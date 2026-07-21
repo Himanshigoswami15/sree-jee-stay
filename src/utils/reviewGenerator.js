@@ -1,7 +1,7 @@
 /**
  * Smart Review Generator Engine
- * Auto-assembles natural human-sounding review sentences based on selected rating,
- * room/table context, and selected keyword tags.
+ * Auto-assembles natural human-sounding review sentences based on selected rating
+ * and selected keyword tags.
  */
 
 export const RATING_KEYWORDS = {
@@ -31,14 +31,14 @@ export const RATING_KEYWORDS = {
   ]
 };
 
-export function generateReviewText({ rating, roomNumber, selectedTags, customNote = '', keywordsList = RATING_KEYWORDS }) {
+export function generateReviewText({ rating, selectedTags = [], customNote = '', keywordsList = RATING_KEYWORDS }) {
   if (!rating) return '';
 
-  const locationContext = roomNumber ? `during our stay in ${roomNumber}` : 'during our recent visit';
+  const locationContext = 'during our stay';
   
   // Openings based on rating
   const openings = {
-    5: [`Had a fantastic experience ${locationContext}!`, `Highly recommend this place! Great experience ${locationContext}.`, `Wonderful stay ${locationContext}. Everything exceeded expectations.`],
+    5: [`Had a fantastic experience ${locationContext}!`, `Highly recommend Sree Jee Stay! Great experience ${locationContext}.`, `Wonderful stay ${locationContext}. Everything exceeded expectations.`],
     4: [`Really enjoyed our stay ${locationContext}.`, `Great experience overall ${locationContext}.`, `Good stay ${locationContext} with nice amenities.`],
     3: [`Mixed experience ${locationContext}. A few things could be improved.`, `Decent stay ${locationContext}, but had some minor hiccups.`],
     2: [`Disappointed with our stay ${locationContext}.`, `Had several issues ${locationContext} that impacted our experience.`],

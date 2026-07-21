@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, Building2, MapPin } from 'lucide-react';
+import { Star, Building2 } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { generateReviewText } from '../../utils/reviewGenerator';
 import { KeywordChips } from './KeywordChips';
@@ -8,7 +8,7 @@ import { SmartNextStep } from './SmartNextStep';
 import { ThankYouCard } from './ThankYouCard';
 
 export function GuestReviewCard() {
-  const { settings, currentRoom, keywords } = useFeedback();
+  const { settings, keywords } = useFeedback();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -20,7 +20,6 @@ export function GuestReviewCard() {
     if (rating > 0) {
       const generated = generateReviewText({
         rating,
-        roomNumber: currentRoom,
         selectedTags,
         keywordsList: keywords,
       });
@@ -28,7 +27,7 @@ export function GuestReviewCard() {
     } else {
       setReviewText('');
     }
-  }, [rating, selectedTags, currentRoom, keywords]);
+  }, [rating, selectedTags, keywords]);
 
   const handleStarClick = (val) => {
     setRating(val);
@@ -62,7 +61,6 @@ export function GuestReviewCard() {
     return (
       <ThankYouCard
         rating={rating}
-        roomNumber={currentRoom}
         onReset={handleResetForm}
       />
     );
@@ -70,16 +68,13 @@ export function GuestReviewCard() {
 
   return (
     <div className="guest-card">
-      {/* Header */}
-      <div className="hotel-badge-header">
-        <div className="hotel-info">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-            <Building2 size={13} /> {settings.hotelName}
+      {/* Clean Header without Room Number */}
+      <div className="hotel-badge-header" style={{ justifyContent: 'center', textAlign: 'center' }}>
+        <div className="hotel-info" style={{ alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+            <Building2 size={14} /> {settings.hotelName}
           </div>
-          <div className="hotel-name">Guest Feedback</div>
-        </div>
-        <div className="room-tag">
-          <MapPin size={12} /> {currentRoom}
+          <div className="hotel-name" style={{ fontSize: '1.25rem' }}>Guest Feedback</div>
         </div>
       </div>
 
@@ -131,7 +126,6 @@ export function GuestReviewCard() {
         rating={rating}
         reviewText={reviewText}
         selectedTags={selectedTags}
-        roomNumber={currentRoom}
         onSubmitted={() => {
           setIsSubmitted(true);
         }}

@@ -1,21 +1,14 @@
 import React from 'react';
-import { Heart, Building2, MapPin, CheckCircle2, RotateCcw, ExternalLink } from 'lucide-react';
+import { Heart, Building2, CheckCircle2, RotateCcw, ExternalLink } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 
-export function ThankYouCard({ rating, roomNumber, onReset }) {
+export function ThankYouCard({ rating, onReset }) {
   const { settings } = useFeedback();
 
   const isHighRating = rating >= 4;
 
   return (
     <div className="guest-card" style={{ textAlign: 'center', padding: '2.5rem 2rem' }}>
-      {/* Header */}
-      <div className="hotel-badge-header" style={{ justifyContent: 'center' }}>
-        <div className="room-tag" style={{ fontSize: '0.85rem', padding: '0.4rem 0.85rem' }}>
-          <MapPin size={13} /> {roomNumber}
-        </div>
-      </div>
-
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', margin: '1rem 0' }}>
         <div
           style={{
@@ -41,8 +34,8 @@ export function ThankYouCard({ rating, roomNumber, onReset }) {
 
         <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.5', maxWidth: '480px' }}>
           {isHighRating
-            ? `Your feedback for ${roomNumber} has been received and copied to your clipboard. We truly appreciate your support and hope you enjoy the rest of your stay!`
-            : `Your feedback for ${roomNumber} has been sent directly to our Duty Manager. We are addressing your comments immediately to ensure a comfortable stay.`}
+            ? `Your feedback has been received and copied to your clipboard. We truly appreciate your support and hope you enjoy the rest of your stay!`
+            : `Your feedback has been sent directly to our Duty Manager. We are addressing your comments immediately to ensure a comfortable stay.`}
         </p>
       </div>
 

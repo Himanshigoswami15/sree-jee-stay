@@ -3,7 +3,7 @@ import confetti from 'canvas-confetti';
 import { ExternalLink, Copy, Check, ShieldCheck, Send, AlertCircle, Sparkles } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 
-export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber, onSubmitted }) {
+export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = 'Room', onSubmitted }) {
   const { settings, addFeedback } = useFeedback();
   const [copied, setCopied] = useState(false);
   const [guestContact, setGuestContact] = useState('');
@@ -140,7 +140,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber, on
           <AlertCircle size={20} /> Duty Manager Notified!
         </h3>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-          Our team in {roomNumber} has been alerted immediately so we can fix this for you right away.
+          Our team has been alerted immediately so we can fix this for you right away.
         </p>
         <button
           type="button"
@@ -190,14 +190,14 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber, on
         <form onSubmit={handleLowRatingSubmitToManager} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div className="form-group">
             <label className="form-label" style={{ fontSize: '0.8rem' }}>
-              Your Contact / Room Call Back (Optional):
+              Your Contact Callback Info (Optional):
             </label>
             <input
               type="text"
               className="form-input"
               value={guestContact}
               onChange={(e) => setGuestContact(e.target.value)}
-              placeholder="e.g. John (Ext 204 or Phone #)"
+              placeholder="e.g. Name or Phone #"
               style={{ fontSize: '0.85rem', padding: '0.6rem 0.85rem' }}
             />
           </div>

@@ -9,8 +9,6 @@ export function Navigation() {
     setActiveTab,
     feedbacks,
     settings,
-    currentRoom,
-    setCurrentRoom,
     isManagerAuthenticated,
     lockDashboard
   } = useFeedback();
@@ -32,24 +30,6 @@ export function Navigation() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Room quick switcher when in guest view */}
-          {activeTab === 'guest' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(255, 255, 255, 0.05)', padding: '0.35rem 0.75rem', borderRadius: '10px', border: '1px solid var(--bg-card-border)', fontSize: '0.8rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Simulating Room:</span>
-              <select
-                value={currentRoom}
-                onChange={(e) => setCurrentRoom(e.target.value)}
-                style={{ background: 'transparent', border: 'none', color: '#a5b4fc', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}
-              >
-                <option value="Room 204" style={{ background: '#0f172a' }}>Room 204</option>
-                <option value="Room 312" style={{ background: '#0f172a' }}>Room 312</option>
-                <option value="Room 108" style={{ background: '#0f172a' }}>Room 108</option>
-                <option value="Table 14" style={{ background: '#0f172a' }}>Table 14</option>
-                <option value="Room 501" style={{ background: '#0f172a' }}>Room 501</option>
-              </select>
-            </div>
-          )}
-
           {/* Navigation View Switcher */}
           <nav className="nav-tabs">
             <button

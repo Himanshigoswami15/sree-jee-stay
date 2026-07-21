@@ -7,7 +7,6 @@ import { GuestReviewCard } from './components/GuestFlow/GuestReviewCard';
 import { MetricsOverview } from './components/Dashboard/MetricsOverview';
 import { TagAnalytics } from './components/Dashboard/TagAnalytics';
 import { FeedbackTable } from './components/Dashboard/FeedbackTable';
-import { QrStudio } from './components/Dashboard/QrStudio';
 import { KeywordStudio } from './components/Dashboard/KeywordStudio';
 
 function MainContent() {
@@ -36,8 +35,6 @@ function MainContent() {
           <TagAnalytics feedbacks={feedbacks} />
 
           <KeywordStudio />
-
-          <QrStudio />
 
           <FeedbackTable feedbacks={feedbacks} />
         </div>
