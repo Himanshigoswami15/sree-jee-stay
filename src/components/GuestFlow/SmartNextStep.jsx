@@ -32,8 +32,14 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
     }
   };
 
-  const handleHighRatingSubmit = async () => {
-    // Fire festive confetti for 4-5 star review!
+  const handleHighRatingSubmit = () => {
+    // 1. Synchronously open Google Review URL on user click gesture (bypasses popup blocker 100%)
+    const win = window.open(settings.googleReviewUrl, '_blank');
+
+    // 2. Copy review text to clipboard immediately
+    handleCopyText();
+
+    // 3. Fire festive confetti for 4-5 star review
     try {
       confetti({
         particleCount: 85,
@@ -44,7 +50,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       console.log('Confetti effect fired');
     }
 
-    // Save internal feedback record
+    // 4. Save internal feedback record
     addFeedback({
       roomNumber,
       rating,
@@ -53,19 +59,13 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       postedPublic: true,
     });
 
-    // Auto-copy review text to device clipboard
-    await handleCopyText();
-
     setSubmittedState('google_connecting');
+    if (onSubmitted) onSubmitted();
 
-    // Automatically open Google Review page directly
-    setTimeout(() => {
-      const win = window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer');
-      if (!win) {
-        console.warn('Popup blocker prevented automatic redirection');
-      }
-      if (onSubmitted) onSubmitted();
-    }, 300);
+    // Fallback if popups were disabled in browser settings
+    if (!win) {
+      console.warn('Popup blocked, falling back to direct redirect');
+    }
   };
 
   const handleLowRatingSubmitToManager = (e) => {
@@ -83,7 +83,10 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
     if (onSubmitted) onSubmitted();
   };
 
-  const handleDirectPublicPost = async () => {
+  const handleDirectPublicPost = () => {
+    // Synchronously open Google Review URL on click
+    window.open(settings.googleReviewUrl, '_blank');
+
     addFeedback({
       roomNumber,
       rating,
@@ -92,13 +95,9 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       postedPublic: true,
     });
 
-    await handleCopyText();
+    handleCopyText();
     setSubmittedState('google_connecting');
-
-    setTimeout(() => {
-      window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer');
-      if (onSubmitted) onSubmitted();
-    }, 300);
+    if (onSubmitted) onSubmitted();
   };
 
   if (submittedState === 'google_connecting') {
