@@ -80,8 +80,8 @@ export function GuestReviewCard() {
       {/* Clean Header without Room Number */}
       <div className="hotel-badge-header" style={{ justifyContent: 'center', textAlign: 'center' }}>
         <div className="hotel-info" style={{ alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-            <Building2 size={14} /> {settings.hotelName}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1e3a8a', fontSize: '0.825rem', fontWeight: 700 }}>
+            <Building2 size={14} color="#1d4ed8" /> {settings.hotelName}
           </div>
           <div className="hotel-name" style={{ fontSize: '1.25rem' }}>Guest Feedback</div>
         </div>

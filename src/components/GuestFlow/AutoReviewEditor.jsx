@@ -7,8 +7,8 @@ export function AutoReviewEditor({ reviewText, onTextChange, rating, onRefreshPh
   return (
     <div className="review-editor-section">
       <div className="section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a5b4fc', fontWeight: 600 }}>
-          <Sparkles size={14} color="#818cf8" />
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#0b192c', fontWeight: 800 }}>
+          <Sparkles size={14} color="#1d4ed8" />
           Auto-Written Review (Editable):
         </span>
 
@@ -18,9 +18,9 @@ export function AutoReviewEditor({ reviewText, onTextChange, rating, onRefreshPh
               type="button"
               onClick={onRefreshPhrasing}
               style={{
-                background: 'rgba(99, 102, 241, 0.15)',
-                border: '1px solid rgba(99, 102, 241, 0.3)',
-                color: '#a5b4fc',
+                background: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                color: '#1d4ed8',
                 borderRadius: '6px',
                 padding: '0.2rem 0.55rem',
                 fontSize: '0.725rem',
@@ -28,7 +28,7 @@ export function AutoReviewEditor({ reviewText, onTextChange, rating, onRefreshPh
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.3rem',
-                fontWeight: 600
+                fontWeight: 700
               }}
               title="Generate a unique new sentence variation"
             >
@@ -36,7 +36,7 @@ export function AutoReviewEditor({ reviewText, onTextChange, rating, onRefreshPh
             </button>
           )}
 
-          <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+          <span style={{ fontSize: '0.725rem', color: '#1e3a8a', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
             <Edit3 size={11} /> Tap to edit
           </span>
         </div>
