@@ -129,7 +129,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         <button
           type="button"
           className="btn-primary-action"
-          style={{ marginTop: '0.25rem', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
+          style={{ marginTop: '0.25rem', background: 'linear-gradient(135deg, #0b192c 0%, #1e3a8a 100%)' }}
           onClick={() => window.open(targetGoogleUrl, '_blank', 'noopener,noreferrer')}
         >
           <ExternalLink size={18} /> Open Google Review Page Again
@@ -183,8 +183,8 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           className="btn-primary-action"
           onClick={handlePostToGoogle}
           style={{
-            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-            boxShadow: '0 8px 25px rgba(37, 99, 235, 0.35)',
+            background: 'linear-gradient(135deg, #0b192c 0%, #1e3a8a 100%)',
+            boxShadow: '0 8px 25px rgba(11, 25, 44, 0.35)',
             fontSize: '1rem',
             padding: '0.9rem'
           }}
