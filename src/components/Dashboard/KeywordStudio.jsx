@@ -34,26 +34,31 @@ export function KeywordStudio() {
   return (
     <div className="chart-card">
       <div className="chart-title">
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)' }}>
-          <Tag size={20} /> Keyword & Sentiment Tag Studio
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#4f46e5' }}>
+          <Tag size={20} color="#4f46e5" /> Keyword & Sentiment Tag Studio
         </span>
-        <span style={{ fontSize: '0.75rem', color: '#34d399', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <Sparkles size={12} /> Live Sync with Guest Flow
+        <span style={{ fontSize: '0.75rem', color: '#059669', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 700 }}>
+          <Sparkles size={13} color="#059669" /> Live Sync with Guest Flow
         </span>
       </div>
 
-      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+      <p style={{ fontSize: '0.875rem', color: '#475569', lineHeight: '1.4', fontWeight: 500 }}>
         Manage the tap-able keyword chips offered to guests and configure the auto-written sentence snippets generated for public reviews or internal alerts.
       </p>
 
       {/* Type Switcher & Add Button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div className="nav-tabs" style={{ background: 'rgba(15, 23, 42, 0.8)' }}>
+        <div className="nav-tabs" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '4px', borderRadius: '12px' }}>
           <button
             type="button"
             className={`nav-tab-btn ${activeTab === 'positive' ? 'active' : ''}`}
             onClick={() => setActiveTab('positive')}
-            style={{ background: activeTab === 'positive' ? '#10b981' : 'transparent', color: activeTab === 'positive' ? 'white' : 'var(--text-muted)' }}
+            style={{
+              background: activeTab === 'positive' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
+              color: activeTab === 'positive' ? '#ffffff' : '#475569',
+              boxShadow: activeTab === 'positive' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
+              fontWeight: 700
+            }}
           >
             <ThumbsUp size={14} /> Positive Highlights (4-5 Stars)
           </button>
@@ -61,7 +66,12 @@ export function KeywordStudio() {
             type="button"
             className={`nav-tab-btn ${activeTab === 'negative' ? 'active' : ''}`}
             onClick={() => setActiveTab('negative')}
-            style={{ background: activeTab === 'negative' ? '#f43f5e' : 'transparent', color: activeTab === 'negative' ? 'white' : 'var(--text-muted)' }}
+            style={{
+              background: activeTab === 'negative' ? 'linear-gradient(135deg, #f43f5e 0%, #dc2626 100%)' : 'transparent',
+              color: activeTab === 'negative' ? '#ffffff' : '#475569',
+              boxShadow: activeTab === 'negative' ? '0 4px 12px rgba(244, 63, 94, 0.3)' : 'none',
+              fontWeight: 700
+            }}
           >
             <AlertCircle size={14} /> Issue Tags (1-3 Stars)
           </button>
@@ -82,8 +92,9 @@ export function KeywordStudio() {
         <form
           onSubmit={handleAddSubmit}
           style={{
-            background: 'rgba(15, 23, 42, 0.9)',
-            border: '1px solid var(--primary-light)',
+            background: '#ffffff',
+            border: '1.5px solid #cbd5e1',
+            boxShadow: '0 10px 30px -5px rgba(15, 23, 42, 0.08)',
             padding: '1.25rem',
             borderRadius: '16px',
             display: 'flex',
@@ -91,7 +102,7 @@ export function KeywordStudio() {
             gap: '1rem',
           }}
         >
-          <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)' }}>
+          <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a' }}>
             Add New {activeTab === 'positive' ? 'Positive Highlight' : 'Issue Tag'}
           </div>
 
@@ -162,35 +173,39 @@ export function KeywordStudio() {
           <div
             key={tag.id}
             style={{
-              background: 'rgba(15, 23, 42, 0.7)',
-              border: '1px solid var(--bg-card-border)',
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
               borderRadius: '14px',
               padding: '1rem',
               display: 'flex',
               flexDirection: 'column',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               gap: '0.65rem',
+              boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)',
+              transition: 'all 0.2s ease-in-out'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+              <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a' }}>
                 {tag.label}
               </span>
               <span
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.725rem',
                   fontWeight: 700,
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '10px',
-                  color: 'var(--text-muted)',
+                  background: '#e0e7ff',
+                  color: '#4f46e5',
+                  border: '1px solid #c7d2fe',
+                  padding: '0.15rem 0.6rem',
+                  borderRadius: '12px',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {tag.category}
               </span>
             </div>
 
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: '1.35' }}>
+            <div style={{ fontSize: '0.825rem', color: '#475569', fontStyle: 'italic', lineHeight: '1.4', fontWeight: 500 }}>
               "{tag.snippet || tag.label}"
             </div>
 
@@ -199,18 +214,21 @@ export function KeywordStudio() {
                 type="button"
                 onClick={() => deleteKeyword(activeTab, tag.id)}
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#fb7185',
+                  background: '#fef2f2',
+                  border: '1px solid #fca5a5',
+                  color: '#ef4444',
+                  borderRadius: '8px',
+                  padding: '0.25rem 0.6rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.3rem',
                   fontSize: '0.75rem',
-                  fontWeight: 600,
+                  fontWeight: 700,
+                  transition: 'all 0.2s ease'
                 }}
               >
-                <Trash2 size={13} /> Delete Tag
+                <Trash2 size={13} color="#ef4444" /> Delete Tag
               </button>
             </div>
           </div>
