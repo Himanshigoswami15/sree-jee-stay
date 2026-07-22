@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, MessageSquare, AlertTriangle, ShieldCheck, TrendingUp } from 'lucide-react';
+import { Star, AlertTriangle, ShieldCheck, TrendingUp } from 'lucide-react';
 
 export function MetricsOverview({ feedbacks, alertThreshold }) {
   const totalReviews = feedbacks.length;
@@ -25,14 +25,14 @@ export function MetricsOverview({ feedbacks, alertThreshold }) {
       {/* Avg Rating Card */}
       <div className="metric-card rating-card">
         <div className="metric-header">
-          <span>Overall Guest Rating</span>
-          <Star size={18} color="#fbbf24" fill="#fbbf24" />
+          <span style={{ color: '#475569', fontWeight: 800 }}>Overall Guest Rating</span>
+          <Star size={18} color="#f59e0b" fill="#f59e0b" />
         </div>
-        <div className="metric-value" style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
+        <div className="metric-value" style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', color: '#0f172a' }}>
           <span>{avgRating}</span>
-          <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 600 }}>/ 5.0</span>
+          <span style={{ fontSize: '1rem', color: '#475569', fontWeight: 700 }}>/ 5.0</span>
         </div>
-        <div className="metric-footer">
+        <div className="metric-footer" style={{ color: '#64748b', fontWeight: 600 }}>
           Based on {totalReviews} recent guest feedback submissions
         </div>
       </div>
@@ -40,41 +40,46 @@ export function MetricsOverview({ feedbacks, alertThreshold }) {
       {/* Unresolved Manager Alerts Card */}
       <div className="metric-card alert-card">
         <div className="metric-header">
-          <span>Active Manager Alerts</span>
-          <AlertTriangle size={18} color="#ef4444" />
+          <span style={{ color: '#475569', fontWeight: 800 }}>Active Manager Alerts</span>
+          <AlertTriangle size={18} color="#dc2626" />
         </div>
-        <div className="metric-value" style={{ color: unresolvedAlerts > 0 ? '#ef4444' : '#34d399' }}>
+        <div className="metric-value" style={{ color: unresolvedAlerts > 0 ? '#dc2626' : '#059669', fontWeight: 800 }}>
           {unresolvedAlerts}
         </div>
-        <div className="metric-footer">
+        <div className="metric-footer" style={{ color: unresolvedAlerts > 0 ? '#dc2626' : '#059669', fontWeight: 700 }}>
           {unresolvedAlerts > 0 ? 'Requires immediate duty manager attention' : 'All low-rating alerts handled'}
         </div>
       </div>
 
       {/* Public Conversion & NPS Card */}
-      <div className="metric-card positive-card">
+      <div
+        className="metric-card"
+        style={{
+          borderLeft: `4px solid ${npsScore >= 0 ? '#10b981' : '#f43f5e'}`
+        }}
+      >
         <div className="metric-header">
-          <span>Net Promoter Score (NPS)</span>
-          <TrendingUp size={18} color="#10b981" />
+          <span style={{ color: '#475569', fontWeight: 800 }}>Net Promoter Score (NPS)</span>
+          <TrendingUp size={18} color={npsScore >= 0 ? '#10b981' : '#f43f5e'} />
         </div>
-        <div className="metric-value">
+        <div className="metric-value" style={{ color: npsScore >= 0 ? '#059669' : '#e11d48', fontWeight: 800 }}>
           {npsScore > 0 ? `+${npsScore}` : npsScore}
         </div>
-        <div className="metric-footer">
+        <div className="metric-footer" style={{ color: '#64748b', fontWeight: 600 }}>
           {publicConversionRate}% public review conversion rate
         </div>
       </div>
 
       {/* Policy Compliance Card */}
-      <div className="metric-card" style={{ borderLeft: '4px solid var(--primary)' }}>
+      <div className="metric-card" style={{ borderLeft: '4px solid #4f46e5' }}>
         <div className="metric-header">
-          <span>Policy Compliance</span>
-          <ShieldCheck size={18} color="#6366f1" />
+          <span style={{ color: '#475569', fontWeight: 800 }}>Policy Compliance</span>
+          <ShieldCheck size={18} color="#4f46e5" />
         </div>
-        <div className="metric-value" style={{ color: '#818cf8', fontSize: '1.6rem' }}>
+        <div className="metric-value" style={{ color: '#4f46e5', fontSize: '1.6rem', fontWeight: 800 }}>
           100% Compliant
         </div>
-        <div className="metric-footer">
+        <div className="metric-footer" style={{ color: '#64748b', fontWeight: 600 }}>
           No review gating • All guests have public link access
         </div>
       </div>
