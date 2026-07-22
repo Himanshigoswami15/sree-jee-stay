@@ -46,10 +46,10 @@ export function Navigation() {
               className={`nav-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveTab('dashboard')}
             >
-              {isManagerAuthenticated ? <LayoutDashboard size={16} /> : <Lock size={15} color="#fb7185" />}
+              {isManagerAuthenticated ? <LayoutDashboard size={16} /> : <Lock size={15} color={activeTab === 'dashboard' ? '#ffffff' : '#1d4ed8'} />}
               <span>Manager Dashboard</span>
               {!isManagerAuthenticated && (
-                <span style={{ fontSize: '0.7rem', color: '#fb7185', background: 'rgba(239, 68, 68, 0.2)', padding: '0.1rem 0.45rem', borderRadius: '8px', fontWeight: 700 }}>
+                <span style={{ fontSize: '0.7rem', color: activeTab === 'dashboard' ? '#ffffff' : '#1d4ed8', background: activeTab === 'dashboard' ? 'rgba(255, 255, 255, 0.25)' : '#e0f2fe', padding: '0.1rem 0.45rem', borderRadius: '8px', fontWeight: 800 }}>
                   PIN Protected
                 </span>
               )}
