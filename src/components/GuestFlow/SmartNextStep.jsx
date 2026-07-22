@@ -90,38 +90,38 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       <div style={{
         textAlign: 'center',
         padding: '1.5rem',
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%)',
+        background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
         borderRadius: '20px',
-        border: '1px solid rgba(16, 185, 129, 0.4)',
+        border: '1px solid #93c5fd',
         display: 'flex',
         flexDirection: 'column',
         gap: '0.85rem',
-        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.25)'
+        boxShadow: '0 8px 30px rgba(37, 99, 235, 0.12)'
       }}>
-        <div style={{ color: '#34d399', fontWeight: 800, fontSize: '1.15rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          <Sparkles size={24} color="#34d399" /> Google Review Page Connected!
+        <div style={{ color: '#059669', fontWeight: 800, fontSize: '1.15rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          <Sparkles size={24} color="#059669" /> Google Review Page Connected!
         </div>
 
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
+        <p style={{ fontSize: '0.9rem', color: '#1e3a8a', lineHeight: '1.4' }}>
           ✨ <strong>Your review text was automatically copied to your clipboard!</strong>
         </p>
 
         <div style={{
-          background: 'rgba(15, 23, 42, 0.85)',
+          background: '#ffffff',
           padding: '0.9rem 1rem',
           borderRadius: '14px',
-          border: '1px solid var(--bg-card-border)',
+          border: '1px solid #bfdbfe',
           textAlign: 'left',
           fontSize: '0.825rem',
-          color: 'var(--text-muted)',
+          color: '#1e3a8a',
           display: 'flex',
           flexDirection: 'column',
           gap: '0.45rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#60a5fa', fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2563eb', fontWeight: 700 }}>
             <span>1️⃣</span> Google Review window opened in new tab.
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#34d399', fontWeight: 600 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontWeight: 700 }}>
             <span>2️⃣</span> Sign in to Google & paste (Ctrl+V or Long-Press) your text!
           </div>
         </div>
@@ -129,14 +129,14 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         <button
           type="button"
           className="btn-primary-action"
-          style={{ marginTop: '0.25rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+          style={{ marginTop: '0.25rem', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
           onClick={() => window.open(targetGoogleUrl, '_blank', 'noopener,noreferrer')}
         >
           <ExternalLink size={18} /> Open Google Review Page Again
         </button>
 
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', marginTop: '0.2rem' }}>
-          <Info size={13} color="#94a3b8" />
+        <div style={{ fontSize: '0.75rem', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', marginTop: '0.2rem' }}>
+          <Info size={13} color="#2563eb" />
           <span>Note: You'll need to sign in with your Google account on Google to submit the review.</span>
         </div>
       </div>
@@ -145,11 +145,11 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
 
   if (submittedState === 'manager_sent') {
     return (
-      <div style={{ textAlign: 'center', padding: '1.25rem', background: 'rgba(239, 68, 68, 0.15)', borderRadius: '16px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-        <h3 style={{ color: '#fca5a5', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+      <div style={{ textAlign: 'center', padding: '1.25rem', background: '#fef2f2', borderRadius: '16px', border: '1px solid #fca5a5' }}>
+        <h3 style={{ color: '#dc2626', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
           <AlertCircle size={20} /> Duty Manager Notified!
         </h3>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+        <p style={{ fontSize: '0.875rem', color: '#1e3a8a', marginBottom: '0.75rem' }}>
           Our internal team has received your feedback and will reach out immediately.
         </p>
 
@@ -183,8 +183,8 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           className="btn-primary-action"
           onClick={handlePostToGoogle}
           style={{
-            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-            boxShadow: '0 8px 25px rgba(99, 102, 241, 0.4)',
+            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+            boxShadow: '0 8px 25px rgba(37, 99, 235, 0.35)',
             fontSize: '1rem',
             padding: '0.9rem'
           }}
@@ -199,24 +199,24 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           className="btn-secondary-action"
           onClick={handleCopyText}
         >
-          {copied ? <Check size={16} color="#34d399" /> : <Copy size={16} />}
+          {copied ? <Check size={16} color="#059669" /> : <Copy size={16} />}
           <span>{copied ? 'Copied Review Text!' : 'Copy Review Text to Clipboard'}</span>
         </button>
 
         {/* Clarifying note / tooltip as required by Task 5 */}
         <div style={{
-          background: 'rgba(15, 23, 42, 0.6)',
+          background: '#eff6ff',
           padding: '0.65rem 0.85rem',
           borderRadius: '10px',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid #bfdbfe',
           fontSize: '0.775rem',
-          color: 'var(--text-muted)',
+          color: '#1e3a8a',
           display: 'flex',
           alignItems: 'flex-start',
           gap: '0.4rem',
           lineHeight: '1.4'
         }}>
-          <Info size={15} color="#818cf8" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <Info size={15} color="#2563eb" style={{ flexShrink: 0, marginTop: '2px' }} />
           <span>
             <strong>Note:</strong> Clicking this will open Google in a new tab — you'll need to sign in with your Google account and submit the review there.
           </span>
@@ -225,9 +225,9 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
 
       {/* For lower ratings (1-3 stars), offer optional callback input to Duty Manager as additional help */}
       {rating <= 3 && (
-        <form onSubmit={handleNotifyDutyManager} style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--bg-card-border)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+        <form onSubmit={handleNotifyDutyManager} style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px dashed #bfdbfe', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
           <div className="form-group">
-            <label className="form-label" style={{ fontSize: '0.785rem', color: '#fca5a5' }}>
+            <label className="form-label" style={{ fontSize: '0.785rem', color: '#dc2626' }}>
               Want immediate internal manager callback? (Optional):
             </label>
             <input
@@ -243,7 +243,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           <button
             type="submit"
             className="btn-secondary-action"
-            style={{ fontSize: '0.8rem', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+            style={{ fontSize: '0.8rem', color: '#dc2626', borderColor: '#fca5a5' }}
           >
             <Send size={14} />
             <span>Notify Duty Manager Privately</span>
