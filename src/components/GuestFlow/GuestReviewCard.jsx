@@ -14,30 +14,38 @@ export function GuestReviewCard() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [reviewText, setReviewText] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [variationSeed, setVariationSeed] = useState(Math.random());
 
-  // Update auto-written review when rating or selected tags change
+  // Update auto-written review when rating, selected tags, or variation seed changes
   useEffect(() => {
     if (rating > 0) {
       const generated = generateReviewText({
         rating,
         selectedTags,
         keywordsList: keywords,
+        variationSeed,
       });
       setReviewText(generated);
     } else {
       setReviewText('');
     }
-  }, [rating, selectedTags, keywords]);
+  }, [rating, selectedTags, keywords, variationSeed]);
 
   const handleStarClick = (val) => {
     setRating(val);
     setSelectedTags([]); // Reset tags when changing sentiment
+    setVariationSeed(Math.random());
   };
 
   const handleToggleTag = (tagId) => {
+    setVariationSeed(Math.random()); // Pick fresh unique statement variation on tag click!
     setSelectedTags((prev) =>
       prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
     );
+  };
+
+  const handleRefreshPhrasing = () => {
+    setVariationSeed(Math.random());
   };
 
   const handleResetForm = () => {
@@ -45,6 +53,7 @@ export function GuestReviewCard() {
     setSelectedTags([]);
     setReviewText('');
     setIsSubmitted(false);
+    setVariationSeed(Math.random());
   };
 
   const getSentimentText = () => {
@@ -119,6 +128,7 @@ export function GuestReviewCard() {
         rating={rating}
         reviewText={reviewText}
         onTextChange={setReviewText}
+        onRefreshPhrasing={handleRefreshPhrasing}
       />
 
       {/* Policy Compliant Next Step */}

@@ -13,19 +13,32 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
 
   const isHighRating = rating >= 4;
 
-  const handleCopyText = () => {
-    navigator.clipboard.writeText(reviewText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
+  const handleCopyText = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(reviewText);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = reviewText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch (err) {
+      console.warn('Clipboard write failed:', err);
+    }
   };
 
-  const handleHighRatingSubmit = () => {
-    // Fire confetti for 4-5 star review!
+  const handleHighRatingSubmit = async () => {
+    // Fire festive confetti for 4-5 star review!
     try {
       confetti({
-        particleCount: 75,
+        particleCount: 85,
         spread: 80,
-        origin: { y: 0.6 }
+        origin: { y: 0.55 }
       });
     } catch (e) {
       console.log('Confetti effect fired');
@@ -40,16 +53,19 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       postedPublic: true,
     });
 
-    // Auto-copy text
-    handleCopyText();
+    // Auto-copy review text to device clipboard
+    await handleCopyText();
 
     setSubmittedState('google_connecting');
 
-    // Automatically open Google Review page
+    // Automatically open Google Review page directly
     setTimeout(() => {
-      window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer');
+      const win = window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        console.warn('Popup blocker prevented automatic redirection');
+      }
       if (onSubmitted) onSubmitted();
-    }, 400);
+    }, 300);
   };
 
   const handleLowRatingSubmitToManager = (e) => {
@@ -67,7 +83,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
     if (onSubmitted) onSubmitted();
   };
 
-  const handleDirectPublicPost = () => {
+  const handleDirectPublicPost = async () => {
     addFeedback({
       roomNumber,
       rating,
@@ -76,13 +92,13 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       postedPublic: true,
     });
 
-    handleCopyText();
+    await handleCopyText();
     setSubmittedState('google_connecting');
 
     setTimeout(() => {
       window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer');
       if (onSubmitted) onSubmitted();
-    }, 400);
+    }, 300);
   };
 
   if (submittedState === 'google_connecting') {
@@ -90,44 +106,49 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       <div style={{
         textAlign: 'center',
         padding: '1.5rem',
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)',
+        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%)',
         borderRadius: '20px',
-        border: '1px solid rgba(99, 102, 241, 0.3)',
+        border: '1px solid rgba(16, 185, 129, 0.4)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.85rem'
+        gap: '0.85rem',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.25)'
       }}>
-        <div style={{ color: '#34d399', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          <Sparkles size={22} color="#34d399" /> Google Review Page Connected!
+        <div style={{ color: '#34d399', fontWeight: 800, fontSize: '1.15rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          <Sparkles size={24} color="#34d399" /> Opening Google Business Review Page!
         </div>
 
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
-          ✅ <strong>Your review text was copied to clipboard!</strong>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
+          ✨ <strong>Your review text was automatically copied to your clipboard!</strong>
         </p>
 
         <div style={{
-          background: 'rgba(15, 23, 42, 0.8)',
-          padding: '0.85rem',
-          borderRadius: '12px',
+          background: 'rgba(15, 23, 42, 0.85)',
+          padding: '0.9rem 1rem',
+          borderRadius: '14px',
           border: '1px solid var(--bg-card-border)',
           textAlign: 'left',
-          fontSize: '0.8rem',
+          fontSize: '0.825rem',
           color: 'var(--text-muted)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.35rem'
+          gap: '0.45rem'
         }}>
-          <div>1️⃣ Google Business Review window is opening automatically...</div>
-          <div>2️⃣ Simply select <strong>5 Stars</strong> on Google and paste (Ctrl+V or long-press paste) your pre-filled review text!</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#60a5fa', fontWeight: 600 }}>
+            <span>1️⃣</span> Google Review window opened in new tab automatically.
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#34d399', fontWeight: 600 }}>
+            <span>2️⃣</span> Tap <strong>5 Stars</strong> on Google & paste (Ctrl+V or Long-Press) your text!
+          </div>
         </div>
 
         <button
           type="button"
           className="btn-primary-action"
-          style={{ marginTop: '0.35rem' }}
+          style={{ marginTop: '0.25rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
           onClick={() => window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer')}
         >
-          <ExternalLink size={18} /> Re-Open Google Review Page
+          <ExternalLink size={18} /> Tap Here to Open Google Review Page Now
         </button>
       </div>
     );

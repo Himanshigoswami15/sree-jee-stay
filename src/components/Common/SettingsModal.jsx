@@ -112,6 +112,9 @@ export function SettingsModal({ isOpen, onClose }) {
               placeholder="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID"
               required
             />
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem', display: 'block' }}>
+              💡 <strong>Tip:</strong> Find this link on your <em>Google Business Profile</em> under <strong>"Ask for reviews"</strong> (e.g. <code>https://g.page/r/.../review</code> or <code>https://search.google.com/local/writereview?placeid=...</code>). Clients will be automatically redirected here to post!
+            </span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
