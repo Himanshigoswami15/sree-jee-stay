@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { RATING_KEYWORDS } from '../utils/reviewGenerator';
+import { generateGoogleReviewUrl, GOOGLE_PLACE_ID } from '../utils/googleReview';
 
 const FeedbackContext = createContext();
 
 const INITIAL_SETTINGS = {
   hotelName: 'Sree Jee Stay - Homestay in Varanasi',
-  googleReviewUrl: 'https://share.google/A2R9wcQuxsaISXwnn',
+  googlePlaceId: GOOGLE_PLACE_ID,
+  googleReviewUrl: generateGoogleReviewUrl(GOOGLE_PLACE_ID),
   tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
   managerEmail: 'info@sreejeestay.com',
   managerPhone: '+91 98765 43210',

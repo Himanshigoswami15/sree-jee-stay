@@ -94,8 +94,26 @@ export function SettingsModal({ isOpen, onClose }) {
           </div>
 
           <div className="form-group">
+            <label className="form-label">Google Place ID (from .env / Google Maps):</label>
+            <input
+              type="text"
+              className="form-input"
+              value={formState.googlePlaceId || ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormState((prev) => ({
+                  ...prev,
+                  googlePlaceId: val,
+                  googleReviewUrl: val ? `https://search.google.com/local/writereview?placeid=${val}` : prev.googleReviewUrl
+                }));
+              }}
+              placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4"
+            />
+          </div>
+
+          <div className="form-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label className="form-label">Connected Google Business Review Link:</label>
+              <label className="form-label">Generated Google Business Review Link:</label>
               <button
                 type="button"
                 onClick={handleTestGoogleLink}
@@ -113,7 +131,7 @@ export function SettingsModal({ isOpen, onClose }) {
               required
             />
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem', display: 'block' }}>
-              💡 <strong>Tip:</strong> Find this link on your <em>Google Business Profile</em> under <strong>"Ask for reviews"</strong> (e.g. <code>https://g.page/r/.../review</code> or <code>https://search.google.com/local/writereview?placeid=...</code>). Clients will be automatically redirected here to post!
+              💡 <strong>Tip:</strong> Generates <code>https://search.google.com/local/writereview?placeid=...</code> for your Place ID!
             </span>
           </div>
 

@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { ExternalLink, Copy, Check, ShieldCheck, Send, AlertCircle, Sparkles } from 'lucide-react';
+import { ExternalLink, Copy, Check, ShieldCheck, Send, Info, Sparkles, AlertCircle } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
+import { generateGoogleReviewUrl } from '../../utils/googleReview';
 
 export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = 'Room', onSubmitted }) {
   const { settings, addFeedback } = useFeedback();
   const [copied, setCopied] = useState(false);
   const [guestContact, setGuestContact] = useState('');
-  const [submittedState, setSubmittedState] = useState(null); // 'manager_sent' | 'google_connecting' | null
+  const [submittedState, setSubmittedState] = useState(null); // 'google_connecting' | 'manager_sent' | null
 
   if (!rating) return null;
 
-  const isHighRating = rating >= 4;
+  const targetGoogleUrl = generateGoogleReviewUrl(settings.googlePlaceId || settings.googleReviewUrl);
 
   const handleCopyText = async () => {
     try {
@@ -26,31 +27,32 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         document.body.removeChild(textarea);
       }
       setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
+      setTimeout(() => setCopied(false), 3500);
     } catch (err) {
-      console.warn('Clipboard write failed:', err);
+      console.warn('Clipboard copy warning:', err);
     }
   };
 
-  const handleHighRatingSubmit = () => {
-    // 1. Synchronously open Google Review URL on user click gesture (bypasses popup blocker 100%)
-    const win = window.open(settings.googleReviewUrl, '_blank');
+  // Policy-compliant Google Review submission for ALL star ratings
+  const handlePostToGoogle = () => {
+    // 1. Synchronously open Google Review URL in new tab (bypasses popup blockers)
+    const win = window.open(targetGoogleUrl, '_blank', 'noopener,noreferrer');
 
-    // 2. Copy review text to clipboard immediately
+    // 2. Auto-copy review text to clipboard
     handleCopyText();
 
-    // 3. Fire festive confetti for 4-5 star review
-    try {
-      confetti({
-        particleCount: 85,
-        spread: 80,
-        origin: { y: 0.55 }
-      });
-    } catch (e) {
-      console.log('Confetti effect fired');
+    // 3. Fire confetti for positive feedback
+    if (rating >= 4) {
+      try {
+        confetti({
+          particleCount: 85,
+          spread: 80,
+          origin: { y: 0.55 }
+        });
+      } catch (e) {}
     }
 
-    // 4. Save internal feedback record
+    // 4. Save feedback in internal database for analytics regardless of Google click
     addFeedback({
       roomNumber,
       rating,
@@ -62,13 +64,13 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
     setSubmittedState('google_connecting');
     if (onSubmitted) onSubmitted();
 
-    // Fallback if popups were disabled in browser settings
     if (!win) {
-      console.warn('Popup blocked, falling back to direct redirect');
+      console.warn('Browser popup blocked; user can use fallback CTA button');
     }
   };
 
-  const handleLowRatingSubmitToManager = (e) => {
+  // Optional manager notification for urgent low rating assistance
+  const handleNotifyDutyManager = (e) => {
     e.preventDefault();
     addFeedback({
       roomNumber,
@@ -80,23 +82,6 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
     });
 
     setSubmittedState('manager_sent');
-    if (onSubmitted) onSubmitted();
-  };
-
-  const handleDirectPublicPost = () => {
-    // Synchronously open Google Review URL on click
-    window.open(settings.googleReviewUrl, '_blank');
-
-    addFeedback({
-      roomNumber,
-      rating,
-      tags: selectedTags,
-      reviewText,
-      postedPublic: true,
-    });
-
-    handleCopyText();
-    setSubmittedState('google_connecting');
     if (onSubmitted) onSubmitted();
   };
 
@@ -114,7 +99,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         boxShadow: '0 8px 30px rgba(0, 0, 0, 0.25)'
       }}>
         <div style={{ color: '#34d399', fontWeight: 800, fontSize: '1.15rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          <Sparkles size={24} color="#34d399" /> Opening Google Business Review Page!
+          <Sparkles size={24} color="#34d399" /> Google Review Page Connected!
         </div>
 
         <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
@@ -134,10 +119,10 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           gap: '0.45rem'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#60a5fa', fontWeight: 600 }}>
-            <span>1️⃣</span> Google Review window opened in new tab automatically.
+            <span>1️⃣</span> Google Review window opened in new tab.
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#34d399', fontWeight: 600 }}>
-            <span>2️⃣</span> Tap <strong>5 Stars</strong> on Google & paste (Ctrl+V or Long-Press) your text!
+            <span>2️⃣</span> Sign in to Google & paste (Ctrl+V or Long-Press) your text!
           </div>
         </div>
 
@@ -145,10 +130,15 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           type="button"
           className="btn-primary-action"
           style={{ marginTop: '0.25rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
-          onClick={() => window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer')}
+          onClick={() => window.open(targetGoogleUrl, '_blank', 'noopener,noreferrer')}
         >
-          <ExternalLink size={18} /> Tap Here to Open Google Review Page Now
+          <ExternalLink size={18} /> Open Google Review Page Again
         </button>
+
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', marginTop: '0.2rem' }}>
+          <Info size={13} color="#94a3b8" />
+          <span>Note: You'll need to sign in with your Google account on Google to submit the review.</span>
+        </div>
       </div>
     );
   }
@@ -160,86 +150,103 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           <AlertCircle size={20} /> Duty Manager Notified!
         </h3>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-          Our team has been alerted immediately so we can fix this for you right away.
+          Our internal team has received your feedback and will reach out immediately.
         </p>
+
+        {/* Policy compliant equal option to post on Google */}
         <button
           type="button"
-          onClick={handleDirectPublicPost}
-          className="btn-secondary-action"
-          style={{ fontSize: '0.8rem' }}
+          onClick={handlePostToGoogle}
+          className="btn-primary-action"
+          style={{ marginTop: '0.5rem' }}
         >
-          <ExternalLink size={14} /> Still want to post publicly on Google?
+          <ExternalLink size={16} /> Post this review on Google
         </button>
       </div>
     );
   }
 
   return (
-    <div className="action-box">
-      {/* Anti-gating compliance notice */}
+    <div className="action-box" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      {/* Policy Anti-gating Notice */}
       <div className="policy-badge">
         <ShieldCheck size={16} style={{ flexShrink: 0 }} />
         <span>
-          <strong>Connected with Google:</strong> Auto-copies review text and connects directly to official Google Business Listing.
+          <strong>Google Policy Compliant:</strong> Direct 1-tap link to official Google Business Listing for all guests.
         </span>
       </div>
 
-      {isHighRating ? (
-        /* High Rating Path (4-5 Stars) */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          <button
-            type="button"
-            className="btn-primary-action"
-            onClick={handleHighRatingSubmit}
-          >
-            <ExternalLink size={18} />
-            <span>Connect & Post on Google</span>
-          </button>
+      {/* Prominent CTA to Post on Google for ALL ratings equally */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+        <button
+          type="button"
+          className="btn-primary-action"
+          onClick={handlePostToGoogle}
+          style={{
+            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            boxShadow: '0 8px 25px rgba(99, 102, 241, 0.4)',
+            fontSize: '1rem',
+            padding: '0.9rem'
+          }}
+        >
+          <ExternalLink size={20} />
+          <span>Post this review on Google</span>
+        </button>
 
-          <button
-            type="button"
-            className="btn-secondary-action"
-            onClick={handleCopyText}
-          >
-            {copied ? <Check size={16} color="#34d399" /> : <Copy size={16} />}
-            <span>{copied ? 'Copied Review Text!' : 'Copy Review Text Only'}</span>
-          </button>
+        {/* Copy Review Text Only Button */}
+        <button
+          type="button"
+          className="btn-secondary-action"
+          onClick={handleCopyText}
+        >
+          {copied ? <Check size={16} color="#34d399" /> : <Copy size={16} />}
+          <span>{copied ? 'Copied Review Text!' : 'Copy Review Text to Clipboard'}</span>
+        </button>
+
+        {/* Clarifying note / tooltip as required by Task 5 */}
+        <div style={{
+          background: 'rgba(15, 23, 42, 0.6)',
+          padding: '0.65rem 0.85rem',
+          borderRadius: '10px',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          fontSize: '0.775rem',
+          color: 'var(--text-muted)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.4rem',
+          lineHeight: '1.4'
+        }}>
+          <Info size={15} color="#818cf8" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <span>
+            <strong>Note:</strong> Clicking this will open Google in a new tab — you'll need to sign in with your Google account and submit the review there.
+          </span>
         </div>
-      ) : (
-        /* Low Rating Path (1-3 Stars) */
-        <form onSubmit={handleLowRatingSubmitToManager} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      </div>
+
+      {/* For lower ratings (1-3 stars), offer optional callback input to Duty Manager as additional help */}
+      {rating <= 3 && (
+        <form onSubmit={handleNotifyDutyManager} style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--bg-card-border)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
           <div className="form-group">
-            <label className="form-label" style={{ fontSize: '0.8rem' }}>
-              Your Contact Callback Info (Optional):
+            <label className="form-label" style={{ fontSize: '0.785rem', color: '#fca5a5' }}>
+              Want immediate internal manager callback? (Optional):
             </label>
             <input
               type="text"
               className="form-input"
               value={guestContact}
               onChange={(e) => setGuestContact(e.target.value)}
-              placeholder="e.g. Name or Phone #"
-              style={{ fontSize: '0.85rem', padding: '0.6rem 0.85rem' }}
+              placeholder="e.g. Name or Room / Phone #"
+              style={{ fontSize: '0.85rem', padding: '0.55rem 0.85rem' }}
             />
           </div>
 
           <button
             type="submit"
-            className="btn-primary-action"
-            style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', boxShadow: '0 6px 20px rgba(239, 68, 68, 0.4)' }}
-          >
-            <Send size={18} />
-            <span>Send to Duty Manager (Get Immediate Fix)</span>
-          </button>
-
-          {/* Policy Compliant Secondary Link */}
-          <button
-            type="button"
             className="btn-secondary-action"
-            onClick={handleDirectPublicPost}
-            style={{ marginTop: '0.25rem' }}
+            style={{ fontSize: '0.8rem', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
           >
-            <ExternalLink size={14} />
-            <span>Prefer to post publicly on Google / TripAdvisor?</span>
+            <Send size={14} />
+            <span>Notify Duty Manager Privately</span>
           </button>
         </form>
       )}
