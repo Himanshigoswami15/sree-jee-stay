@@ -13,11 +13,9 @@ export function ManagerPinModal() {
   const [loginError, setLoginError] = useState('');
 
   // Forgot Password / Reset state
-  const [generatedCode, setGeneratedCode] = useState('');
-  const [enteredCode, setEnteredCode] = useState('');
+  const [emailInput, setEmailInput] = useState('');
   const [newPin, setNewPin] = useState('');
   const [resetError, setResetError] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
 
   if (!isPinModalOpen) return null;
 
@@ -37,22 +35,22 @@ export function ManagerPinModal() {
 
   // Initiate Forgot Password Flow
   const handleStartForgotPassword = () => {
-    // Generate 6-digit verification code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(code);
-    setCodeSent(true);
     setResetError('');
-    setEnteredCode('');
+    setEmailInput('');
     setNewPin('');
     setViewMode('forgot');
   };
 
-  // Handle PIN Reset Submission
+  // Handle Email Verification PIN Reset
   const handleResetSubmit = (e) => {
     e.preventDefault();
 
-    if (enteredCode.trim() !== generatedCode) {
-      setResetError('Invalid verification code. Please check the code sent to your email.');
+    const savedEmail = (settings.managerEmail || 'info@sreejeestay.com').trim().toLowerCase();
+    const userEmail = emailInput.trim().toLowerCase();
+
+    // Verify entered email matches the saved manager email
+    if (userEmail !== savedEmail) {
+      setResetError(`Email address does not match saved Manager Email (${settings.managerEmail || 'info@sreejeestay.com'}).`);
       return;
     }
 
@@ -69,7 +67,7 @@ export function ManagerPinModal() {
     setPinInput('');
     setLoginError('');
     setResetError('');
-    setEnteredCode('');
+    setEmailInput('');
     setNewPin('');
   };
 
@@ -178,7 +176,7 @@ export function ManagerPinModal() {
           </>
         )}
 
-        {/* View Mode 2: Forgot Password / Email Verification Reset */}
+        {/* View Mode 2: Reset PIN via Saved Manager Email */}
         {viewMode === 'forgot' && (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '-0.5rem' }}>
@@ -201,74 +199,59 @@ export function ManagerPinModal() {
               <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-main)' }}>
                 Reset Manager Password
               </h2>
-
-              {/* Email Address Notification */}
-              <div style={{
-                background: '#f0f9ff',
-                border: '1px solid #bae6fd',
-                borderRadius: '14px',
-                padding: '0.75rem 0.95rem',
-                fontSize: '0.825rem',
-                color: '#0369a1',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.5rem',
-                lineHeight: '1.4',
-                width: '100%'
-              }}>
-                <Mail size={18} color="#0284c7" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <strong>Verification Code Sent To Saved Manager Email:</strong>
-                  <div style={{ fontWeight: 800, color: '#0284c7', marginTop: '2px' }}>
-                    {settings.managerEmail || 'info@sreejeestay.com'}
-                  </div>
-                </div>
-              </div>
+              <p style={{ fontSize: '0.835rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                Verify your identity by entering your saved <strong>Duty Manager Email</strong> to set a new PIN.
+              </p>
             </div>
 
             <form onSubmit={handleResetSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.75rem' }}>
               <div className="form-group" style={{ textAlign: 'left' }}>
-                <label className="form-label">Enter 6-Digit Email Code:</label>
-                <input
-                  type="text"
-                  maxLength={6}
-                  inputMode="numeric"
-                  className="form-input"
-                  value={enteredCode}
-                  onChange={(e) => {
-                    setEnteredCode(e.target.value);
-                    setResetError('');
-                  }}
-                  placeholder="e.g. 849201"
-                  required
-                />
+                <label className="form-label">Saved Duty Manager Email:</label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
+                  <input
+                    type="email"
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem', fontSize: '0.95rem' }}
+                    value={emailInput}
+                    onChange={(e) => {
+                      setEmailInput(e.target.value);
+                      setResetError('');
+                    }}
+                    placeholder={settings.managerEmail || 'info@sreejeestay.com'}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-group" style={{ textAlign: 'left' }}>
-                <label className="form-label">Set New Manager Security PIN:</label>
-                <input
-                  type="password"
-                  maxLength={8}
-                  className="form-input"
-                  value={newPin}
-                  onChange={(e) => {
-                    setNewPin(e.target.value);
-                    setResetError('');
-                  }}
-                  placeholder="Enter new 4-digit PIN (e.g. 5678)"
-                  required
-                />
+                <label className="form-label">New Manager Security PIN:</label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
+                  <input
+                    type="password"
+                    maxLength={8}
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem', fontSize: '1rem', fontWeight: 700 }}
+                    value={newPin}
+                    onChange={(e) => {
+                      setNewPin(e.target.value);
+                      setResetError('');
+                    }}
+                    placeholder="Enter new 4-digit PIN"
+                    required
+                  />
+                </div>
               </div>
 
               {resetError && (
-                <div style={{ fontSize: '0.8rem', color: '#fb7185', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+                <div style={{ fontSize: '0.8rem', color: '#fb7185', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', background: '#fff1f2', padding: '0.55rem', borderRadius: '10px', border: '1px solid #fda4af' }}>
                   <AlertCircle size={14} /> {resetError}
                 </div>
               )}
 
               <button type="submit" className="btn-primary-action">
-                <CheckCircle2 size={18} /> Reset PIN & Open Dashboard Directly
+                <CheckCircle2 size={18} /> Reset PIN & Open Dashboard
               </button>
 
               <button
