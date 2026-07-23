@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { ExternalLink, Copy, Check, ShieldCheck, Send, Info, Sparkles, AlertCircle } from 'lucide-react';
+import { ExternalLink, Copy, Check, ShieldCheck, Send, Info, Sparkles, AlertCircle, ShieldAlert, Smartphone } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { generateGoogleReviewUrl } from '../../utils/googleReview';
 
 export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = 'Room', onSubmitted }) {
-  const { settings, addFeedback } = useFeedback();
+  const { settings, addFeedback, checkIsDuplicate } = useFeedback();
   const [copied, setCopied] = useState(false);
   const [guestContact, setGuestContact] = useState('');
-  const [submittedState, setSubmittedState] = useState(null); // 'google_connecting' | 'manager_sent' | null
+  const [submittedState, setSubmittedState] = useState(null); // 'google_connecting' | 'manager_sent' | 'duplicate_blocked' | null
 
   if (!rating) return null;
 
   const targetGoogleUrl = generateGoogleReviewUrl(settings.googlePlaceId || settings.googleReviewUrl);
+
+  const isDuplicate = checkIsDuplicate(guestContact);
 
   const handleCopyText = async () => {
     try {
@@ -35,13 +37,33 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
 
   // Policy-compliant Google Review submission for ALL star ratings
   const handlePostToGoogle = () => {
-    // 1. Synchronously open Google Review URL in new tab (bypasses popup blockers)
+    if (isDuplicate) {
+      setSubmittedState('duplicate_blocked');
+      return;
+    }
+
+    // 1. Save feedback in internal database first
+    const result = addFeedback({
+      roomNumber,
+      rating,
+      tags: selectedTags,
+      reviewText,
+      guestContact,
+      postedPublic: true,
+    });
+
+    if (result && result.isDuplicate) {
+      setSubmittedState('duplicate_blocked');
+      return;
+    }
+
+    // 2. Synchronously open Google Review URL in new tab (bypasses popup blockers)
     const win = window.open(targetGoogleUrl, '_blank', 'noopener,noreferrer');
 
-    // 2. Auto-copy review text to clipboard
+    // 3. Auto-copy review text to clipboard
     handleCopyText();
 
-    // 3. Fire confetti for positive feedback
+    // 4. Fire confetti for positive feedback
     if (rating >= 4) {
       try {
         confetti({
@@ -51,15 +73,6 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         });
       } catch (e) {}
     }
-
-    // 4. Save feedback in internal database for analytics regardless of Google click
-    addFeedback({
-      roomNumber,
-      rating,
-      tags: selectedTags,
-      reviewText,
-      postedPublic: true,
-    });
 
     setSubmittedState('google_connecting');
     if (onSubmitted) onSubmitted();
@@ -72,7 +85,13 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
   // Optional manager notification for urgent low rating assistance
   const handleNotifyDutyManager = (e) => {
     e.preventDefault();
-    addFeedback({
+
+    if (isDuplicate) {
+      setSubmittedState('duplicate_blocked');
+      return;
+    }
+
+    const result = addFeedback({
       roomNumber,
       rating,
       tags: selectedTags,
@@ -81,9 +100,40 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       postedPublic: false,
     });
 
+    if (result && result.isDuplicate) {
+      setSubmittedState('duplicate_blocked');
+      return;
+    }
+
     setSubmittedState('manager_sent');
     if (onSubmitted) onSubmitted();
   };
+
+  if (submittedState === 'duplicate_blocked') {
+    return (
+      <div style={{
+        textAlign: 'center',
+        padding: '1.5rem',
+        background: '#fff1f2',
+        borderRadius: '20px',
+        border: '1px solid #fda4af',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.85rem',
+        boxShadow: '0 8px 30px rgba(225, 29, 72, 0.1)'
+      }}>
+        <div style={{ color: '#e11d48', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          <ShieldAlert size={24} color="#e11d48" /> Multiple Reviews Blocked
+        </div>
+        <p style={{ fontSize: '0.875rem', color: '#9f1239', lineHeight: '1.4' }}>
+          A review has already been submitted for Phone / Customer ID: <strong>{guestContact || 'this device'}</strong>.
+        </p>
+        <div style={{ fontSize: '0.8rem', color: '#be123c', background: '#ffe4e6', padding: '0.65rem', borderRadius: '10px' }}>
+          🔒 To ensure authentic ratings, multiple reviews from a single customer ID or phone number are not accepted. Thank you for your feedback!
+        </div>
+      </div>
+    );
+  }
 
   if (submittedState === 'google_connecting') {
     return (
@@ -176,19 +226,64 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         </span>
       </div>
 
+      {/* Guest Phone / Customer ID Verification Field */}
+      <div className="form-group" style={{ marginBottom: '0.15rem' }}>
+        <label className="form-label" style={{ fontSize: '0.8rem', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <Smartphone size={14} color="#2563eb" />
+          Phone Number / Customer ID (Prevents duplicate reviews):
+        </label>
+        <input
+          type="text"
+          className="form-input"
+          value={guestContact}
+          onChange={(e) => setGuestContact(e.target.value)}
+          placeholder="e.g. 9876543210 or CUST-102"
+          style={{
+            fontSize: '0.875rem',
+            padding: '0.6rem 0.85rem',
+            borderColor: isDuplicate ? '#fca5a5' : undefined,
+            background: isDuplicate ? '#fff1f2' : undefined
+          }}
+        />
+      </div>
+
+      {/* Duplicate Warning Card if matched */}
+      {isDuplicate && (
+        <div style={{
+          background: '#fff1f2',
+          border: '1px solid #fda4af',
+          padding: '0.75rem 0.85rem',
+          borderRadius: '12px',
+          color: '#9f1239',
+          fontSize: '0.8rem',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.45rem',
+          lineHeight: '1.4'
+        }}>
+          <ShieldAlert size={18} color="#e11d48" style={{ flexShrink: 0, marginTop: '1px' }} />
+          <div>
+            <strong>Duplicate Customer Blocked:</strong> A review has already been submitted for <strong>{guestContact}</strong>. Multiple submissions from the same Customer ID or phone are disabled.
+          </div>
+        </div>
+      )}
+
       {/* Prominent CTA to Post on Google for ALL ratings equally */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
         <button
           type="button"
           className="btn-primary-action"
           onClick={handlePostToGoogle}
+          disabled={isDuplicate}
           style={{
             fontSize: '1rem',
-            padding: '0.9rem'
+            padding: '0.9rem',
+            opacity: isDuplicate ? 0.5 : 1,
+            cursor: isDuplicate ? 'not-allowed' : 'pointer'
           }}
         >
           <ExternalLink size={20} />
-          <span>Post this review on Google</span>
+          <span>{isDuplicate ? 'Duplicate Review Blocked' : 'Post this review on Google'}</span>
         </button>
 
         {/* Copy Review Text Only Button */}
@@ -196,12 +291,17 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           type="button"
           className="btn-secondary-action"
           onClick={handleCopyText}
+          disabled={isDuplicate}
+          style={{
+            opacity: isDuplicate ? 0.5 : 1,
+            cursor: isDuplicate ? 'not-allowed' : 'pointer'
+          }}
         >
           {copied ? <Check size={16} color="#059669" /> : <Copy size={16} />}
           <span>{copied ? 'Copied Review Text!' : 'Copy Review Text to Clipboard'}</span>
         </button>
 
-        {/* Clarifying note / tooltip as required by Task 5 */}
+        {/* Clarifying note / tooltip */}
         <div style={{
           background: '#eff6ff',
           padding: '0.65rem 0.85rem',
@@ -222,22 +322,8 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       </div>
 
       {/* For lower ratings (1-3 stars), offer optional callback input to Duty Manager as additional help */}
-      {rating <= 3 && (
+      {rating <= 3 && !isDuplicate && (
         <form onSubmit={handleNotifyDutyManager} style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px dashed #bfdbfe', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          <div className="form-group">
-            <label className="form-label" style={{ fontSize: '0.785rem', color: '#dc2626' }}>
-              Want immediate internal manager callback? (Optional):
-            </label>
-            <input
-              type="text"
-              className="form-input"
-              value={guestContact}
-              onChange={(e) => setGuestContact(e.target.value)}
-              placeholder="e.g. Name or Room / Phone #"
-              style={{ fontSize: '0.85rem', padding: '0.55rem 0.85rem' }}
-            />
-          </div>
-
           <button
             type="submit"
             className="btn-secondary-action"
@@ -251,3 +337,4 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
     </div>
   );
 }
+

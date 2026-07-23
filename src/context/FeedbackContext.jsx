@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { RATING_KEYWORDS } from '../utils/reviewGenerator';
 import { generateGoogleReviewUrl, GOOGLE_PLACE_ID } from '../utils/googleReview';
+import { normalizeContact } from '../utils/contactNormalizer';
 
 const FeedbackContext = createContext();
 
@@ -14,6 +15,7 @@ const INITIAL_SETTINGS = {
   alertThreshold: 3, // Ratings <= 3 trigger manager alert
   antiGatingNoticeEnabled: true,
   managerPin: '1234', // Default Security PIN
+  preventDuplicateReviews: true, // Block multiple reviews from same Phone/Customer ID
 };
 
 const SEED_FEEDBACKS = [
@@ -101,10 +103,14 @@ export function FeedbackProvider({ children }) {
     const saved = localStorage.getItem('reviewpulse_settings');
     if (saved) {
       const parsed = JSON.parse(saved);
+      const placeId = parsed.googlePlaceId || GOOGLE_PLACE_ID;
       return { 
         ...parsed, 
-        hotelName: 'Sree Jee Stay - Homestay in Varanasi',
-        googleReviewUrl: 'https://share.google/A2R9wcQuxsaISXwnn',
+        hotelName: parsed.hotelName || 'Sree Jee Stay - Homestay in Varanasi',
+        googlePlaceId: placeId,
+        googleReviewUrl: parsed.googleReviewUrl && parsed.googleReviewUrl !== 'https://share.google/A2R9wcQuxsaISXwnn' 
+          ? parsed.googleReviewUrl 
+          : generateGoogleReviewUrl(placeId),
         managerPin: parsed.managerPin || '1234'
       };
     }
@@ -162,8 +168,43 @@ export function FeedbackProvider({ children }) {
     setActiveTab('guest');
   };
 
+  // Check if a phone number or Customer ID has already submitted feedback
+  const checkIsDuplicate = (contactStr) => {
+    if (!contactStr || !settings.preventDuplicateReviews) return false;
+    const norm = normalizeContact(contactStr);
+    if (!norm) return false;
+
+    // 1. Check existing feedbacks list
+    const isMatched = feedbacks.some(
+      (fb) => fb.guestContact && normalizeContact(fb.guestContact) === norm
+    );
+    if (isMatched) return true;
+
+    // 2. Check localStorage submitted contacts
+    try {
+      const savedContacts = JSON.parse(localStorage.getItem('reviewpulse_submitted_contacts') || '[]');
+      if (savedContacts.includes(norm)) return true;
+    } catch (e) {}
+
+    return false;
+  };
+
   // Submit new guest review
   const addFeedback = (newFb) => {
+    const contact = newFb.guestContact || '';
+    
+    // Guard against duplicate submission if phone/customer ID is provided
+    if (settings.preventDuplicateReviews && contact) {
+      if (checkIsDuplicate(contact)) {
+        return {
+          success: false,
+          isDuplicate: true,
+          error: 'DUPLICATE_REVIEW',
+          message: `A review has already been submitted for Phone/Customer ID: ${contact}`,
+        };
+      }
+    }
+
     const isLowRating = newFb.rating <= settings.alertThreshold;
     
     const submission = {
@@ -176,11 +217,25 @@ export function FeedbackProvider({ children }) {
       alertSent: isLowRating,
       managerResolved: false,
       timestamp: new Date().toISOString(),
-      guestContact: newFb.guestContact || '',
+      guestContact: contact,
       postedPublic: newFb.postedPublic || false,
     };
 
     setFeedbacks((prev) => [submission, ...prev]);
+
+    // Save contact to localStorage array for persistence
+    if (contact) {
+      const norm = normalizeContact(contact);
+      if (norm) {
+        try {
+          const saved = JSON.parse(localStorage.getItem('reviewpulse_submitted_contacts') || '[]');
+          if (!saved.includes(norm)) {
+            saved.push(norm);
+            localStorage.setItem('reviewpulse_submitted_contacts', JSON.stringify(saved));
+          }
+        } catch (e) {}
+      }
+    }
 
     if (isLowRating) {
       setManagerAlertToast({
@@ -193,7 +248,7 @@ export function FeedbackProvider({ children }) {
       });
     }
 
-    return submission;
+    return { success: true, submission };
   };
 
   // Add new custom keyword tag (type = 'positive' | 'negative')
@@ -235,7 +290,13 @@ export function FeedbackProvider({ children }) {
 
   // Update settings
   const updateSettings = (newSettings) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      if (newSettings.googlePlaceId) {
+        updated.googleReviewUrl = generateGoogleReviewUrl(newSettings.googlePlaceId);
+      }
+      return updated;
+    });
   };
 
   // Reset to seed data
@@ -247,6 +308,7 @@ export function FeedbackProvider({ children }) {
     localStorage.removeItem('reviewpulse_feedbacks');
     localStorage.removeItem('reviewpulse_settings');
     localStorage.removeItem('reviewpulse_keywords');
+    localStorage.removeItem('reviewpulse_submitted_contacts');
   };
 
   return (
@@ -266,6 +328,7 @@ export function FeedbackProvider({ children }) {
         setIsPinModalOpen,
         verifyPin,
         lockDashboard,
+        checkIsDuplicate,
         addFeedback,
         addKeyword,
         deleteKeyword,

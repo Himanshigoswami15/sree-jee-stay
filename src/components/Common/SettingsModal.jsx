@@ -157,6 +157,22 @@ export function SettingsModal({ isOpen, onClose }) {
             </div>
           </div>
 
+          {/* Anti-Duplicate Review Setting Toggle */}
+          <div className="form-group" style={{ background: 'var(--bg-card-subtle, #f8fafc)', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-main, #1e293b)' }}>
+              <input
+                type="checkbox"
+                checked={formState.preventDuplicateReviews !== false}
+                onChange={(e) => handleChange('preventDuplicateReviews', e.target.checked)}
+                style={{ width: '17px', height: '17px', accentColor: '#2563eb' }}
+              />
+              <span>Prevent Multiple Reviews from Same Phone / Customer ID</span>
+            </label>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #64748b)', marginTop: '0.25rem', display: 'block', paddingLeft: '1.75rem' }}>
+              🔒 Normalizes phone numbers (e.g. +91 98765 43210 $\rightarrow$ 9876543210) & customer IDs to strictly block duplicate submissions.
+            </span>
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
             <button
               type="button"
