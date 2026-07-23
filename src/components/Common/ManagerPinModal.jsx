@@ -24,7 +24,7 @@ export function ManagerPinModal() {
 
   if (!isPinModalOpen) return null;
 
-  const managerEmail = settings.managerEmail || 'info@sreejeestay.com';
+  const managerEmail = settings.managerEmail || 'himanshigoswami9057@gmail.com';
 
   // Handle standard PIN Login
   const handleLoginSubmit = (e) => {

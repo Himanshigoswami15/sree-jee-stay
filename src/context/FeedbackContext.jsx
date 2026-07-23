@@ -10,7 +10,7 @@ const INITIAL_SETTINGS = {
   googlePlaceId: GOOGLE_PLACE_ID,
   googleReviewUrl: generateGoogleReviewUrl(GOOGLE_PLACE_ID),
   tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
-  managerEmail: 'info@sreejeestay.com',
+  managerEmail: 'himanshigoswami9057@gmail.com',
   managerPhone: '+91 98765 43210',
   alertThreshold: 3, // Ratings <= 3 trigger manager alert
   antiGatingNoticeEnabled: true,
