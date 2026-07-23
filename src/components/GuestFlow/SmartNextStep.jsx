@@ -3,6 +3,7 @@ import confetti from 'canvas-confetti';
 import { ExternalLink, Copy, Check, ShieldCheck, Send, Info, Sparkles, AlertCircle, ShieldAlert, Smartphone } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { generateGoogleReviewUrl } from '../../utils/googleReview';
+import { copyToMobileClipboard } from '../../utils/clipboardHelper';
 
 export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = 'Room', onSubmitted }) {
   const { settings, addFeedback, checkIsDuplicate } = useFeedback();
@@ -17,32 +18,28 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
   const isDuplicate = checkIsDuplicate(guestContact);
 
   const handleCopyText = async () => {
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(reviewText);
-      } else {
-        const textarea = document.createElement('textarea');
-        textarea.value = reviewText;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-      }
+    const success = await copyToMobileClipboard(reviewText);
+    if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 3500);
-    } catch (err) {
-      console.warn('Clipboard copy warning:', err);
     }
   };
 
   // Policy-compliant Google Review submission for ALL star ratings
-  const handlePostToGoogle = () => {
+  const handlePostToGoogle = async () => {
     if (isDuplicate) {
       setSubmittedState('duplicate_blocked');
       return;
     }
 
-    // 1. Save feedback in internal database first
+    // 1. MUST Copy review text to mobile clipboard FIRST (synchronously in user gesture)
+    // This ensures iOS Safari & Android Chrome permit clipboard write before switching focus!
+    const copiedOk = await copyToMobileClipboard(reviewText);
+    if (copiedOk) {
+      setCopied(true);
+    }
+
+    // 2. Save feedback in internal database first
     const result = addFeedback({
       roomNumber,
       rating,
@@ -57,11 +54,8 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       return;
     }
 
-    // 2. Synchronously open Google Review URL in new tab (bypasses popup blockers)
+    // 3. Synchronously open Google Review URL in new tab
     const win = window.open(targetGoogleUrl, '_blank', 'noopener,noreferrer');
-
-    // 3. Auto-copy review text to clipboard
-    handleCopyText();
 
     // 4. Fire confetti for positive feedback
     if (rating >= 4) {
@@ -152,27 +146,26 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           <Sparkles size={24} color="#059669" /> Google Review Page Connected!
         </div>
 
-        <p style={{ fontSize: '0.9rem', color: '#1e3a8a', lineHeight: '1.4' }}>
-          ✨ <strong>Your review text was automatically copied to your clipboard!</strong>
-        </p>
-
         <div style={{
-          background: '#ffffff',
+          background: '#ecfdf5',
           padding: '0.9rem 1rem',
           borderRadius: '14px',
-          border: '1px solid #bfdbfe',
+          border: '1px solid #6ee7b7',
           textAlign: 'left',
-          fontSize: '0.825rem',
-          color: '#1e3a8a',
+          fontSize: '0.835rem',
+          color: '#065f46',
           display: 'flex',
           flexDirection: 'column',
           gap: '0.45rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2563eb', fontWeight: 700 }}>
-            <span>1️⃣</span> Google Review window opened in new tab.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#047857', fontWeight: 800, fontSize: '0.925rem' }}>
+            <Check size={18} color="#059669" /> Review Text Auto-Copied to Clipboard!
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontWeight: 700 }}>
-            <span>2️⃣</span> Sign in to Google & paste (Ctrl+V or Long-Press) your text!
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#047857' }}>
+            <span>📱</span> <strong>Mobile Phone:</strong> Tap inside Google's review box and select <strong>Paste</strong> (or tap the clipboard bar above your keyboard).
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1e3a8a' }}>
+            <span>💻</span> <strong>Computer:</strong> Press <strong>Ctrl + V</strong> (or <strong>Cmd + V</strong>) to paste.
           </div>
         </div>
 
