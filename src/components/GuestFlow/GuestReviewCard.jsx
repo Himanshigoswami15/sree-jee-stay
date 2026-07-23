@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, Building2 } from 'lucide-react';
+import { Star, Building2, MapPin } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { generateReviewText } from '../../utils/reviewGenerator';
 import { KeywordChips } from './KeywordChips';
@@ -77,19 +77,21 @@ export function GuestReviewCard() {
 
   return (
     <div className="guest-card">
-      {/* Clean Header without Room Number */}
+      {/* Mobile-optimized Header with Business Badge */}
       <div className="hotel-badge-header" style={{ justifyContent: 'center', textAlign: 'center' }}>
-        <div className="hotel-info" style={{ alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1e3a8a', fontSize: '0.825rem', fontWeight: 700 }}>
-            <Building2 size={14} color="#1d4ed8" /> {settings.hotelName}
+        <div className="hotel-info" style={{ alignItems: 'center', gap: '0.2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#2563eb', fontSize: '0.85rem', fontWeight: 800 }}>
+            <Building2 size={15} color="#2563eb" /> {settings.hotelName}
           </div>
-          <div className="hotel-name" style={{ fontSize: '1.25rem' }}>Guest Feedback</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#64748b', fontSize: '0.785rem', fontWeight: 600 }}>
+            <MapPin size={12} color="#059669" /> Homestay in Varanasi
+          </div>
         </div>
       </div>
 
       {/* Star Selector */}
       <div className="star-rating-box">
-        <div className="rating-prompt">How was your stay?</div>
+        <div className="rating-prompt">How was your experience?</div>
         <div className="stars-row">
           {[1, 2, 3, 4, 5].map((val) => {
             const isSelected = rating >= val;
@@ -100,6 +102,7 @@ export function GuestReviewCard() {
                 type="button"
                 className={`star-btn ${isSelected ? 'selected' : ''} ${isHovered ? 'hovered' : ''}`}
                 onClick={() => handleStarClick(val)}
+                onTouchStart={() => handleStarClick(val)}
                 onMouseEnter={() => setHoverRating(val)}
                 onMouseLeave={() => setHoverRating(0)}
                 aria-label={`${val} star`}
