@@ -225,27 +225,6 @@ export function ManagerPinModal() {
                   </div>
                 </div>
               </div>
-
-              {/* Dev / Email Simulator Code Banner */}
-              {generatedCode && (
-                <div style={{
-                  background: '#ecfdf5',
-                  border: '1px solid #6ee7b7',
-                  borderRadius: '12px',
-                  padding: '0.65rem 0.85rem',
-                  fontSize: '0.8rem',
-                  color: '#065f46',
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <span>🔑 Email Verification Code:</span>
-                  <strong style={{ fontSize: '1rem', letterSpacing: '0.15em', color: '#047857' }}>
-                    {generatedCode}
-                  </strong>
-                </div>
-              )}
             </div>
 
             <form onSubmit={handleResetSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.75rem' }}>
