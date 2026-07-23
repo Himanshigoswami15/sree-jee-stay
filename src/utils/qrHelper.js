@@ -9,7 +9,7 @@ export async function generateQrDataUrl(text, options = {}) {
       width: options.width || 250,
       margin: options.margin || 2,
       color: {
-        dark: options.darkColor || '#1e293b',
+        dark: options.darkColor || '#0f172a',
         light: options.lightColor || '#ffffff',
       },
       ...options,
