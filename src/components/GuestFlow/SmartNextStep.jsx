@@ -177,11 +177,6 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         >
           <ExternalLink size={18} /> Open Google Review Page Again
         </button>
-
-        <div style={{ fontSize: '0.75rem', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', marginTop: '0.2rem' }}>
-          <Info size={13} color="#2563eb" />
-          <span>Note: You'll need to sign in with your Google account on Google to submit the review.</span>
-        </div>
       </div>
     );
   }
@@ -293,25 +288,6 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           {copied ? <Check size={16} color="#059669" /> : <Copy size={16} />}
           <span>{copied ? 'Copied Review Text!' : 'Copy Review Text to Clipboard'}</span>
         </button>
-
-        {/* Clarifying note / tooltip */}
-        <div style={{
-          background: '#eff6ff',
-          padding: '0.65rem 0.85rem',
-          borderRadius: '10px',
-          border: '1px solid #bfdbfe',
-          fontSize: '0.775rem',
-          color: '#1e3a8a',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '0.4rem',
-          lineHeight: '1.4'
-        }}>
-          <Info size={15} color="#2563eb" style={{ flexShrink: 0, marginTop: '2px' }} />
-          <span>
-            <strong>Note:</strong> Clicking this will open Google in a new tab — you'll need to sign in with your Google account and submit the review there.
-          </span>
-        </div>
       </div>
 
       {/* For lower ratings (1-3 stars), offer optional callback input to Duty Manager as additional help */}
