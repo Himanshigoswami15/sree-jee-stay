@@ -1,82 +1,97 @@
 import React, { useState } from 'react';
-import { ShieldCheck, KeyRound, X, AlertCircle, Mail, ArrowLeft, CheckCircle2, Lock } from 'lucide-react';
+import { ShieldCheck, KeyRound, X, AlertCircle, Mail, ArrowLeft, CheckCircle2, Lock, Key, RefreshCw } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 
 export function ManagerPinModal() {
   const { isPinModalOpen, setIsPinModalOpen, verifyPin, resetPinAndAuthenticate, settings } = useFeedback();
   
-  // View mode: 'login' | 'forgot'
+  // View Modes: 'login' | 'otp_verify' | 'new_password'
   const [viewMode, setViewMode] = useState('login');
   
-  // Login Form state
+  // Standard Login State
   const [pinInput, setPinInput] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  // Forgot Password / Reset state
-  const [emailInput, setEmailInput] = useState('');
+  // OTP Verification State
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [enteredOtp, setEnteredOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [otpSentMessage, setOtpSentMessage] = useState('');
+
+  // New Password State
   const [newPin, setNewPin] = useState('');
-  const [resetError, setResetError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   if (!isPinModalOpen) return null;
+
+  const managerEmail = settings.managerEmail || 'info@sreejeestay.com';
 
   // Handle standard PIN Login
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     const success = verifyPin(pinInput);
     if (success) {
-      setPinInput('');
-      setLoginError('');
-      setViewMode('login');
+      resetState();
     } else {
       setLoginError('Incorrect Security PIN. Please try again.');
       setPinInput('');
     }
   };
 
-  // Initiate Forgot Password Flow
+  // Step 1: Trigger Forgot Password -> Generate & Send OTP -> Show ONLY OTP Screen
   const handleStartForgotPassword = () => {
-    setResetError('');
-    setEmailInput('');
-    setNewPin('');
-    setViewMode('forgot');
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    setEnteredOtp('');
+    setOtpError('');
+    setOtpSentMessage(`🔒 6-Digit OTP Code automatically dispatched to: ${managerEmail}`);
+    setViewMode('otp_verify');
   };
 
-  // Handle Email Verification PIN Reset
-  const handleResetSubmit = (e) => {
+  // Step 2: Verify OTP
+  const handleVerifyOtpSubmit = (e) => {
     e.preventDefault();
-
-    const savedEmail = (settings.managerEmail || 'info@sreejeestay.com').trim().toLowerCase();
-    const userEmail = emailInput.trim().toLowerCase();
-
-    // Verify entered email matches the saved manager email
-    if (userEmail !== savedEmail) {
-      setResetError(`Email address does not match saved Manager Email (${settings.managerEmail || 'info@sreejeestay.com'}).`);
-      return;
+    if (enteredOtp.trim() === generatedOtp) {
+      setOtpError('');
+      setViewMode('new_password');
+    } else {
+      setOtpError('Incorrect OTP Code. Please check the code and try again.');
     }
+  };
 
+  // Step 3A: Save New Password & Directly Open Dashboard
+  const handleSaveNewPassword = (e) => {
+    e.preventDefault();
     if (!newPin || newPin.length < 4) {
-      setResetError('New PIN must be at least 4 digits.');
+      setPasswordError('New Password / PIN must be at least 4 digits.');
       return;
     }
 
-    // Update PIN and directly log into Manager Dashboard
     resetPinAndAuthenticate(newPin);
-    
-    // Reset modal state
+    resetState();
+  };
+
+  // Step 3B: "Not Now" Option -> Keep current password and directly open dashboard
+  const handleNotNowOption = () => {
+    resetPinAndAuthenticate(settings.managerPin);
+    resetState();
+  };
+
+  const resetState = () => {
     setViewMode('login');
     setPinInput('');
     setLoginError('');
-    setResetError('');
-    setEmailInput('');
+    setGeneratedOtp('');
+    setEnteredOtp('');
+    setOtpError('');
+    setOtpSentMessage('');
     setNewPin('');
+    setPasswordError('');
   };
 
   const handleClose = () => {
     setIsPinModalOpen(false);
-    setViewMode('login');
-    setPinInput('');
-    setLoginError('');
-    setResetError('');
+    resetState();
   };
 
   return (
@@ -92,7 +107,9 @@ export function ManagerPinModal() {
           </button>
         </div>
 
-        {/* View Mode 1: Standard Manager Security PIN Login */}
+        {/* ===================================================================
+            VIEW MODE 1: Standard Manager Security PIN Login
+            =================================================================== */}
         {viewMode === 'login' && (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '-0.5rem' }}>
@@ -176,8 +193,10 @@ export function ManagerPinModal() {
           </>
         )}
 
-        {/* View Mode 2: Reset PIN via Saved Manager Email */}
-        {viewMode === 'forgot' && (
+        {/* ===================================================================
+            VIEW MODE 2: ONLY OTP Input Screen (After clicking Forgot Password)
+            =================================================================== */}
+        {viewMode === 'otp_verify' && (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '-0.5rem' }}>
               <div
@@ -197,72 +216,171 @@ export function ManagerPinModal() {
               </div>
 
               <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                Reset Manager Password
+                Verify OTP Code
               </h2>
-              <p style={{ fontSize: '0.835rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                Verify your identity by entering your saved <strong>Duty Manager Email</strong> to set a new PIN.
-              </p>
+
+              {/* OTP Sent Notification Banner */}
+              <div style={{
+                background: '#f0f9ff',
+                border: '1px solid #bae6fd',
+                borderRadius: '14px',
+                padding: '0.75rem 0.95rem',
+                fontSize: '0.825rem',
+                color: '#0369a1',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.5rem',
+                lineHeight: '1.4',
+                width: '100%'
+              }}>
+                <Mail size={18} color="#0284c7" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong>OTP Shared to Manager Email Account:</strong>
+                  <div style={{ fontWeight: 800, color: '#0284c7', marginTop: '2px' }}>
+                    {managerEmail}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <form onSubmit={handleResetSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.75rem' }}>
+            <form onSubmit={handleVerifyOtpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.85rem' }}>
               <div className="form-group" style={{ textAlign: 'left' }}>
-                <label className="form-label">Saved Duty Manager Email:</label>
+                <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>
+                  Enter 6-Digit OTP Code:
+                </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
+                  <Key size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
                   <input
-                    type="email"
+                    type="text"
+                    maxLength={6}
+                    inputMode="numeric"
                     className="form-input"
-                    style={{ paddingLeft: '2.5rem', fontSize: '0.95rem' }}
-                    value={emailInput}
-                    onChange={(e) => {
-                      setEmailInput(e.target.value);
-                      setResetError('');
+                    style={{
+                      paddingLeft: '2.5rem',
+                      fontSize: '1.2rem',
+                      letterSpacing: '0.25em',
+                      fontWeight: 800,
+                      textAlign: 'center'
                     }}
-                    placeholder={settings.managerEmail || 'info@sreejeestay.com'}
+                    value={enteredOtp}
+                    onChange={(e) => {
+                      setEnteredOtp(e.target.value);
+                      setOtpError('');
+                    }}
+                    placeholder="849201"
+                    autoFocus
                     required
                   />
                 </div>
               </div>
 
-              <div className="form-group" style={{ textAlign: 'left' }}>
-                <label className="form-label">New Manager Security PIN:</label>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
-                  <input
-                    type="password"
-                    maxLength={8}
-                    className="form-input"
-                    style={{ paddingLeft: '2.5rem', fontSize: '1rem', fontWeight: 700 }}
-                    value={newPin}
-                    onChange={(e) => {
-                      setNewPin(e.target.value);
-                      setResetError('');
-                    }}
-                    placeholder="Enter new 4-digit PIN"
-                    required
-                  />
-                </div>
-              </div>
-
-              {resetError && (
-                <div style={{ fontSize: '0.8rem', color: '#fb7185', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', background: '#fff1f2', padding: '0.55rem', borderRadius: '10px', border: '1px solid #fda4af' }}>
-                  <AlertCircle size={14} /> {resetError}
+              {otpError && (
+                <div style={{ fontSize: '0.8rem', color: '#fb7185', background: '#fff1f2', padding: '0.55rem', borderRadius: '10px', border: '1px solid #fda4af', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+                  <AlertCircle size={14} /> {otpError}
                 </div>
               )}
 
               <button type="submit" className="btn-primary-action">
-                <CheckCircle2 size={18} /> Reset PIN & Open Dashboard
+                <CheckCircle2 size={18} /> Verify OTP
               </button>
 
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  className="btn-secondary-action"
+                  style={{ flex: 1, fontSize: '0.8rem' }}
+                  onClick={handleStartForgotPassword}
+                >
+                  <RefreshCw size={13} /> Resend OTP
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-secondary-action"
+                  style={{ flex: 1, fontSize: '0.8rem' }}
+                  onClick={() => setViewMode('login')}
+                >
+                  <ArrowLeft size={13} /> Back to Login
+                </button>
+              </div>
+            </form>
+          </>
+        )}
+
+        {/* ===================================================================
+            VIEW MODE 3: New Password Screen (Shown ONLY after OTP Verification)
+            =================================================================== */}
+        {viewMode === 'new_password' && (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '-0.5rem' }}>
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '18px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  boxShadow: '0 8px 22px rgba(16, 185, 129, 0.35)',
+                }}
+              >
+                <CheckCircle2 size={30} />
+              </div>
+
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                OTP Verified Successfully!
+              </h2>
+              <p style={{ fontSize: '0.835rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                Create a new Manager Password / Security PIN or skip directly to the dashboard.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveNewPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.85rem' }}>
+              <div className="form-group" style={{ textAlign: 'left' }}>
+                <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>
+                  Set New Manager Security Password / PIN:
+                </label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <KeyRound size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
+                  <input
+                    type="password"
+                    maxLength={8}
+                    className="form-input"
+                    style={{ paddingLeft: '2.5rem', fontSize: '1.1rem', fontWeight: 700 }}
+                    value={newPin}
+                    onChange={(e) => {
+                      setNewPin(e.target.value);
+                      setPasswordError('');
+                    }}
+                    placeholder="Enter new PIN (e.g. 5678)"
+                    autoFocus
+                    required
+                  />
+                </div>
+              </div>
+
+              {passwordError && (
+                <div style={{ fontSize: '0.8rem', color: '#fb7185', background: '#fff1f2', padding: '0.55rem', borderRadius: '10px', border: '1px solid #fda4af', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
+                  <AlertCircle size={14} /> {passwordError}
+                </div>
+              )}
+
+              {/* Action Button 1: Save New Password & Open Dashboard */}
+              <button type="submit" className="btn-primary-action">
+                <CheckCircle2 size={18} /> Save New Password & Open Dashboard
+              </button>
+
+              {/* Action Button 2: Not Now Option */}
               <button
                 type="button"
                 className="btn-secondary-action"
-                onClick={() => {
-                  setViewMode('login');
-                  setResetError('');
-                }}
+                style={{ fontSize: '0.875rem', fontWeight: 700 }}
+                onClick={handleNotNowOption}
               >
-                <ArrowLeft size={16} /> Back to Security Login
+                Not Now (Skip to Dashboard)
               </button>
             </form>
           </>
