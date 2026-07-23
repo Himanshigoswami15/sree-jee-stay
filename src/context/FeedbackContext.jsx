@@ -162,6 +162,15 @@ export function FeedbackProvider({ children }) {
     return false;
   };
 
+  // Reset PIN via Email Verification & Directly Open Dashboard
+  const resetPinAndAuthenticate = (newPin) => {
+    setSettings((prev) => ({ ...prev, managerPin: newPin }));
+    setIsManagerAuthenticated(true);
+    setIsPinModalOpen(false);
+    setActiveTab('dashboard');
+    return true;
+  };
+
   // Logout/Lock Manager Dashboard
   const lockDashboard = () => {
     setIsManagerAuthenticated(false);
@@ -327,6 +336,7 @@ export function FeedbackProvider({ children }) {
         isPinModalOpen,
         setIsPinModalOpen,
         verifyPin,
+        resetPinAndAuthenticate,
         lockDashboard,
         checkIsDuplicate,
         addFeedback,
