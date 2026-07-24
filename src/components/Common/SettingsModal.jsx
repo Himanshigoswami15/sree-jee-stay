@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, X, Save, RotateCcw, ExternalLink, KeyRound, CheckCircle2, Globe, Sparkles, AlertTriangle } from 'lucide-react';
+import { Settings, X, Save, RotateCcw, ExternalLink, KeyRound, CheckCircle2, Globe, Sparkles, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail, Phone, Building2 } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { extractPlaceId, generateGoogleReviewUrl, getUrlType } from '../../utils/googleReview';
 
@@ -7,12 +7,14 @@ export function SettingsModal({ isOpen, onClose }) {
   const { settings, updateSettings, resetToDemoData } = useFeedback();
 
   const [formState, setFormState] = useState(settings);
+  const [showPin, setShowPin] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setFormState(settings);
       setSaveSuccess(false);
+      setShowPin(false);
     }
   }, [isOpen, settings]);
 
@@ -50,7 +52,7 @@ export function SettingsModal({ isOpen, onClose }) {
     setTimeout(() => {
       setSaveSuccess(false);
       onClose();
-    }, 800);
+    }, 1200);
   };
 
   const handleReset = () => {
@@ -97,48 +99,83 @@ export function SettingsModal({ isOpen, onClose }) {
             background: '#ecfdf5',
             border: '1px solid #6ee7b7',
             color: '#065f46',
-            padding: '0.75rem 1rem',
-            borderRadius: '10px',
-            marginBottom: '0.85rem',
+            padding: '0.85rem 1rem',
+            borderRadius: '12px',
+            marginBottom: '1rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
+            gap: '0.65rem',
             fontWeight: 700,
-            fontSize: '0.875rem'
+            fontSize: '0.9rem',
+            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.15)'
           }}>
-            <CheckCircle2 size={18} color="#059669" />
-            <span>Settings saved successfully! Updating system...</span>
+            <CheckCircle2 size={22} color="#059669" />
+            <div>
+              <div>All Settings Updated Successfully!</div>
+              <div style={{ fontSize: '0.78rem', fontWeight: 500, color: '#047857', marginTop: '2px' }}>
+                PIN, Hotel Name, Google & Platform Links, Contact Details and Alert Thresholds have been saved.
+              </div>
+            </div>
           </div>
         )}
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+          {/* Hotel Name */}
           <div className="form-group">
-            <label className="form-label">Hotel / Restaurant Name:</label>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Building2 size={15} color="#2563eb" />
+              Hotel / Restaurant Name:
+            </label>
             <input
               type="text"
               className="form-input"
               value={formState.hotelName || ''}
               onChange={(e) => handleChange('hotelName', e.target.value)}
+              placeholder="e.g. Sree Jee Stay - Homestay in Varanasi"
               required
             />
           </div>
 
+          {/* PIN & Alert Threshold */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label className="form-label">Manager Security PIN:</label>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <ShieldCheck size={15} color="#4f46e5" />
+                Manager Security PIN:
+              </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
                 <input
-                  type="text"
-                  maxLength={6}
+                  type={showPin ? "text" : "password"}
+                  maxLength={8}
                   className="form-input"
-                  style={{ paddingLeft: '2.5rem', fontWeight: 700 }}
+                  style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem', fontWeight: 800, fontSize: '1rem', letterSpacing: showPin ? '0.1em' : '0.2em' }}
                   value={formState.managerPin || ''}
                   onChange={(e) => handleChange('managerPin', e.target.value)}
                   placeholder="1234"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPin(!showPin)}
+                  style={{
+                    position: 'absolute',
+                    right: '0.75rem',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#64748b',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  title={showPin ? "Hide PIN" : "Show PIN"}
+                >
+                  {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
+              <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
+                🔑 PIN used to unlock Manager Dashboard
+              </span>
             </div>
 
             <div className="form-group">
@@ -152,6 +189,9 @@ export function SettingsModal({ isOpen, onClose }) {
                 <option value={2}>≤ 2 Stars (Urgent Only)</option>
                 <option value={1}>1 Star Only</option>
               </select>
+              <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
+                🚨 Ratings at or below this trigger alerts
+              </span>
             </div>
           </div>
 
@@ -218,7 +258,7 @@ export function SettingsModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* Additional Review Platforms Section */}
+          {/* TripAdvisor Platform Link Section */}
           <div className="form-group" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0.85rem 1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
               <label className="form-label" style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>TripAdvisor Review URL (Optional):</label>
@@ -239,24 +279,33 @@ export function SettingsModal({ isOpen, onClose }) {
             />
           </div>
 
+          {/* Duty Manager Contacts */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label className="form-label">Duty Manager Email:</label>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Mail size={15} color="#0284c7" />
+                Duty Manager Email:
+              </label>
               <input
                 type="email"
                 className="form-input"
                 value={formState.managerEmail || ''}
                 onChange={(e) => handleChange('managerEmail', e.target.value)}
+                placeholder="manager@example.com"
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Duty Manager Phone / SMS:</label>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Phone size={15} color="#16a34a" />
+                Duty Manager Phone / SMS:
+              </label>
               <input
                 type="text"
                 className="form-input"
                 value={formState.managerPhone || ''}
                 onChange={(e) => handleChange('managerPhone', e.target.value)}
+                placeholder="+91 98765 43210"
               />
             </div>
           </div>
