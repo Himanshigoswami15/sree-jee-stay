@@ -7,7 +7,7 @@ A policy-compliant, full-featured Guest Review & Feedback Web Application for **
 ## ✨ Features
 
 - **Policy-Compliant Dual-Path Routing (Anti-Review Gating)**:
-  - **4–5 Star Ratings**: Automatically copies auto-written review text to clipboard, fires celebration confetti, and connects directly to the official Google Business review link (`https://share.google/A2R9wcQuxsaISXwnn`).
+  - **4–5 Star Ratings**: Automatically copies auto-written review text to clipboard, fires celebration confetti, and connects directly to the official Google Business review link (`https://g.page/r/CTERYeDefsTREAE/review`).
   - **1–3 Star Ratings**: Dispatches direct internal alerts to the Duty Manager + keeps the secondary public Google review link unhidden to comply 100% with Google & TripAdvisor policies.
 - **Dynamic Keyword Engine & Auto-Written Sentence Assembly**: Guests tap sentiment keyword chips (*✨ Spotless Room*, *🍳 Superb Breakfast*, *⚡ Fast Wi-Fi*, etc.) and human-sounding review text auto-assembles in real-time.
 - **Hotel-Branded Thank You Screen**: Displays a warm appreciation card specifically for Sree Jee Stay upon review completion.

@@ -4,7 +4,7 @@
  */
 
 export const GOOGLE_SYDNEY_DEMO_ID = 'ChIJN1t_tDeuEmsRUsoyG83frY4';
-export const SREE_JEE_STAY_MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Sree+Jee+Stay+Digiya+Jaitpura+Varanasi';
+export const SREE_JEE_STAY_MAPS_URL = 'https://g.page/r/CTERYeDefsTREAE/review';
 
 export const GOOGLE_PLACE_ID = import.meta.env.VITE_GOOGLE_PLACE_ID || '';
 
