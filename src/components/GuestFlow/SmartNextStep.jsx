@@ -214,6 +214,27 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         </span>
       </div>
 
+      {/* Helper Tip when Google Place ID is not yet configured */}
+      {!settings.googlePlaceId && (
+        <div style={{
+          background: '#fef3c7',
+          border: '1px solid #fde68a',
+          borderRadius: '12px',
+          padding: '0.65rem 0.85rem',
+          fontSize: '0.78rem',
+          color: '#92400e',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          lineHeight: '1.35'
+        }}>
+          <Info size={18} color="#d97706" style={{ flexShrink: 0 }} />
+          <div>
+            <strong>Notice:</strong> Add your <strong>Google Place ID</strong> in <strong>Manager Dashboard $\rightarrow$ Settings</strong> to open the <em>Write Review Box directly</em> instead of opening the Google Maps location overview page!
+          </div>
+        </div>
+      )}
+
       {/* Guest Phone / Customer ID Verification Field */}
       <div className="form-group" style={{ marginBottom: '0.15rem' }}>
         <label className="form-label" style={{ fontSize: '0.8rem', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
