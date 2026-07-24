@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, X, Save, RotateCcw, ExternalLink, KeyRound, CheckCircle2, Globe, Sparkles, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail, Phone, Building2 } from 'lucide-react';
+import { Settings, X, Save, RotateCcw, ExternalLink, KeyRound, CheckCircle2, Globe, Sparkles, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail, Phone, Building2, Search } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { extractPlaceId, generateGoogleReviewUrl, getUrlType } from '../../utils/googleReview';
 
@@ -73,6 +73,10 @@ export function SettingsModal({ isOpen, onClose }) {
     if (formState.tripadvisorReviewUrl) {
       window.open(formState.tripadvisorReviewUrl, '_blank', 'noopener,noreferrer');
     }
+  };
+
+  const handleOpenPlaceIdFinder = () => {
+    window.open('https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder', '_blank', 'noopener,noreferrer');
   };
 
   const googleUrlType = getUrlType(formState.googleReviewUrl);
@@ -197,34 +201,43 @@ export function SettingsModal({ isOpen, onClose }) {
 
           {/* Google Place ID & Link Configuration Section */}
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1e293b', fontWeight: 700, fontSize: '0.925rem' }}>
-              <Globe size={18} color="#2563eb" />
-              <span>Google Business Profile Configuration</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1e293b', fontWeight: 700, fontSize: '0.925rem' }}>
+                <Globe size={18} color="#2563eb" />
+                <span>Google Business Profile Configuration</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenPlaceIdFinder}
+                style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '0.25rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                <Search size={12} /> Find My Google Place ID
+              </button>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Google Place ID (or Google Maps link):</label>
+              <label className="form-label">Google Place ID (Starts with <code>ChIJ...</code>):</label>
               <input
                 type="text"
                 className="form-input"
                 value={formState.googlePlaceId || ''}
                 onChange={(e) => handlePlaceIdChange(e.target.value)}
-                placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4 or https://g.page/r/..."
+                placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4"
               />
               <span style={{ fontSize: '0.73rem', color: '#64748b', marginTop: '0.3rem', display: 'block' }}>
-                💡 <strong>Tip:</strong> Paste your official Google Place ID (e.g. <code>ChIJ...</code>) or your Google Maps listing URL.
+                💡 <strong>Direct Review Popup requirement:</strong> Enter your 27-character Place ID (e.g. <code>ChIJ...</code>) to open the Write Review box directly!
               </span>
             </div>
 
             <div className="form-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                <label className="form-label" style={{ margin: 0 }}>Google Business Review URL:</label>
+                <label className="form-label" style={{ margin: 0 }}>Generated Review Link:</label>
                 <button
                   type="button"
                   onClick={handleTestGoogleLink}
                   style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', padding: '0.2rem 0.55rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                 >
-                  <ExternalLink size={12} /> Test Google Link
+                  <ExternalLink size={12} /> Test Link Now
                 </button>
               </div>
 
@@ -237,21 +250,21 @@ export function SettingsModal({ isOpen, onClose }) {
                 required
               />
 
-              {/* Status Badge */}
-              <div style={{ marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}>
+              {/* Status Badge & Helper Notice */}
+              <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.75rem' }}>
                 {googleUrlType === 'direct_popup' && (
-                  <span style={{ background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', padding: '0.15rem 0.5rem', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <Sparkles size={12} color="#15803d" /> Direct Write Review Popup Link
+                  <span style={{ background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', padding: '0.25rem 0.6rem', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Sparkles size={14} color="#15803d" /> Direct 1-Tap Write Review Popup Enabled! (Opens 5-Star Box Directly)
                   </span>
                 )}
                 {googleUrlType === 'custom_url' && (
-                  <span style={{ background: '#dbeafe', color: '#1d4ed8', border: '1px solid #93c5fd', padding: '0.15rem 0.5rem', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <Globe size={12} color="#1d4ed8" /> Custom Google Listing Link
+                  <span style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '0.35rem 0.6rem', borderRadius: '6px', fontWeight: 600, lineHeight: '1.4' }}>
+                    ⚠️ <strong>Notice:</strong> This is a standard Google Maps link (opens business profile location page). To open the <strong>Write Review box DIRECTLY</strong>, click <em>"Find My Google Place ID"</em> above and paste your <code>ChIJ...</code> Place ID!
                   </span>
                 )}
                 {googleUrlType === 'invalid' && (
                   <span style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '0.15rem 0.5rem', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <AlertTriangle size={12} color="#b45309" /> Please enter a full HTTP/HTTPS URL
+                    <AlertTriangle size={12} color="#b45309" /> Please enter a valid URL (http:// or https://)
                   </span>
                 )}
               </div>
