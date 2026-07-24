@@ -103,15 +103,19 @@ export function FeedbackProvider({ children }) {
     const saved = localStorage.getItem('reviewpulse_settings');
     if (saved) {
       const parsed = JSON.parse(saved);
-      const placeId = parsed.googlePlaceId || GOOGLE_PLACE_ID;
+      const placeId = parsed.googlePlaceId !== undefined ? parsed.googlePlaceId : GOOGLE_PLACE_ID;
+      const reviewUrl = parsed.googleReviewUrl && !parsed.googleReviewUrl.includes('placeid=https://') && parsed.googleReviewUrl !== 'https://share.google/A2R9wcQuxsaISXwnn'
+        ? parsed.googleReviewUrl
+        : generateGoogleReviewUrl(placeId);
+
       return { 
         ...parsed, 
         hotelName: parsed.hotelName || 'Sree Jee Stay - Homestay in Varanasi',
         googlePlaceId: placeId,
-        googleReviewUrl: parsed.googleReviewUrl && parsed.googleReviewUrl !== 'https://share.google/A2R9wcQuxsaISXwnn' 
-          ? parsed.googleReviewUrl 
-          : generateGoogleReviewUrl(placeId),
-        managerPin: parsed.managerPin || '1234'
+        googleReviewUrl: reviewUrl,
+        tripadvisorReviewUrl: parsed.tripadvisorReviewUrl || 'https://www.tripadvisor.com/UserReview',
+        managerPin: parsed.managerPin || '1234',
+        preventDuplicateReviews: parsed.preventDuplicateReviews !== false,
       };
     }
     return INITIAL_SETTINGS;
@@ -301,8 +305,12 @@ export function FeedbackProvider({ children }) {
   const updateSettings = (newSettings) => {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };
-      if (newSettings.googlePlaceId) {
+      
+      // If user did NOT explicitly provide a googleReviewUrl, or if googlePlaceId was changed, generate URL intelligently
+      if (newSettings.googlePlaceId && (!newSettings.googleReviewUrl || newSettings.googleReviewUrl === prev.googleReviewUrl)) {
         updated.googleReviewUrl = generateGoogleReviewUrl(newSettings.googlePlaceId);
+      } else if (newSettings.googleReviewUrl) {
+        updated.googleReviewUrl = generateGoogleReviewUrl(newSettings.googleReviewUrl);
       }
       return updated;
     });

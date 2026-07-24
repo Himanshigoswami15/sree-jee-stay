@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
-import { Settings, X, Save, RotateCcw, ExternalLink, KeyRound } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, X, Save, RotateCcw, ExternalLink, KeyRound, CheckCircle2, Globe, Sparkles, AlertTriangle } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
+import { extractPlaceId, generateGoogleReviewUrl, getUrlType } from '../../utils/googleReview';
 
 export function SettingsModal({ isOpen, onClose }) {
   const { settings, updateSettings, resetToDemoData } = useFeedback();
 
   const [formState, setFormState] = useState(settings);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormState(settings);
+      setSaveSuccess(false);
+    }
+  }, [isOpen, settings]);
 
   if (!isOpen) return null;
 
@@ -13,10 +22,35 @@ export function SettingsModal({ isOpen, onClose }) {
     setFormState((prev) => ({ ...prev, [field]: val }));
   };
 
+  const handlePlaceIdChange = (val) => {
+    const cleanVal = val.trim();
+    const generatedUrl = generateGoogleReviewUrl(cleanVal);
+
+    setFormState((prev) => ({
+      ...prev,
+      googlePlaceId: cleanVal,
+      googleReviewUrl: generatedUrl,
+    }));
+  };
+
+  const handleReviewUrlChange = (val) => {
+    const cleanVal = val.trim();
+    const extractedId = extractPlaceId(cleanVal);
+    setFormState((prev) => ({
+      ...prev,
+      googleReviewUrl: val,
+      googlePlaceId: extractedId ? extractedId : prev.googlePlaceId,
+    }));
+  };
+
   const handleSave = (e) => {
     e.preventDefault();
     updateSettings(formState);
-    onClose();
+    setSaveSuccess(true);
+    setTimeout(() => {
+      setSaveSuccess(false);
+      onClose();
+    }, 800);
   };
 
   const handleReset = () => {
@@ -27,14 +61,23 @@ export function SettingsModal({ isOpen, onClose }) {
   };
 
   const handleTestGoogleLink = () => {
-    if (formState.googleReviewUrl) {
-      window.open(formState.googleReviewUrl, '_blank', 'noopener,noreferrer');
+    const urlToTest = formState.googleReviewUrl || generateGoogleReviewUrl(formState.googlePlaceId);
+    if (urlToTest) {
+      window.open(urlToTest, '_blank', 'noopener,noreferrer');
     }
   };
 
+  const handleTestTripadvisorLink = () => {
+    if (formState.tripadvisorReviewUrl) {
+      window.open(formState.tripadvisorReviewUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const googleUrlType = getUrlType(formState.googleReviewUrl);
+
   return (
     <div className="modal-overlay">
-      <div className="modal-card">
+      <div className="modal-card" style={{ maxWidth: '640px' }}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Settings size={22} color="var(--primary)" />
@@ -49,13 +92,32 @@ export function SettingsModal({ isOpen, onClose }) {
           </button>
         </div>
 
+        {saveSuccess && (
+          <div style={{
+            background: '#ecfdf5',
+            border: '1px solid #6ee7b7',
+            color: '#065f46',
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            marginBottom: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontWeight: 700,
+            fontSize: '0.875rem'
+          }}>
+            <CheckCircle2 size={18} color="#059669" />
+            <span>Settings saved successfully! Updating system...</span>
+          </div>
+        )}
+
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
           <div className="form-group">
             <label className="form-label">Hotel / Restaurant Name:</label>
             <input
               type="text"
               className="form-input"
-              value={formState.hotelName}
+              value={formState.hotelName || ''}
               onChange={(e) => handleChange('hotelName', e.target.value)}
               required
             />
@@ -71,7 +133,7 @@ export function SettingsModal({ isOpen, onClose }) {
                   maxLength={6}
                   className="form-input"
                   style={{ paddingLeft: '2.5rem', fontWeight: 700 }}
-                  value={formState.managerPin}
+                  value={formState.managerPin || ''}
                   onChange={(e) => handleChange('managerPin', e.target.value)}
                   placeholder="1234"
                   required
@@ -83,7 +145,7 @@ export function SettingsModal({ isOpen, onClose }) {
               <label className="form-label">Alert Threshold (Stars):</label>
               <select
                 className="form-input"
-                value={formState.alertThreshold}
+                value={formState.alertThreshold || 3}
                 onChange={(e) => handleChange('alertThreshold', parseInt(e.target.value, 10))}
               >
                 <option value={3}>≤ 3 Stars (Alert Manager)</option>
@@ -93,46 +155,88 @@ export function SettingsModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Google Place ID (from .env / Google Maps):</label>
-            <input
-              type="text"
-              className="form-input"
-              value={formState.googlePlaceId || ''}
-              onChange={(e) => {
-                const val = e.target.value;
-                setFormState((prev) => ({
-                  ...prev,
-                  googlePlaceId: val,
-                  googleReviewUrl: val ? `https://search.google.com/local/writereview?placeid=${val}` : prev.googleReviewUrl
-                }));
-              }}
-              placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4"
-            />
+          {/* Google Place ID & Link Configuration Section */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1e293b', fontWeight: 700, fontSize: '0.925rem' }}>
+              <Globe size={18} color="#2563eb" />
+              <span>Google Business Profile Configuration</span>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Google Place ID (or Google Maps link):</label>
+              <input
+                type="text"
+                className="form-input"
+                value={formState.googlePlaceId || ''}
+                onChange={(e) => handlePlaceIdChange(e.target.value)}
+                placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4 or https://g.page/r/..."
+              />
+              <span style={{ fontSize: '0.73rem', color: '#64748b', marginTop: '0.3rem', display: 'block' }}>
+                💡 <strong>Tip:</strong> Paste your official Google Place ID (e.g. <code>ChIJ...</code>) or your Google Maps listing URL.
+              </span>
+            </div>
+
+            <div className="form-group">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <label className="form-label" style={{ margin: 0 }}>Google Business Review URL:</label>
+                <button
+                  type="button"
+                  onClick={handleTestGoogleLink}
+                  style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', padding: '0.2rem 0.55rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                >
+                  <ExternalLink size={12} /> Test Google Link
+                </button>
+              </div>
+
+              <input
+                type="url"
+                className="form-input"
+                value={formState.googleReviewUrl || ''}
+                onChange={(e) => handleReviewUrlChange(e.target.value)}
+                placeholder="https://search.google.com/local/writereview?placeid=..."
+                required
+              />
+
+              {/* Status Badge */}
+              <div style={{ marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}>
+                {googleUrlType === 'direct_popup' && (
+                  <span style={{ background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', padding: '0.15rem 0.5rem', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <Sparkles size={12} color="#15803d" /> Direct Write Review Popup Link
+                  </span>
+                )}
+                {googleUrlType === 'custom_url' && (
+                  <span style={{ background: '#dbeafe', color: '#1d4ed8', border: '1px solid #93c5fd', padding: '0.15rem 0.5rem', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <Globe size={12} color="#1d4ed8" /> Custom Google Listing Link
+                  </span>
+                )}
+                {googleUrlType === 'invalid' && (
+                  <span style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '0.15rem 0.5rem', borderRadius: '6px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <AlertTriangle size={12} color="#b45309" /> Please enter a full HTTP/HTTPS URL
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="form-group">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label className="form-label">Generated Google Business Review Link:</label>
+          {/* Additional Review Platforms Section */}
+          <div className="form-group" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0.85rem 1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+              <label className="form-label" style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>TripAdvisor Review URL (Optional):</label>
               <button
                 type="button"
-                onClick={handleTestGoogleLink}
-                style={{ background: 'transparent', border: 'none', color: '#34d399', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+                onClick={handleTestTripadvisorLink}
+                style={{ background: 'transparent', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.2rem' }}
               >
-                <ExternalLink size={12} /> Test Google Link
+                <ExternalLink size={12} /> Test TripAdvisor Link
               </button>
             </div>
             <input
               type="url"
               className="form-input"
-              value={formState.googleReviewUrl}
-              onChange={(e) => handleChange('googleReviewUrl', e.target.value)}
-              placeholder="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID"
-              required
+              value={formState.tripadvisorReviewUrl || ''}
+              onChange={(e) => handleChange('tripadvisorReviewUrl', e.target.value)}
+              placeholder="https://www.tripadvisor.com/UserReview..."
             />
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem', display: 'block' }}>
-              💡 <strong>Tip:</strong> Generates <code>https://search.google.com/local/writereview?placeid=...</code> for your Place ID!
-            </span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -141,7 +245,7 @@ export function SettingsModal({ isOpen, onClose }) {
               <input
                 type="email"
                 className="form-input"
-                value={formState.managerEmail}
+                value={formState.managerEmail || ''}
                 onChange={(e) => handleChange('managerEmail', e.target.value)}
               />
             </div>
@@ -151,7 +255,7 @@ export function SettingsModal({ isOpen, onClose }) {
               <input
                 type="text"
                 className="form-input"
-                value={formState.managerPhone}
+                value={formState.managerPhone || ''}
                 onChange={(e) => handleChange('managerPhone', e.target.value)}
               />
             </div>
