@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, AlertTriangle, ShieldCheck, TrendingUp } from 'lucide-react';
+import { Star, AlertTriangle } from 'lucide-react';
 
 export function MetricsOverview({ feedbacks, alertThreshold }) {
   const totalReviews = feedbacks.length;
@@ -11,14 +11,6 @@ export function MetricsOverview({ feedbacks, alertThreshold }) {
   const unresolvedAlerts = feedbacks.filter(
     (f) => f.rating <= alertThreshold && !f.managerResolved
   ).length;
-
-  const publicPostedCount = feedbacks.filter((f) => f.postedPublic || f.status === 'Public Posted').length;
-  const publicConversionRate = totalReviews > 0 ? Math.round((publicPostedCount / totalReviews) * 100) : 0;
-
-  // NPS Calculation (% 5-star Promoters - % 1-3 star Detractors)
-  const promoters = feedbacks.filter((f) => f.rating === 5).length;
-  const detractors = feedbacks.filter((f) => f.rating <= 3).length;
-  const npsScore = totalReviews > 0 ? Math.round(((promoters - detractors) / totalReviews) * 100) : 100;
 
   return (
     <div className="metrics-grid">
@@ -48,39 +40,6 @@ export function MetricsOverview({ feedbacks, alertThreshold }) {
         </div>
         <div className="metric-footer" style={{ color: unresolvedAlerts > 0 ? '#dc2626' : '#059669', fontWeight: 700 }}>
           {unresolvedAlerts > 0 ? 'Requires immediate duty manager attention' : 'All low-rating alerts handled'}
-        </div>
-      </div>
-
-      {/* Public Conversion & NPS Card */}
-      <div
-        className="metric-card"
-        style={{
-          borderLeft: `4px solid ${npsScore >= 0 ? '#10b981' : '#f43f5e'}`
-        }}
-      >
-        <div className="metric-header">
-          <span style={{ color: '#475569', fontWeight: 800 }}>Net Promoter Score (NPS)</span>
-          <TrendingUp size={18} color={npsScore >= 0 ? '#10b981' : '#f43f5e'} />
-        </div>
-        <div className="metric-value" style={{ color: npsScore >= 0 ? '#059669' : '#e11d48', fontWeight: 800 }}>
-          {npsScore > 0 ? `+${npsScore}` : npsScore}
-        </div>
-        <div className="metric-footer" style={{ color: '#64748b', fontWeight: 600 }}>
-          {publicConversionRate}% public review conversion rate
-        </div>
-      </div>
-
-      {/* Policy Compliance Card */}
-      <div className="metric-card" style={{ borderLeft: '4px solid #4f46e5' }}>
-        <div className="metric-header">
-          <span style={{ color: '#475569', fontWeight: 800 }}>Policy Compliance</span>
-          <ShieldCheck size={18} color="#4f46e5" />
-        </div>
-        <div className="metric-value" style={{ color: '#4f46e5', fontSize: '1.6rem', fontWeight: 800 }}>
-          100% Compliant
-        </div>
-        <div className="metric-footer" style={{ color: '#64748b', fontWeight: 600 }}>
-          No review gating • All guests have public link access
         </div>
       </div>
     </div>
