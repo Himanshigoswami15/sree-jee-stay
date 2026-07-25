@@ -7,6 +7,7 @@ import { GuestReviewCard } from './components/GuestFlow/GuestReviewCard';
 import { MetricsOverview } from './components/Dashboard/MetricsOverview';
 import { TagAnalytics } from './components/Dashboard/TagAnalytics';
 import { KeywordStudio } from './components/Dashboard/KeywordStudio';
+import { FeedbackTable } from './components/Dashboard/FeedbackTable';
 
 function MainContent() {
   const { activeTab, feedbacks, settings } = useFeedback();
@@ -34,6 +35,8 @@ function MainContent() {
           <TagAnalytics feedbacks={feedbacks} />
 
           <KeywordStudio />
+
+          <FeedbackTable feedbacks={feedbacks} />
         </div>
       )}
     </main>
