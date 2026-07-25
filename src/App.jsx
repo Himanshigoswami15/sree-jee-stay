@@ -1,4 +1,5 @@
 import React from 'react';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { FeedbackProvider, useFeedback } from './context/FeedbackContext';
 import { Navigation } from './components/Navigation';
 import { AlertBanner } from './components/Common/AlertBanner';
@@ -40,9 +41,11 @@ function MainContent() {
   );
 }
 
-export default function App() {
+function MultiTenantWrapper() {
+  const { tenantId, locationId } = useParams();
+  
   return (
-    <FeedbackProvider>
+    <FeedbackProvider tenantId={tenantId} locationId={locationId}>
       <div className="app-root">
         <Navigation />
         <AlertBanner />
@@ -50,5 +53,15 @@ export default function App() {
         <MainContent />
       </div>
     </FeedbackProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/demo" replace />} />
+      <Route path="/:tenantId" element={<MultiTenantWrapper />} />
+      <Route path="/:tenantId/:locationId" element={<MultiTenantWrapper />} />
+    </Routes>
   );
 }

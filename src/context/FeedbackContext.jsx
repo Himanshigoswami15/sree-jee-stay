@@ -2,127 +2,50 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { RATING_KEYWORDS } from '../utils/reviewGenerator';
 import { generateGoogleReviewUrl, GOOGLE_PLACE_ID } from '../utils/googleReview';
 import { normalizeContact } from '../utils/contactNormalizer';
+import { getTenantConfig } from '../config/tenantConfig';
+import { AuditLogger } from '../utils/auditLogger';
 
 const FeedbackContext = createContext();
 
-const INITIAL_SETTINGS = {
-  hotelName: 'Sree Jee Stay - Homestay in Varanasi',
-  googlePlaceId: GOOGLE_PLACE_ID,
-  googleReviewUrl: generateGoogleReviewUrl(GOOGLE_PLACE_ID),
-  tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
-  managerEmail: 'himanshigoswami9057@gmail.com',
-  managerPhone: '+91 98765 43210',
-  alertThreshold: 3, // Ratings <= 3 trigger manager alert
-  antiGatingNoticeEnabled: true,
-  managerPin: '1234', // Default Security PIN
-  preventDuplicateReviews: true, // Block multiple reviews from same Phone/Customer ID
-};
-
-const SEED_FEEDBACKS = [
-  {
-    id: 'fb-101',
-    roomNumber: 'Room 204',
-    rating: 5,
-    tags: ['clean', 'wifi', 'staff', 'breakfast'],
-    reviewText: 'Had a fantastic experience during our stay in Room 204! The room was impeccably clean and spotless. The Wi-Fi was fast and reliable for work and streaming. The staff were incredibly warm, welcoming, and helpful. Will definitely come back again!',
-    status: 'Public Posted',
-    alertSent: false,
-    managerResolved: false,
-    timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    guestContact: '',
-  },
-  {
-    id: 'fb-102',
-    roomNumber: 'Room 312',
-    rating: 2,
-    tags: ['ac_issue', 'noise'],
-    reviewText: 'Disappointed with our stay in Room 312. Specifically, the air conditioning in the room was not cooling properly, and there was considerable noise disrupting our rest. Hope management can look into these issues promptly.',
-    status: 'Manager Alerted',
-    alertSent: true,
-    managerResolved: false,
-    timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    guestContact: 'John D. (Ext: 312, Phone: 555-0192)',
-  },
-  {
-    id: 'fb-103',
-    roomNumber: 'Table 14',
-    rating: 5,
-    tags: ['breakfast', 'staff'],
-    reviewText: 'Wonderful stay during our recent visit! Breakfast was fresh, delicious, and offered great variety. The staff were incredibly warm and welcoming.',
-    status: 'Public Posted',
-    alertSent: false,
-    managerResolved: false,
-    timestamp: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
-    guestContact: '',
-  },
-  {
-    id: 'fb-104',
-    roomNumber: 'Room 108',
-    rating: 3,
-    tags: ['slow_wifi', 'cold_food'],
-    reviewText: 'Mixed experience during our stay in Room 108. A few things could be improved. Specifically, the Wi-Fi connection was unstable and very slow, and the food served was cold and delayed.',
-    status: 'Manager Resolved',
-    alertSent: true,
-    managerResolved: true,
-    timestamp: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
-    guestContact: 'Sarah M. (Room 108)',
-  },
-  {
-    id: 'fb-105',
-    roomNumber: 'Room 405',
-    rating: 4,
-    tags: ['clean', 'bed', 'location'],
-    reviewText: 'Really enjoyed our stay in Room 405! The room was impeccably clean and spotless. The bed was super comfortable for a restful sleep.',
-    status: 'Submitted',
-    alertSent: false,
-    managerResolved: false,
-    timestamp: new Date(Date.now() - 1000 * 60 * 1400).toISOString(),
-    guestContact: '',
-  },
-  {
-    id: 'fb-106',
-    roomNumber: 'Room 215',
-    rating: 1,
-    tags: ['dirty_bathroom', 'checkin_delay'],
-    reviewText: 'Extremely disappointed with our stay in Room 215. Specifically, the bathroom cleanliness fell below expected standards, and we experienced a long wait time during check-in.',
-    status: 'Manager Alerted',
-    alertSent: true,
-    managerResolved: false,
-    timestamp: new Date(Date.now() - 1000 * 60 * 2000).toISOString(),
-    guestContact: 'Elena R. (555-8831)',
-  }
-];
-
-export function FeedbackProvider({ children }) {
+export function FeedbackProvider({ children, tenantId = 'demo', locationId = 'main' }) {
   const [feedbacks, setFeedbacks] = useState(() => {
-    const saved = localStorage.getItem('reviewpulse_feedbacks');
-    return saved ? JSON.parse(saved) : SEED_FEEDBACKS;
+    const saved = localStorage.getItem(`reviewpulse_feedbacks_${tenantId}`);
+    // Load empty array if no saved feedback for this tenant
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('reviewpulse_settings');
+    const tenantConfig = getTenantConfig(tenantId);
+    const saved = localStorage.getItem(`reviewpulse_settings_${tenantId}`);
+    
     if (saved) {
       const parsed = JSON.parse(saved);
-      const placeId = parsed.googlePlaceId !== undefined ? parsed.googlePlaceId : GOOGLE_PLACE_ID;
+      const placeId = parsed.googlePlaceId !== undefined ? parsed.googlePlaceId : tenantConfig.googlePlaceId;
       const reviewUrl = parsed.googleReviewUrl && !parsed.googleReviewUrl.includes('placeid=https://') && parsed.googleReviewUrl !== 'https://share.google/A2R9wcQuxsaISXwnn'
         ? parsed.googleReviewUrl
         : generateGoogleReviewUrl(placeId);
 
       return { 
+        ...tenantConfig,
         ...parsed, 
-        hotelName: parsed.hotelName || 'Sree Jee Stay - Homestay in Varanasi',
+        hotelName: parsed.hotelName || tenantConfig.name,
         googlePlaceId: placeId,
         googleReviewUrl: reviewUrl,
-        tripadvisorReviewUrl: parsed.tripadvisorReviewUrl || 'https://www.tripadvisor.com/UserReview',
-        managerPin: parsed.managerPin || '1234',
-        preventDuplicateReviews: parsed.preventDuplicateReviews !== false,
+        tripadvisorReviewUrl: parsed.tripadvisorReviewUrl || tenantConfig.tripadvisorReviewUrl,
+        managerPin: parsed.managerPin || tenantConfig.managerPin,
+        preventDuplicateReviews: parsed.preventDuplicateReviews !== undefined ? parsed.preventDuplicateReviews : tenantConfig.preventDuplicateReviews,
       };
     }
-    return INITIAL_SETTINGS;
+    
+    return {
+      ...tenantConfig,
+      hotelName: tenantConfig.name,
+      googleReviewUrl: generateGoogleReviewUrl(tenantConfig.googlePlaceId)
+    };
   });
 
   const [keywords, setKeywords] = useState(() => {
-    const saved = localStorage.getItem('reviewpulse_keywords');
+    const saved = localStorage.getItem(`reviewpulse_keywords_${tenantId}`);
     return saved ? JSON.parse(saved) : RATING_KEYWORDS;
   });
 
@@ -134,17 +57,20 @@ export function FeedbackProvider({ children }) {
   const [isManagerAuthenticated, setIsManagerAuthenticated] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem('reviewpulse_feedbacks', JSON.stringify(feedbacks));
-  }, [feedbacks]);
+  // Audit Logger instance
+  const auditLogger = new AuditLogger(tenantId, locationId);
 
   useEffect(() => {
-    localStorage.setItem('reviewpulse_settings', JSON.stringify(settings));
-  }, [settings]);
+    localStorage.setItem(`reviewpulse_feedbacks_${tenantId}`, JSON.stringify(feedbacks));
+  }, [feedbacks, tenantId]);
 
   useEffect(() => {
-    localStorage.setItem('reviewpulse_keywords', JSON.stringify(keywords));
-  }, [keywords]);
+    localStorage.setItem(`reviewpulse_settings_${tenantId}`, JSON.stringify(settings));
+  }, [settings, tenantId]);
+
+  useEffect(() => {
+    localStorage.setItem(`reviewpulse_keywords_${tenantId}`, JSON.stringify(keywords));
+  }, [keywords, tenantId]);
 
   // Tab switching with Manager Security Gate
   const switchTab = (tab) => {
@@ -161,8 +87,10 @@ export function FeedbackProvider({ children }) {
       setIsManagerAuthenticated(true);
       setIsPinModalOpen(false);
       setActiveTab('dashboard');
+      auditLogger.logEvent('MANAGER_LOGIN_SUCCESS');
       return true;
     }
+    auditLogger.logEvent('MANAGER_LOGIN_FAILED');
     return false;
   };
 
@@ -172,6 +100,7 @@ export function FeedbackProvider({ children }) {
     setIsManagerAuthenticated(true);
     setIsPinModalOpen(false);
     setActiveTab('dashboard');
+    auditLogger.logEvent('MANAGER_PIN_RESET');
     return true;
   };
 
@@ -179,6 +108,7 @@ export function FeedbackProvider({ children }) {
   const lockDashboard = () => {
     setIsManagerAuthenticated(false);
     setActiveTab('guest');
+    auditLogger.logEvent('MANAGER_LOGOUT');
   };
 
   // Check if a phone number or Customer ID has already submitted feedback
@@ -195,7 +125,7 @@ export function FeedbackProvider({ children }) {
 
     // 2. Check localStorage submitted contacts
     try {
-      const savedContacts = JSON.parse(localStorage.getItem('reviewpulse_submitted_contacts') || '[]');
+      const savedContacts = JSON.parse(localStorage.getItem(`reviewpulse_submitted_contacts_${tenantId}`) || '[]');
       if (savedContacts.includes(norm)) return true;
     } catch (e) {}
 
@@ -209,6 +139,7 @@ export function FeedbackProvider({ children }) {
     // Guard against duplicate submission if phone/customer ID is provided
     if (settings.preventDuplicateReviews && contact) {
       if (checkIsDuplicate(contact)) {
+        auditLogger.logEvent('DUPLICATE_REVIEW_BLOCKED', { contact });
         return {
           success: false,
           isDuplicate: true,
@@ -235,22 +166,24 @@ export function FeedbackProvider({ children }) {
     };
 
     setFeedbacks((prev) => [submission, ...prev]);
+    auditLogger.logEvent('FEEDBACK_SUBMITTED', { rating: submission.rating, room: submission.roomNumber });
 
     // Save contact to localStorage array for persistence
     if (contact) {
       const norm = normalizeContact(contact);
       if (norm) {
         try {
-          const saved = JSON.parse(localStorage.getItem('reviewpulse_submitted_contacts') || '[]');
+          const saved = JSON.parse(localStorage.getItem(`reviewpulse_submitted_contacts_${tenantId}`) || '[]');
           if (!saved.includes(norm)) {
             saved.push(norm);
-            localStorage.setItem('reviewpulse_submitted_contacts', JSON.stringify(saved));
+            localStorage.setItem(`reviewpulse_submitted_contacts_${tenantId}`, JSON.stringify(saved));
           }
         } catch (e) {}
       }
     }
 
     if (isLowRating) {
+      auditLogger.logEvent('MANAGER_ALERTED', { rating: submission.rating, room: submission.roomNumber });
       setManagerAlertToast({
         id: submission.id,
         roomNumber: submission.roomNumber,
@@ -277,6 +210,7 @@ export function FeedbackProvider({ children }) {
       ...prev,
       [type]: [...(prev[type] || []), newTag],
     }));
+    auditLogger.logEvent('KEYWORD_ADDED', { type, label: tagData.label });
   };
 
   // Delete keyword tag
@@ -285,6 +219,7 @@ export function FeedbackProvider({ children }) {
       ...prev,
       [type]: (prev[type] || []).filter((t) => t.id !== tagId),
     }));
+    auditLogger.logEvent('KEYWORD_DELETED', { type, tagId });
   };
 
   // Mark manager alert as resolved
@@ -294,6 +229,7 @@ export function FeedbackProvider({ children }) {
         item.id === id ? { ...item, managerResolved: true, status: 'Manager Resolved' } : item
       )
     );
+    auditLogger.logEvent('ALERT_RESOLVED', { id });
   };
 
   // Clear toast alert
@@ -314,18 +250,22 @@ export function FeedbackProvider({ children }) {
       }
       return updated;
     });
+    auditLogger.logEvent('SETTINGS_UPDATED');
   };
 
   // Reset to seed data
   const resetToDemoData = () => {
-    setFeedbacks(SEED_FEEDBACKS);
-    setSettings(INITIAL_SETTINGS);
+    // For demo reset, we don't restore seed feedback in multi-tenant mode to avoid confusion,
+    // or we can just empty it. Let's just empty it for simplicity.
+    setFeedbacks([]);
+    setSettings(getTenantConfig(tenantId));
     setKeywords(RATING_KEYWORDS);
     setIsManagerAuthenticated(false);
-    localStorage.removeItem('reviewpulse_feedbacks');
-    localStorage.removeItem('reviewpulse_settings');
-    localStorage.removeItem('reviewpulse_keywords');
-    localStorage.removeItem('reviewpulse_submitted_contacts');
+    localStorage.removeItem(`reviewpulse_feedbacks_${tenantId}`);
+    localStorage.removeItem(`reviewpulse_settings_${tenantId}`);
+    localStorage.removeItem(`reviewpulse_keywords_${tenantId}`);
+    localStorage.removeItem(`reviewpulse_submitted_contacts_${tenantId}`);
+    auditLogger.clearLogs();
   };
 
   return (

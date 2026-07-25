@@ -1,11 +1,13 @@
 import React from 'react';
 import { Heart, Building2, CheckCircle2, RotateCcw, ExternalLink } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
+import { getActiveProviders } from '../../utils/providerRouter';
 
 export function ThankYouCard({ rating, onReset }) {
   const { settings } = useFeedback();
 
   const isHighRating = rating >= 4;
+  const activeProviders = getActiveProviders(settings);
 
   return (
     <div className="guest-card" style={{ textAlign: 'center', padding: '2.5rem 2rem' }}>
@@ -39,14 +41,18 @@ export function ThankYouCard({ rating, onReset }) {
         </p>
       </div>
 
-      <button
-          type="button"
-          className="btn-primary-action"
-          onClick={() => window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer')}
-          style={{ marginBottom: '0.5rem' }}
-        >
-          <ExternalLink size={18} /> Post this review on Google
-        </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+        {activeProviders.map((provider) => (
+          <button
+            key={provider.type}
+            type="button"
+            className="btn-primary-action"
+            onClick={() => window.open(provider.url, '_blank', 'noopener,noreferrer')}
+          >
+            <ExternalLink size={18} /> Post this review on {provider.name}
+          </button>
+        ))}
+      </div>
 
       <button
         type="button"

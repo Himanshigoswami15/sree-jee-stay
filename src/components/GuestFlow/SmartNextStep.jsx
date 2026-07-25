@@ -4,17 +4,18 @@ import { ExternalLink, Copy, Check, ShieldCheck, Send, Info, Sparkles, AlertCirc
 import { useFeedback } from '../../context/FeedbackContext';
 import { generateGoogleReviewUrl } from '../../utils/googleReview';
 import { copyToMobileClipboard } from '../../utils/clipboardHelper';
+import { getActiveProviders } from '../../utils/providerRouter';
 
 export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = 'Room', onSubmitted }) {
   const { settings, addFeedback, checkIsDuplicate } = useFeedback();
   const [copied, setCopied] = useState(false);
   const [guestContact, setGuestContact] = useState('');
-  const [submittedState, setSubmittedState] = useState(null); // 'google_connecting' | 'manager_sent' | 'duplicate_blocked' | null
+  const [submittedState, setSubmittedState] = useState(null); // 'provider_connecting' | 'manager_sent' | 'duplicate_blocked' | null
+  const [lastUsedProvider, setLastUsedProvider] = useState(null);
 
   if (!rating) return null;
 
-  const targetGoogleUrl = generateGoogleReviewUrl(settings.googlePlaceId || settings.googleReviewUrl);
-
+  const activeProviders = getActiveProviders(settings);
   const isDuplicate = checkIsDuplicate(guestContact);
 
   const handleCopyText = async () => {
@@ -25,15 +26,14 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
     }
   };
 
-  // Policy-compliant Google Review submission for ALL star ratings
-  const handlePostToGoogle = async () => {
+  // Policy-compliant Provider Review submission for ALL star ratings
+  const handlePostToProvider = async (provider) => {
     if (isDuplicate) {
       setSubmittedState('duplicate_blocked');
       return;
     }
 
     // 1. MUST Copy review text to mobile clipboard FIRST (synchronously in user gesture)
-    // This ensures iOS Safari & Android Chrome permit clipboard write before switching focus!
     const copiedOk = await copyToMobileClipboard(reviewText);
     if (copiedOk) {
       setCopied(true);
@@ -54,8 +54,8 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       return;
     }
 
-    // 3. Synchronously open Google Review URL in new tab
-    const win = window.open(targetGoogleUrl, '_blank', 'noopener,noreferrer');
+    // 3. Synchronously open Provider Review URL in new tab
+    const win = window.open(provider.url, '_blank', 'noopener,noreferrer');
 
     // 4. Fire confetti for positive feedback
     if (rating >= 4) {
@@ -68,7 +68,8 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       } catch (e) {}
     }
 
-    setSubmittedState('google_connecting');
+    setLastUsedProvider(provider);
+    setSubmittedState('provider_connecting');
     if (onSubmitted) onSubmitted();
 
     if (!win) {
@@ -129,7 +130,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
     );
   }
 
-  if (submittedState === 'google_connecting') {
+  if (submittedState === 'provider_connecting') {
     return (
       <div style={{
         textAlign: 'center',
@@ -143,7 +144,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         boxShadow: '0 8px 30px rgba(37, 99, 235, 0.12)'
       }}>
         <div style={{ color: '#059669', fontWeight: 800, fontSize: '1.15rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          <Sparkles size={24} color="#059669" /> Google Review Page Connected!
+          <Sparkles size={24} color="#059669" /> {lastUsedProvider?.name} Connected!
         </div>
 
         <div style={{
@@ -162,7 +163,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
             <Check size={18} color="#059669" /> Review Text Auto-Copied to Clipboard!
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#047857' }}>
-            <span>📱</span> <strong>Mobile Phone:</strong> Tap inside Google's review box and select <strong>Paste</strong> (or tap the clipboard bar above your keyboard).
+            <span>📱</span> <strong>Mobile Phone:</strong> Tap inside the review box and select <strong>Paste</strong>.
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1e3a8a' }}>
             <span>💻</span> <strong>Computer:</strong> Press <strong>Ctrl + V</strong> (or <strong>Cmd + V</strong>) to paste.
@@ -173,9 +174,9 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           type="button"
           className="btn-primary-action"
           style={{ marginTop: '0.25rem' }}
-          onClick={() => window.open(targetGoogleUrl, '_blank', 'noopener,noreferrer')}
+          onClick={() => window.open(lastUsedProvider?.url, '_blank', 'noopener,noreferrer')}
         >
-          <ExternalLink size={18} /> Open Google Review Page Again
+          <ExternalLink size={18} /> Open {lastUsedProvider?.name} Again
         </button>
       </div>
     );
@@ -191,15 +192,17 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
           Our internal team has received your feedback and will reach out immediately.
         </p>
 
-        {/* Policy compliant equal option to post on Google */}
-        <button
-          type="button"
-          onClick={handlePostToGoogle}
-          className="btn-primary-action"
-          style={{ marginTop: '0.5rem' }}
-        >
-          <ExternalLink size={16} /> Post this review on Google
-        </button>
+        {activeProviders.map((provider) => (
+          <button
+            key={provider.type}
+            type="button"
+            onClick={() => handlePostToProvider(provider)}
+            className="btn-primary-action"
+            style={{ marginTop: '0.5rem' }}
+          >
+            <ExternalLink size={16} /> Post this review on {provider.name}
+          </button>
+        ))}
       </div>
     );
   }
@@ -210,7 +213,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
       <div className="policy-badge">
         <ShieldCheck size={16} style={{ flexShrink: 0 }} />
         <span>
-          <strong>Google Policy Compliant:</strong> Direct 1-tap link to official Google Business Listing for all guests.
+          <strong>Policy Compliant:</strong> Direct 1-tap link to official public profiles for all guests.
         </span>
       </div>
 
@@ -230,7 +233,7 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         }}>
           <Info size={18} color="#d97706" style={{ flexShrink: 0 }} />
           <div>
-            <strong>Notice:</strong> Add your <strong>Google Place ID</strong> in <strong>Manager Dashboard $\rightarrow$ Settings</strong> to open the <em>Write Review Box directly</em> instead of opening the Google Maps location overview page!
+            <strong>Notice:</strong> Add your <strong>Google Place ID</strong> in <strong>Manager Dashboard $\rightarrow$ Settings</strong> to open the <em>Write Review Box directly</em>!
           </div>
         </div>
       )}
@@ -277,23 +280,27 @@ export function SmartNextStep({ rating, reviewText, selectedTags, roomNumber = '
         </div>
       )}
 
-      {/* Prominent CTA to Post on Google for ALL ratings equally */}
+      {/* Prominent CTA to Post on Public Platforms for ALL ratings equally */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-        <button
-          type="button"
-          className="btn-primary-action"
-          onClick={handlePostToGoogle}
-          disabled={isDuplicate}
-          style={{
-            fontSize: '1rem',
-            padding: '0.9rem',
-            opacity: isDuplicate ? 0.5 : 1,
-            cursor: isDuplicate ? 'not-allowed' : 'pointer'
-          }}
-        >
-          <ExternalLink size={20} />
-          <span>{isDuplicate ? 'Duplicate Review Blocked' : 'Post this review on Google'}</span>
-        </button>
+        
+        {activeProviders.map((provider) => (
+          <button
+            key={provider.type}
+            type="button"
+            className="btn-primary-action"
+            onClick={() => handlePostToProvider(provider)}
+            disabled={isDuplicate}
+            style={{
+              fontSize: '1rem',
+              padding: '0.9rem',
+              opacity: isDuplicate ? 0.5 : 1,
+              cursor: isDuplicate ? 'not-allowed' : 'pointer'
+            }}
+          >
+            <ExternalLink size={20} />
+            <span>{isDuplicate ? 'Duplicate Review Blocked' : `Post this review on ${provider.name}`}</span>
+          </button>
+        ))}
 
         {/* Copy Review Text Only Button */}
         <button
