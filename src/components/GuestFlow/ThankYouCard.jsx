@@ -39,16 +39,14 @@ export function ThankYouCard({ rating, onReset }) {
         </p>
       </div>
 
-      {isHighRating && (
-        <button
+      <button
           type="button"
           className="btn-primary-action"
           onClick={() => window.open(settings.googleReviewUrl, '_blank', 'noopener,noreferrer')}
           style={{ marginBottom: '0.5rem' }}
         >
-          <ExternalLink size={18} /> Open Google Review Page
+          <ExternalLink size={18} /> Post this review on Google
         </button>
-      )}
 
       <button
         type="button"
