@@ -3,7 +3,7 @@ import { ShieldCheck, KeyRound, X, AlertCircle, Mail, ArrowLeft, CheckCircle2, L
 import { useFeedback } from '../../context/FeedbackContext';
 
 export function ManagerPinModal() {
-  const { isPinModalOpen, setIsPinModalOpen, verifyPin, resetPinAndAuthenticate, settings } = useFeedback();
+  const { isPinModalOpen, setIsPinModalOpen, verifyPin, resetPinAndAuthenticate, authenticateAndOpenDashboard, settings } = useFeedback();
   
   // View Modes: 'login' | 'otp_verify' | 'new_password'
   const [viewMode, setViewMode] = useState('login');
@@ -94,7 +94,7 @@ export function ManagerPinModal() {
 
   // Step 3B: "Not Now" Option -> Keep current password and directly open dashboard
   const handleNotNowOption = () => {
-    resetPinAndAuthenticate(settings.managerPin);
+    authenticateAndOpenDashboard();
     resetState();
   };
 

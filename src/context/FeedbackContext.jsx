@@ -33,7 +33,6 @@ export function FeedbackProvider({ children, tenantId = 'demo', locationId = 'ma
         googlePlaceId: placeId,
         googleReviewUrl: reviewUrl,
         tripadvisorReviewUrl: parsed.tripadvisorReviewUrl || tenantConfig.tripadvisorReviewUrl,
-        managerPin: parsed.managerPin || tenantConfig.managerPin,
         preventDuplicateReviews: parsed.preventDuplicateReviews !== undefined ? parsed.preventDuplicateReviews : tenantConfig.preventDuplicateReviews,
       };
     }
@@ -104,6 +103,14 @@ export function FeedbackProvider({ children, tenantId = 'demo', locationId = 'ma
       return { success: true, message: result.message };
     }
     return { success: false, error: result.error || 'Failed to update password.' };
+  };
+
+  // Direct Authentication Helper (Unlock without changing password)
+  const authenticateAndOpenDashboard = () => {
+    setIsManagerAuthenticated(true);
+    setIsPinModalOpen(false);
+    setActiveTab('dashboard');
+    auditLogger.logEvent('MANAGER_LOGIN_SUCCESS');
   };
 
   // Reset PIN via Email Verification & Directly Open Dashboard
@@ -301,6 +308,7 @@ export function FeedbackProvider({ children, tenantId = 'demo', locationId = 'ma
         verifyPin,
         changeManagerPassword,
         resetPinAndAuthenticate,
+        authenticateAndOpenDashboard,
         lockDashboard,
         checkIsDuplicate,
         addFeedback,
