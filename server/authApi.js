@@ -19,10 +19,21 @@ function getRawBody(req) {
 function sendJson(res, statusCode, body) {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.end(JSON.stringify(body));
 }
 
 export async function authApiMiddleware(req, res, next) {
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return res.end();
+  }
+
   const urlPath = req.url.split('?')[0];
 
   if (req.method === 'POST' && (urlPath === '/verify' || urlPath === '/verify/')) {
