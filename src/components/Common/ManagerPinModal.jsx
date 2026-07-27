@@ -21,12 +21,11 @@ export function ManagerPinModal() {
   // New Password State
   const [newPin, setNewPin] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isPinModalOpen) return null;
 
   const managerEmail = settings.managerEmail || 'himanshigoswami9057@gmail.com';
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handle standard PIN Login
   const handleLoginSubmit = async (e) => {
