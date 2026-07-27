@@ -4,17 +4,27 @@ import { useFeedback } from '../../context/FeedbackContext';
 import { extractPlaceId, generateGoogleReviewUrl, getUrlType } from '../../utils/googleReview';
 
 export function SettingsModal({ isOpen, onClose }) {
-  const { settings, updateSettings, resetToDemoData } = useFeedback();
+  const { settings, updateSettings, changeManagerPassword, resetToDemoData } = useFeedback();
 
   const [formState, setFormState] = useState(settings);
   const [showPin, setShowPin] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Password update states
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setFormState(settings);
       setSaveSuccess(false);
       setShowPin(false);
+      setOldPassword('');
+      setNewPassword('');
+      setPasswordError('');
+      setIsSaving(false);
     }
   }, [isOpen, settings]);
 
@@ -45,14 +55,44 @@ export function SettingsModal({ isOpen, onClose }) {
     }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    updateSettings(formState);
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-      onClose();
-    }, 1200);
+    setPasswordError('');
+    setIsSaving(true);
+
+    try {
+      // If user provided a new password, verify old password and update hash in DB
+      if (newPassword || oldPassword) {
+        if (!oldPassword) {
+          setPasswordError('Current Password is required to update your password.');
+          setIsSaving(false);
+          return;
+        }
+        if (!newPassword || newPassword.length < 4) {
+          setPasswordError('New Password / PIN must be at least 4 characters long.');
+          setIsSaving(false);
+          return;
+        }
+
+        const res = await changeManagerPassword(oldPassword, newPassword, false);
+        if (!res.success) {
+          setPasswordError(res.error || 'Failed to update password. Please check your current password.');
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      updateSettings(formState);
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        onClose();
+      }, 1200);
+    } catch (err) {
+      setPasswordError('Error saving settings. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -123,6 +163,25 @@ export function SettingsModal({ isOpen, onClose }) {
           </div>
         )}
 
+        {passwordError && (
+          <div style={{
+            background: '#fff1f2',
+            border: '1px solid #fda4af',
+            color: '#be123c',
+            padding: '0.75rem 1rem',
+            borderRadius: '12px',
+            marginBottom: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontWeight: 700,
+            fontSize: '0.85rem'
+          }}>
+            <AlertTriangle size={18} color="#be123c" />
+            <div>{passwordError}</div>
+          </div>
+        )}
+
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
           {/* Hotel Name */}
           <div className="form-group">
@@ -140,63 +199,77 @@ export function SettingsModal({ isOpen, onClose }) {
             />
           </div>
 
-          {/* PIN & Alert Threshold */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group">
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <ShieldCheck size={15} color="#4f46e5" />
-                Manager Security PIN:
-              </label>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
+          {/* Change Password / Security PIN Section */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1e293b', fontWeight: 700, fontSize: '0.9rem' }}>
+              <ShieldCheck size={16} color="#4f46e5" />
+              <span>Change Manager Password / Security PIN (Database Hashed)</span>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+              <div className="form-group">
+                <label className="form-label" style={{ fontSize: '0.8rem' }}>Current Password / PIN:</label>
                 <input
-                  type={showPin ? "text" : "password"}
-                  maxLength={8}
+                  type="password"
+                  maxLength={16}
                   className="form-input"
-                  style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem', fontWeight: 800, fontSize: '1rem', letterSpacing: showPin ? '0.1em' : '0.2em' }}
-                  value={formState.managerPin || ''}
-                  onChange={(e) => handleChange('managerPin', e.target.value)}
-                  placeholder="1234"
-                  required
+                  value={oldPassword}
+                  onChange={(e) => { setOldPassword(e.target.value); setPasswordError(''); }}
+                  placeholder="Enter current password"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPin(!showPin)}
-                  style={{
-                    position: 'absolute',
-                    right: '0.75rem',
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#64748b',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                  title={showPin ? "Hide PIN" : "Show PIN"}
-                >
-                  {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
               </div>
-              <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
-                🔑 PIN used to unlock Manager Dashboard
-              </span>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Alert Threshold (Stars):</label>
-              <select
-                className="form-input"
-                value={formState.alertThreshold || 3}
-                onChange={(e) => handleChange('alertThreshold', parseInt(e.target.value, 10))}
-              >
-                <option value={3}>≤ 3 Stars (Alert Manager)</option>
-                <option value={2}>≤ 2 Stars (Urgent Only)</option>
-                <option value={1}>1 Star Only</option>
-              </select>
-              <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
-                🚨 Ratings at or below this trigger alerts
-              </span>
+              <div className="form-group">
+                <label className="form-label" style={{ fontSize: '0.8rem' }}>New Password / PIN:</label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type={showPin ? "text" : "password"}
+                    maxLength={16}
+                    className="form-input"
+                    style={{ paddingRight: '2.5rem' }}
+                    value={newPassword}
+                    onChange={(e) => { setNewPassword(e.target.value); setPasswordError(''); }}
+                    placeholder="Enter new password (min 4)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPin(!showPin)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#64748b',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title={showPin ? "Hide Password" : "Show Password"}
+                  >
+                    {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
             </div>
+            <span style={{ fontSize: '0.72rem', color: '#64748b', margin: 0 }}>
+              🔒 Leave password fields blank if you do not want to change your password.
+            </span>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Alert Threshold (Stars):</label>
+            <select
+              className="form-input"
+              value={formState.alertThreshold || 3}
+              onChange={(e) => handleChange('alertThreshold', parseInt(e.target.value, 10))}
+            >
+              <option value={3}>≤ 3 Stars (Alert Manager)</option>
+              <option value={2}>≤ 2 Stars (Urgent Only)</option>
+              <option value={1}>1 Star Only</option>
+            </select>
+            <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
+              🚨 Ratings at or below this trigger alerts
+            </span>
           </div>
 
           {/* Google Place ID & Link Configuration Section */}

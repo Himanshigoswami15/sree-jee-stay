@@ -4,6 +4,7 @@ import { generateGoogleReviewUrl, GOOGLE_PLACE_ID } from '../utils/googleReview'
 import { normalizeContact } from '../utils/contactNormalizer';
 import { getTenantConfig } from '../config/tenantConfig';
 import { AuditLogger } from '../utils/auditLogger';
+import { verifyPasswordApi, changePasswordApi } from '../services/authService';
 
 const FeedbackContext = createContext();
 
@@ -81,27 +82,41 @@ export function FeedbackProvider({ children, tenantId = 'demo', locationId = 'ma
     }
   };
 
-  // Verify Security PIN
-  const verifyPin = (inputPin) => {
-    if (inputPin === settings.managerPin) {
+  // Verify Security PIN via database API
+  const verifyPin = async (inputPin) => {
+    const result = await verifyPasswordApi(tenantId, inputPin);
+    if (result.success) {
       setIsManagerAuthenticated(true);
       setIsPinModalOpen(false);
       setActiveTab('dashboard');
       auditLogger.logEvent('MANAGER_LOGIN_SUCCESS');
-      return true;
+      return { success: true };
     }
     auditLogger.logEvent('MANAGER_LOGIN_FAILED');
-    return false;
+    return { success: false, error: result.error || 'Incorrect Security PIN. Please try again.' };
+  };
+
+  // Change Password via database API
+  const changeManagerPassword = async (oldPassword, newPassword, isOtpReset = false) => {
+    const result = await changePasswordApi(tenantId, oldPassword, newPassword, isOtpReset);
+    if (result.success) {
+      auditLogger.logEvent(isOtpReset ? 'MANAGER_PIN_RESET' : 'MANAGER_PASSWORD_CHANGED');
+      return { success: true, message: result.message };
+    }
+    return { success: false, error: result.error || 'Failed to update password.' };
   };
 
   // Reset PIN via Email Verification & Directly Open Dashboard
-  const resetPinAndAuthenticate = (newPin) => {
-    setSettings((prev) => ({ ...prev, managerPin: newPin }));
-    setIsManagerAuthenticated(true);
-    setIsPinModalOpen(false);
-    setActiveTab('dashboard');
-    auditLogger.logEvent('MANAGER_PIN_RESET');
-    return true;
+  const resetPinAndAuthenticate = async (newPin) => {
+    const result = await changePasswordApi(tenantId, '', newPin, true);
+    if (result.success) {
+      setIsManagerAuthenticated(true);
+      setIsPinModalOpen(false);
+      setActiveTab('dashboard');
+      auditLogger.logEvent('MANAGER_PIN_RESET');
+      return { success: true };
+    }
+    return { success: false, error: result.error || 'Failed to reset password.' };
   };
 
   // Logout/Lock Manager Dashboard
@@ -284,6 +299,7 @@ export function FeedbackProvider({ children, tenantId = 'demo', locationId = 'ma
         isPinModalOpen,
         setIsPinModalOpen,
         verifyPin,
+        changeManagerPassword,
         resetPinAndAuthenticate,
         lockDashboard,
         checkIsDuplicate,

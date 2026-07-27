@@ -26,15 +26,25 @@ export function ManagerPinModal() {
 
   const managerEmail = settings.managerEmail || 'himanshigoswami9057@gmail.com';
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Handle standard PIN Login
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    const success = verifyPin(pinInput);
-    if (success) {
-      resetState();
-    } else {
-      setLoginError('Incorrect Security PIN. Please try again.');
-      setPinInput('');
+    setIsSubmitting(true);
+    setLoginError('');
+    try {
+      const res = await verifyPin(pinInput);
+      if (res.success) {
+        resetState();
+      } else {
+        setLoginError(res.error || 'Incorrect Security PIN. Please try again.');
+        setPinInput('');
+      }
+    } catch (err) {
+      setLoginError('Error verifying PIN. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -60,15 +70,27 @@ export function ManagerPinModal() {
   };
 
   // Step 3A: Save New Password & Directly Open Dashboard
-  const handleSaveNewPassword = (e) => {
+  const handleSaveNewPassword = async (e) => {
     e.preventDefault();
     if (!newPin || newPin.length < 4) {
       setPasswordError('New Password / PIN must be at least 4 digits.');
       return;
     }
 
-    resetPinAndAuthenticate(newPin);
-    resetState();
+    setIsSubmitting(true);
+    setPasswordError('');
+    try {
+      const res = await resetPinAndAuthenticate(newPin);
+      if (res.success) {
+        resetState();
+      } else {
+        setPasswordError(res.error || 'Failed to save new password.');
+      }
+    } catch (err) {
+      setPasswordError('Error saving new password.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Step 3B: "Not Now" Option -> Keep current password and directly open dashboard
