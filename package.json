@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "node server/index.js",
+    "start:server": "node server/index.js",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
@@ -16,6 +18,9 @@
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "claude": "^0.1.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "lucide-react": "^1.25.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.7",

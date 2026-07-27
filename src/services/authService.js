@@ -1,6 +1,13 @@
 import bcrypt from 'bcryptjs';
 import { supabase, isSupabaseConfigured } from '../utils/supabaseClient';
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || '').replace(/\/+$/, '');
+
+function getApiUrl(endpoint) {
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return API_BASE_URL ? `${API_BASE_URL}${cleanEndpoint}` : cleanEndpoint;
+}
+
 const DEFAULT_PIN_HASH = bcrypt.hashSync('1234', 10);
 
 function getLocalFallbackHash(tenantId) {
@@ -46,9 +53,9 @@ async function fetchPasswordHash(tenantId = 'demo') {
     }
   }
 
-  // 2. Try Node server API (/api/auth/status) if available
+  // 2. Try Backend server API (Railway / Node) if available
   try {
-    const res = await fetch(`/api/auth/status?tenantId=${encodeURIComponent(tenantId)}`);
+    const res = await fetch(getApiUrl(`/api/auth/status?tenantId=${encodeURIComponent(tenantId)}`));
     if (res.ok) {
       const statusData = await res.json();
       if (statusData && statusData.hasPassword) {
@@ -100,12 +107,12 @@ export async function verifyPasswordApi(tenantId = 'demo', password) {
     return { success: false, error: 'Password is required' };
   }
 
-  // 1. Try Node server API (/api/auth/verify) first if running Node dev server
+  // 1. Try Backend server API (Railway / Node)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const res = await fetch('/api/auth/verify', {
+    const res = await fetch(getApiUrl('/api/auth/verify'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tenantId, password }),
@@ -125,7 +132,7 @@ export async function verifyPasswordApi(tenantId = 'demo', password) {
       }
     }
   } catch (err) {
-    // API not reachable (e.g. Vercel serverless / static host), proceed to Supabase / cloud DB check
+    // Backend API unreachable, proceed to Supabase / local verification
   }
 
   // 2. Direct Cloud Database (Supabase) or Local Verification
@@ -166,12 +173,12 @@ export async function changePasswordApi(tenantId = 'demo', oldPassword, newPassw
 
   const newHash = bcrypt.hashSync(newPassword, 10);
 
-  // 1. Try Node server API (/api/auth/change-password) if available
+  // 1. Try Backend server API (Railway / Node)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const res = await fetch('/api/auth/change-password', {
+    const res = await fetch(getApiUrl('/api/auth/change-password'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tenantId, oldPassword, newPassword, isOtpReset }),
