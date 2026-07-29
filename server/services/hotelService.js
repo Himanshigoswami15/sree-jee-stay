@@ -8,15 +8,39 @@ import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
   const cleanId = (identifier || DEFAULT_HOTEL_ID).toLowerCase().trim();
 
-  let hotel = await Hotel.findOne({
-    $or: [{ hotelId: cleanId }, { hotelSlug: cleanId }]
-  });
+  try {
+    let hotel = await Hotel.findOne({
+      $or: [{ hotelId: cleanId }, { hotelSlug: cleanId }]
+    });
 
-  if (!hotel && DEFAULT_HOTELS.includes(cleanId)) {
-    hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: 'Sree Jee Stay - Homestay in Varanasi' });
+    if (!hotel && DEFAULT_HOTELS.includes(cleanId)) {
+      hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: 'Sree Jee Stay - Homestay in Varanasi' });
+    }
+
+    if (hotel) return hotel;
+  } catch (err) {
+    logger.warn(`[HotelService] DB query failed, returning fallback hotel for "${cleanId}": ${err.message}`);
   }
 
-  return hotel;
+  return {
+    hotelId: cleanId,
+    hotelSlug: cleanId,
+    name: 'Sree Jee Stay - Homestay in Varanasi',
+    themeColor: '#2563eb',
+    googlePlaceId: process.env.VITE_GOOGLE_PLACE_ID || 'https://g.page/r/CTERYeDefsTREAE/review',
+    googleReviewUrl: 'https://g.page/r/CTERYeDefsTREAE/review',
+    tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
+    managerEmail: 'himanshigoswami9057@gmail.com',
+    managerPhone: '+91 98765 43210',
+    alertThreshold: 3,
+    antiGatingNoticeEnabled: true,
+    preventDuplicateReviews: true,
+    tone: 'friendly',
+    providers: [
+      { type: 'google', isEnabled: true },
+      { type: 'tripadvisor', isEnabled: true },
+    ],
+  };
 }
 
 export async function createHotel(data) {

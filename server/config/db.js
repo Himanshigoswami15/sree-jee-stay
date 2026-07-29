@@ -11,6 +11,9 @@ const MONGOOSE_OPTIONS = {
   retryWrites: true,
 };
 
+// Prevent Mongoose from buffering commands indefinitely when DB is disconnected
+mongoose.set('bufferCommands', false);
+
 let connectionPromise = null;
 
 /**
@@ -19,6 +22,15 @@ let connectionPromise = null;
 export async function connectDB(retries = 3, delay = 1500) {
   if (mongoose.connection.readyState === 1) {
     return true;
+  }
+
+  const isVercel = process.env.VERCEL === '1';
+  const isLocalUri = MONGODB_URI.includes('127.0.0.1') || MONGODB_URI.includes('localhost');
+
+  // On Vercel, if MONGODB_URI is not set or points to localhost, skip connection attempt immediately
+  if (isVercel && isLocalUri) {
+    logger.warn('[Vercel] Local MONGODB_URI detected in Vercel serverless environment. Skipping MongoDB connection. To enable database persistence, configure MONGODB_URI with a MongoDB Atlas connection string in Vercel project settings.');
+    return false;
   }
 
   if (mongoose.connection.readyState === 2) {
