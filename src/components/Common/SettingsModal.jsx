@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, X, Save, RotateCcw, ExternalLink, KeyRound, CheckCircle2, Globe, Sparkles, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail, Phone, Building2, Search } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
-import { extractPlaceId, generateGoogleReviewUrl, getUrlType } from '../../utils/googleReview';
+import { extractPlaceId, generateGoogleReviewUrl, getUrlType, validateGoogleReviewLink } from '../../utils/googleReview';
 
 export function SettingsModal({ isOpen, onClose }) {
   const { settings, updateSettings, changeManagerPassword, resetToDemoData } = useFeedback();
@@ -187,7 +187,7 @@ export function SettingsModal({ isOpen, onClose }) {
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <Building2 size={15} color="#2563eb" />
-              Hotel / Restaurant Name:
+              Hotel / Property Name:
             </label>
             <input
               type="text"
@@ -197,6 +197,30 @@ export function SettingsModal({ isOpen, onClose }) {
               placeholder="e.g. Sree Jee Stay - Homestay in Varanasi"
               required
             />
+          </div>
+
+          {/* Customizable Writing Tone */}
+          <div className="form-group" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.85rem 1rem', borderRadius: '12px' }}>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#166534', fontWeight: 800 }}>
+              <Sparkles size={15} color="#16a34a" />
+              Review Generator Writing Tone:
+            </label>
+            <select
+              className="form-input"
+              value={formState.tone || 'friendly'}
+              onChange={(e) => handleChange('tone', e.target.value)}
+              style={{ fontWeight: 700 }}
+            >
+              <option value="friendly">😊 Friendly & Conversational</option>
+              <option value="professional">💼 Professional & Formal</option>
+              <option value="luxury">👑 Luxury & Elegant</option>
+              <option value="budget">🏷️ Budget & Value-focused</option>
+              <option value="family">👨‍👩‍👧‍👦 Family & Warm</option>
+              <option value="business">📈 Business & Efficient</option>
+            </select>
+            <span style={{ fontSize: '0.725rem', color: '#15803d', marginTop: '0.3rem', display: 'block', fontWeight: 600 }}>
+              ✨ Automatically adjusts phrasing style & vocabulary of auto-written guest reviews!
+            </span>
           </div>
 
           {/* Change Password / Security PIN Section */}

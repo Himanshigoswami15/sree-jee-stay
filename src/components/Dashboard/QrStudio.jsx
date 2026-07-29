@@ -1,130 +1,305 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, Download, Printer, ExternalLink, Sparkles, Building2 } from 'lucide-react';
-import { generateQrDataUrl } from '../../utils/qrHelper';
+import { QrCode, Download, Printer, Copy, Check, ExternalLink, Sparkles, RefreshCw, BarChart3, Smartphone, Clock, Globe } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
+import { apiClient } from '../../services/apiClient';
 
 export function QrStudio() {
-  const { settings, setCurrentRoom } = useFeedback();
-  const [selectedRoomInput, setSelectedRoomInput] = useState('Room 204');
-  const [qrDataUrl, setQrDataUrl] = useState('');
+  const { settings } = useFeedback();
 
-  // Target url to encode into QR code
-  const targetUrl = `${window.location.origin}/review?room=${encodeURIComponent(selectedRoomInput)}`;
+  const [qrToken, setQrToken] = useState('');
+  const [targetUrl, setTargetUrl] = useState('');
+  const [pngUrl, setPngUrl] = useState('');
+  const [svgString, setSvgString] = useState('');
+  const [scansCount, setScansCount] = useState(0);
 
-  useEffect(() => {
-    generateQrDataUrl(targetUrl, { width: 300, darkColor: '#0f172a' }).then((url) => {
-      if (url) setQrDataUrl(url);
-    });
-  }, [targetUrl]);
+  const [analytics, setAnalytics] = useState({
+    totalScans: 0,
+    todayScans: 0,
+    googleRedirects: 0,
+    tripadvisorRedirects: 0,
+    facebookRedirects: 0,
+    internalFeedback: 0,
+    conversionRate: 0,
+    topScanTime: '7 PM',
+  });
 
-  const handleApplyToSimulator = () => {
-    setCurrentRoom(selectedRoomInput);
+  const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [regenerating, setRegenerating] = useState(false);
+
+  const hotelSlug = settings.hotelSlug || 'sree-jee-stay';
+  const hotelName = settings.hotelName || 'Sree Jee Stay';
+
+  const fetchQrAndAnalytics = async () => {
+    try {
+      setLoading(true);
+
+      // 1. Fetch / Generate unique QR Token
+      const qrRes = await apiClient('/api/review/generate-qr', {
+        method: 'POST',
+        body: JSON.stringify({ hotelSlug }),
+      });
+
+      if (qrRes.success) {
+        setQrToken(qrRes.qrToken);
+        setTargetUrl(qrRes.targetUrl);
+        setPngUrl(qrRes.pngUrl);
+        setSvgString(qrRes.svgString);
+        setScansCount(qrRes.scansCount || 0);
+      }
+
+      // 2. Fetch Scan Analytics
+      const analyticsRes = await apiClient(`/api/review/analytics?hotelSlug=${encodeURIComponent(hotelSlug)}`);
+      if (analyticsRes.success && analyticsRes.analytics) {
+        setAnalytics(analyticsRes.analytics);
+      }
+    } catch (err) {
+      console.warn('[QrStudio] Error fetching QR or analytics data:', err);
+    } finally {
+      setLoading(false);
+      setRegenerating(false);
+    }
   };
 
-  const handleDownloadQr = () => {
-    if (!qrDataUrl) return;
-    const a = document.createElement('a');
-    a.href = qrDataUrl;
-    a.download = `QR_${selectedRoomInput.replace(/\s+/g, '_')}.png`;
-    a.click();
+  useEffect(() => {
+    fetchQrAndAnalytics();
+  }, [hotelSlug]);
+
+  const handleCopyLink = () => {
+    if (!targetUrl) return;
+    navigator.clipboard.writeText(targetUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadPng = () => {
+    const link = document.createElement('a');
+    link.href = `/api/review/download/png?hotelSlug=${encodeURIComponent(hotelSlug)}`;
+    link.download = `${hotelSlug}-qr-code.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadPdf = () => {
+    const link = document.createElement('a');
+    link.href = `/api/review/download/pdf?hotelSlug=${encodeURIComponent(hotelSlug)}`;
+    link.download = `${hotelSlug}-tent-card.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadSvg = () => {
+    if (!svgString) return;
+    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${hotelSlug}-qr-code.svg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="chart-card">
-      <div className="chart-title">
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#818cf8' }}>
-          <QrCode size={20} /> Room & Table QR Studio
-        </span>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Printable Tent Cards</span>
+    <div className="dashboard-section" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* SECTION TITLE */}
+      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            JJ Review System — Enterprise QR Studio
+          </div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+            {hotelName} Permanent QR Code & Scan Analytics
+          </h2>
+        </div>
+        <button
+          type="button"
+          className="btn-secondary-action"
+          onClick={() => {
+            setRegenerating(true);
+            fetchQrAndAnalytics();
+          }}
+          disabled={regenerating}
+          style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}
+        >
+          <RefreshCw size={14} className={regenerating ? 'spin' : ''} /> Refresh Data
+        </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'center' }}>
-        {/* Controls */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div className="form-group">
-            <label className="form-label">Enter Room Number or Table Tag:</label>
-            <input
-              type="text"
-              className="form-input"
-              value={selectedRoomInput}
-              onChange={(e) => setSelectedRoomInput(e.target.value)}
-              placeholder="e.g. Room 204 or Table 12"
-            />
+      {/* SCAN ANALYTICS CARDS */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 700 }}>
+            <Smartphone size={16} color="#2563eb" /> Total Scans
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', marginTop: '0.35rem' }}>
+            {analytics.totalScans || scansCount || 0}
+          </div>
+          <div style={{ fontSize: '0.725rem', color: '#059669', marginTop: '2px', fontWeight: 600 }}>
+            Today's Scans: <strong>{analytics.todayScans || 0}</strong>
+          </div>
+        </div>
+
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 700 }}>
+            <Globe size={16} color="#059669" /> Google Redirects
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#059669', marginTop: '0.35rem' }}>
+            {analytics.googleRedirects || 0}
+          </div>
+          <div style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '2px' }}>
+            TripAdvisor: {analytics.tripadvisorRedirects || 0} | FB: {analytics.facebookRedirects || 0}
+          </div>
+        </div>
+
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 700 }}>
+            <BarChart3 size={16} color="#4f46e5" /> Conversion Rate
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#4f46e5', marginTop: '0.35rem' }}>
+            {analytics.conversionRate || 0}%
+          </div>
+          <div style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '2px' }}>
+            Internal Feedback: {analytics.internalFeedback || 0}
+          </div>
+        </div>
+
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 700 }}>
+            <Clock size={16} color="#d97706" /> Top Scan Time
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#d97706', marginTop: '0.35rem' }}>
+            {analytics.topScanTime || '7 PM'}
+          </div>
+          <div style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '2px' }}>
+            Peak customer activity window
+          </div>
+        </div>
+      </div>
+
+      {/* QR STUDIO CONTENT GRID */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+        {/* LEFT COLUMN: PERMANENT QR CODE & DOWNLOAD ACTIONS */}
+        <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'center' }}>
+          <div className="chart-title" style={{ justifyContent: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2563eb' }}>
+              <QrCode size={20} color="#2563eb" /> Single Permanent Hotel QR Code
+            </span>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Encoded Guest URL:</label>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'rgba(15, 23, 42, 0.8)', padding: '0.6rem', borderRadius: '8px', wordBreak: 'break-all', border: '1px solid var(--bg-card-border)' }}>
-              {targetUrl}
-            </div>
+          {/* QR Display Card */}
+          <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', border: '2px solid #e2e8f0', display: 'inline-block', margin: '0 auto' }}>
+            {pngUrl ? (
+              <img
+                src={pngUrl}
+                alt="Hotel QR Code"
+                style={{ width: '220px', height: '220px', borderRadius: '8px', display: 'block' }}
+              />
+            ) : (
+              <div style={{ width: '220px', height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                Generating QR...
+              </div>
+            )}
+
+            {/* Token Badge */}
+            {qrToken && (
+              <div style={{ marginTop: '0.85rem', background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.775rem', fontWeight: 800, display: 'inline-block' }}>
+                Token: {qrToken}
+              </div>
+            )}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {/* QR Target Link Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '0.35rem 0.65rem', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', color: '#475569', fontWeight: 700, flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              {targetUrl || `${window.location.origin}/r/${qrToken || hotelSlug}`}
+            </span>
             <button
               type="button"
-              className="btn-primary-action"
-              style={{ flex: 1, padding: '0.75rem', fontSize: '0.85rem' }}
-              onClick={handleApplyToSimulator}
+              onClick={handleCopyLink}
+              style={{ background: '#2563eb', color: 'white', border: 'none', padding: '0.35rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
             >
-              <ExternalLink size={15} /> Load in Guest Simulator
+              {copied ? <Check size={13} /> : <Copy size={13} />}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+
+          {/* Multi-Format Export Buttons */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+            <button
+              type="button"
+              className="btn-secondary-action"
+              onClick={handleDownloadPng}
+              style={{ fontSize: '0.75rem', padding: '0.5rem', justifyContent: 'center' }}
+            >
+              <Download size={13} /> PNG
             </button>
 
             <button
               type="button"
               className="btn-secondary-action"
-              style={{ padding: '0.75rem', fontSize: '0.85rem' }}
-              onClick={handleDownloadQr}
+              onClick={handleDownloadSvg}
+              style={{ fontSize: '0.75rem', padding: '0.5rem', justifyContent: 'center' }}
             >
-              <Download size={15} /> Download PNG
+              <Download size={13} /> SVG
+            </button>
+
+            <button
+              type="button"
+              className="btn-primary-action"
+              onClick={handleDownloadPdf}
+              style={{ fontSize: '0.75rem', padding: '0.5rem', justifyContent: 'center' }}
+            >
+              <Printer size={13} /> PDF Tent Card
             </button>
           </div>
         </div>
 
-        {/* Printable Tent Card Preview */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
-            color: '#0f172a',
-            borderRadius: '20px',
-            padding: '1.75rem',
-            textAlign: 'center',
-            boxShadow: '0 15px 35px rgba(0, 0, 0, 0.3)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '0.85rem',
-            border: '2px dashed #cbd5e1',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#475569', fontSize: '0.8rem', fontWeight: 700, textTransform: uppercaseText() }}>
-            <Building2 size={14} /> {settings.hotelName}
+        {/* RIGHT COLUMN: PRINTABLE TENT CARD & STANDEE PREVIEW */}
+        <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="chart-title">
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#16a34a' }}>
+              <Printer size={20} color="#16a34a" /> Reception Standee & Tent Card Preview
+            </span>
           </div>
 
-          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-            How was your stay in {selectedRoomInput}?
+          {/* Printable Tent Card Mockup Frame */}
+          <div style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', border: '2px solid #2563eb', borderRadius: '16px', padding: '1.5rem', textAlign: 'center', boxShadow: '0 4px 15px rgba(37, 99, 235, 0.08)' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+              ⭐ Love your experience?
+            </div>
+            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
+              {hotelName}
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#059669', marginTop: '4px', fontWeight: 800 }}>
+              Scan to leave a Google Review
+            </div>
+
+            {pngUrl && (
+              <img
+                src={pngUrl}
+                alt="QR Standee Preview"
+                style={{ width: '150px', height: '150px', margin: '0.85rem auto', display: 'block', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+              />
+            )}
+
+            <div style={{ fontSize: '1.1rem', letterSpacing: '2px', marginBottom: '0.4rem' }}>
+              ⭐⭐⭐⭐⭐
+            </div>
+
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', background: '#f1f5f9', padding: '0.35rem 0.65rem', borderRadius: '8px', display: 'inline-block' }}>
+              1. Scan QR  →  2. Tap Highlights  →  3. Post to Google
+            </div>
           </div>
 
-          <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Scan QR code with your camera to share feedback in 10 seconds!
-          </div>
-
-          {qrDataUrl && (
-            <img
-              src={qrDataUrl}
-              alt="QR Code"
-              style={{ width: '170px', height: '170px', borderRadius: '12px', border: '4px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-            />
-          )}
-
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <Sparkles size={12} color="#6366f1" /> Smart Review • Instant Duty Manager Help
+          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.85rem 1rem', borderRadius: '12px', fontSize: '0.775rem', color: '#166534', lineHeight: '1.4' }}>
+            ✨ <strong>Permanent QR Code Guarantee:</strong> Print this QR code once on table tents, reception standees, or room keycards. You can update your Google Place ID or writing tone anytime in Hotel Settings without re-printing!
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-function uppercaseText() {
-  return 'uppercase';
 }

@@ -1,177 +1,112 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
-import { createClient } from '@supabase/supabase-js';
-import { getTenantPasswordHash, updateTenantPasswordHash } from './db.js';
+import cookieParser from 'cookie-parser';
+import { connectDB, disconnectDB } from './config/db.js';
+import routes from './routes/index.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { helmetSecurity, mongoSanitizer, apiLimiter } from './middleware/security.js';
+import { resolveScan } from './controllers/qrController.js';
+import { logger } from './utils/logger.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Enable CORS for Vercel frontend and mobile clients
+// Security Headers & CORS
+app.use(helmetSecurity);
 app.use(cors({
-  origin: '*',
+  origin: true,
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.use(express.json());
+// Payload Limiters & Sanitizers
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(cookieParser());
+app.use(mongoSanitizer);
 
-// Initialize Supabase if credentials are provided in environment variables
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
-const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(supabaseUrl, supabaseAnonKey) : null;
-
-const DEFAULT_PIN_HASH = bcrypt.hashSync('1234', 10);
-
-/**
- * Health check endpoint for Railway deployment monitoring
- */
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', service: 'ReviewPulse Railway Backend API', timestamp: new Date().toISOString() });
+// Database Connection Middleware for Vercel Serverless Functions & Local Dev
+app.use(async (_req, _res, next) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await connectDB(1, 500);
+    }
+    next();
+  } catch (err) {
+    logger.warn(`[DB Middleware] Database connection unavailable: ${err.message}`);
+    next();
+  }
 });
 
-app.get('/health', (req, res) => {
+// General Rate Limiting
+app.use('/api', apiLimiter);
+
+// Public QR Scan Redirect & Analytics Logging Endpoint
+app.get('/r/:token', resolveScan);
+
+// Health check endpoints
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'JJ Review System Backend API',
+    database: 'MongoDB',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/health', (_req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-/**
- * Helper to get tenant password hash from Supabase or local SQLite DB
- */
-async function getPasswordHash(tenantId = 'demo') {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('tenant_passwords')
-        .select('password_hash')
-        .eq('tenant_id', tenantId)
-        .maybeSingle();
+// Mount main API router
+app.use('/api', routes);
 
-      if (!error && data && data.password_hash) {
-        return data.password_hash;
-      }
+// Centralized Error Handler Middleware
+app.use(errorHandler);
 
-      if (!data) {
-        await supabase
-          .from('tenant_passwords')
-          .insert({ tenant_id: tenantId, password_hash: DEFAULT_PIN_HASH, updated_at: new Date().toISOString() });
-        return DEFAULT_PIN_HASH;
-      }
-    } catch (err) {
-      console.error('[Railway Server] Supabase query error:', err.message);
-    }
-  }
+let server = null;
 
-  return getTenantPasswordHash(tenantId);
+// Start server locally (if not running on Vercel)
+if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'production') {
+  startServer().catch((err) => {
+    logger.error(`[Server Startup Error]: ${err.message}`);
+  });
 }
 
-/**
- * Helper to update tenant password hash in Supabase or local SQLite DB
- */
-async function setPasswordHash(tenantId = 'demo', newHash) {
-  if (supabase) {
-    try {
-      const { error } = await supabase
-        .from('tenant_passwords')
-        .upsert(
-          { tenant_id: tenantId, password_hash: newHash, updated_at: new Date().toISOString() },
-          { onConflict: 'tenant_id' }
-        );
+async function startServer() {
+  await connectDB();
 
-      if (error) {
-        console.error('[Railway Server] Supabase update error:', error.message);
-      }
-    } catch (err) {
-      console.error('[Railway Server] Supabase update exception:', err.message);
-    }
-  }
-
-  updateTenantPasswordHash(tenantId, newHash);
-  return true;
+  server = app.listen(PORT, '0.0.0.0', () => {
+    logger.info(`🚀 JJ Review System running on port ${PORT} with MongoDB persistence.`);
+  });
 }
 
-/**
- * POST /api/auth/verify - Verify Manager Password
- */
-app.post('/api/auth/verify', async (req, res) => {
-  try {
-    const { tenantId = 'demo', password = '' } = req.body || {};
-
-    if (!password) {
-      return res.status(400).json({ success: false, error: 'Password is required' });
-    }
-
-    const storedHash = await getPasswordHash(tenantId);
-    const isMatch = bcrypt.compareSync(password, storedHash);
-
-    if (isMatch) {
-      return res.status(200).json({ success: true, message: 'Password verified successfully' });
-    } else {
-      return res.status(401).json({ success: false, error: 'Incorrect Security PIN / Password. Please try again.' });
-    }
-  } catch (err) {
-    console.error('[POST /api/auth/verify Error]:', err);
-    return res.status(500).json({ success: false, error: 'Internal server error' });
-  }
-});
-
-/**
- * POST /api/auth/change-password - Update Manager Password
- */
-app.post('/api/auth/change-password', async (req, res) => {
-  try {
-    const { tenantId = 'demo', oldPassword = '', newPassword = '', isOtpReset = false } = req.body || {};
-
-    if (!newPassword || newPassword.length < 4) {
-      return res.status(400).json({
-        success: false,
-        error: 'New Password / PIN must be at least 4 characters long.'
-      });
-    }
-
-    const storedHash = await getPasswordHash(tenantId);
-
-    if (!isOtpReset) {
-      if (!oldPassword) {
-        return res.status(400).json({
-          success: false,
-          error: 'Current password is required to set a new password.'
-        });
-      }
-
-      const isOldValid = bcrypt.compareSync(oldPassword, storedHash);
-      if (!isOldValid) {
-        return res.status(401).json({
-          success: false,
-          error: 'Incorrect current password. Password update failed.'
-        });
-      }
-    }
-
-    const newHash = bcrypt.hashSync(newPassword, 10);
-    await setPasswordHash(tenantId, newHash);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Password updated and saved to database successfully.'
+// Graceful Shutdown Handler
+async function gracefulShutdown(signal) {
+  logger.info(`[Server Shutdown] ${signal} signal received. Closing HTTP server & MongoDB connection...`);
+  if (server) {
+    server.close(async () => {
+      logger.info('[Server Shutdown] HTTP server closed cleanly.');
+      await disconnectDB();
+      process.exit(0);
     });
-  } catch (err) {
-    console.error('[POST /api/auth/change-password Error]:', err);
-    return res.status(500).json({ success: false, error: 'Internal server error' });
+  } else {
+    await disconnectDB();
+    process.exit(0);
   }
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('uncaughtException', (err) => {
+  logger.error(`[Uncaught Exception]: ${err.message}`, err);
+});
+process.on('unhandledRejection', (reason) => {
+  logger.error(`[Unhandled Rejection]: ${reason}`);
 });
 
-/**
- * GET /api/auth/status - Check tenant auth status
- */
-app.get('/api/auth/status', async (req, res) => {
-  const tenantId = req.query.tenantId || 'demo';
-  const storedHash = await getPasswordHash(tenantId);
-  return res.status(200).json({ success: true, tenantId, hasPassword: Boolean(storedHash) });
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Railway Backend Server listening on port ${PORT}`);
-});
+export default app;

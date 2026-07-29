@@ -2,18 +2,28 @@ import React, { useState } from 'react';
 import { Search, CheckCircle, AlertTriangle, ExternalLink, Filter } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 
-export function FeedbackTable({ feedbacks }) {
+export function FeedbackTable({ feedbacks = [] }) {
   const { resolveAlert } = useFeedback();
   const [searchTerm, setSearchTerm] = useState('');
   const [ratingFilter, setRatingFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const filteredFeedbacks = feedbacks.filter((fb) => {
-    // Search query match
+  const safeFeedbacks = Array.isArray(feedbacks) ? feedbacks : [];
+
+  const filteredFeedbacks = safeFeedbacks.filter((fb) => {
+    if (!fb) return false;
+
+    // Search query match with safe null guards
+    const query = (searchTerm || '').toLowerCase();
+    const reviewText = (fb.reviewText || '').toLowerCase();
+    const guestContact = (fb.guestContact || '').toLowerCase();
+    const roomNumber = (fb.roomNumber || '').toLowerCase();
+
     const matchesSearch =
-      fb.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fb.reviewText.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (fb.guestContact && fb.guestContact.toLowerCase().includes(searchTerm.toLowerCase()));
+      !query ||
+      reviewText.includes(query) ||
+      guestContact.includes(query) ||
+      roomNumber.includes(query);
 
     // Rating filter
     const matchesRating =
@@ -30,112 +40,117 @@ export function FeedbackTable({ feedbacks }) {
 
   return (
     <div className="feed-card">
-      <div className="table-controls">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Search size={18} color="var(--text-muted)" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search room, text, or contact..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.85rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
+          <Filter size={18} color="#2563eb" />
+          <span>Guest Submissions & Feedback Trail</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <Filter size={14} color="var(--text-muted)" />
-            <select
-              className="filter-select"
-              value={ratingFilter}
-              onChange={(e) => setRatingFilter(e.target.value)}
-            >
-              <option value="all">All Ratings</option>
-              <option value="5">5 Stars ⭐⭐⭐⭐⭐</option>
-              <option value="4">4 Stars ⭐⭐⭐⭐</option>
-              <option value="3">3 Stars ⭐⭐⭐</option>
-              <option value="2">2 Stars ⭐⭐</option>
-              <option value="1">1 Star ⭐</option>
-            </select>
+        {/* Filter Controls */}
+        <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={15} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+            <input
+              type="text"
+              className="form-input"
+              style={{ paddingLeft: '2.1rem', fontSize: '0.825rem', width: '200px' }}
+              placeholder="Search text or phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
 
           <select
-            className="filter-select"
+            className="form-input"
+            style={{ width: '130px', fontSize: '0.825rem', fontWeight: 700 }}
+            value={ratingFilter}
+            onChange={(e) => setRatingFilter(e.target.value)}
+          >
+            <option value="all">All Ratings</option>
+            <option value="5">5 Stars ⭐⭐⭐⭐⭐</option>
+            <option value="4">4 Stars ⭐⭐⭐⭐</option>
+            <option value="3">3 Stars ⭐⭐⭐</option>
+            <option value="2">2 Stars ⭐⭐</option>
+            <option value="1">1 Star ⭐</option>
+          </select>
+
+          <select
+            className="form-input"
+            style={{ width: '140px', fontSize: '0.825rem', fontWeight: 700 }}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">All Statuses</option>
-            <option value="alerts">🚨 Unresolved Alerts (≤3 Stars)</option>
-            <option value="resolved">✅ Manager Resolved</option>
-            <option value="public">🌐 Posted on Google</option>
+            <option value="alerts">🚨 Manager Alerts</option>
+            <option value="resolved">✅ Resolved</option>
+            <option value="public">🌐 Public Posted</option>
           </select>
         </div>
       </div>
 
-      <div className="table-wrapper">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Status / Contact</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredFeedbacks.length === 0 ? (
+      {filteredFeedbacks.length === 0 ? (
+        <div style={{ padding: '2.5rem', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+          No guest feedback entries found matching current filter criteria.
+        </div>
+      ) : (
+        <div className="table-wrapper">
+          <table className="custom-table">
+            <thead>
               <tr>
-                <td colSpan={2} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                  No feedback submissions found matching criteria.
-                </td>
+                <th>Rating</th>
+                <th>Guest Feedback</th>
+                <th>Contact</th>
+                <th>Date / Time</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
-            ) : (
-              filteredFeedbacks.map((fb) => {
-                const isLow = fb.rating <= 3;
-
-                return (
-                  <tr key={fb.id}>
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                        {fb.managerResolved ? (
-                          <span className="badge-status status-resolved">
-                            <CheckCircle size={12} /> Resolved
-                          </span>
-                        ) : isLow ? (
-                          <span className="badge-status status-alert">
-                            <AlertTriangle size={12} /> Manager Alerted
-                          </span>
-                        ) : (
-                          <span className="badge-status status-public">
-                            <ExternalLink size={12} /> {fb.postedPublic ? 'Posted on Google' : 'Submitted'}
-                          </span>
-                        )}
-
-                        {fb.guestContact && (
-                          <span style={{ fontSize: '0.75rem', color: '#fca5a5', fontWeight: 600 }}>
-                            📞 {fb.guestContact}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    <td>
-                      {isLow && !fb.managerResolved && (
-                        <button
-                          type="button"
-                          onClick={() => resolveAlert(fb.id)}
-                          className="btn-toast-action"
-                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
-                        >
-                          Resolve Alert
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {filteredFeedbacks.map((fb) => (
+                <tr key={fb.id || fb._id}>
+                  <td style={{ fontWeight: 800, color: fb.rating >= 4 ? '#16a34a' : fb.rating === 3 ? '#d97706' : '#dc2626' }}>
+                    {fb.rating} ⭐
+                  </td>
+                  <td style={{ maxWidth: '340px' }}>
+                    <div style={{ fontSize: '0.875rem', color: '#0f172a', fontWeight: 600 }}>
+                      "{fb.reviewText || 'No text left'}"
+                    </div>
+                  </td>
+                  <td style={{ fontSize: '0.825rem', fontWeight: 700, color: '#2563eb' }}>
+                    {fb.guestContact || 'Anonymous'}
+                  </td>
+                  <td style={{ fontSize: '0.775rem', color: '#64748b' }}>
+                    {fb.timestamp ? new Date(fb.timestamp).toLocaleString() : 'N/A'}
+                  </td>
+                  <td>
+                    {fb.managerResolved ? (
+                      <span className="badge-status status-resolved">✅ Resolved</span>
+                    ) : fb.rating <= 3 ? (
+                      <span className="badge-status status-alert">🚨 Alerted Manager</span>
+                    ) : fb.postedPublic ? (
+                      <span className="badge-status status-public">🌐 Public Posted</span>
+                    ) : (
+                      <span className="badge-status">Submitted</span>
+                    )}
+                  </td>
+                  <td>
+                    {fb.rating <= 3 && !fb.managerResolved && (
+                      <button
+                        type="button"
+                        className="btn-toast-action"
+                        onClick={() => resolveAlert(fb.id || fb._id)}
+                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
+                      >
+                        Mark Resolved
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

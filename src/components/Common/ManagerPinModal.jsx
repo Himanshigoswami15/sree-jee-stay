@@ -151,10 +151,10 @@ export function ManagerPinModal() {
               </div>
 
               <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                Manager Security Access
+                JJ Review System — Hotel Access
               </h2>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                Enter your Manager Security PIN to access analytics & settings for <strong>{settings.hotelName}</strong>.
+                Enter your Security PIN to access analytics & settings for <strong>{settings.name || settings.hotelName || 'Sree Jee Stay'}</strong>.
               </p>
             </div>
 
@@ -166,6 +166,7 @@ export function ManagerPinModal() {
                     type="password"
                     maxLength={8}
                     className="form-input"
+                    disabled={isSubmitting}
                     style={{
                       paddingLeft: '2.75rem',
                       fontSize: '1.25rem',
@@ -190,8 +191,16 @@ export function ManagerPinModal() {
                 )}
               </div>
 
-              <button type="submit" className="btn-primary-action">
-                <Lock size={18} /> Unlock Manager Dashboard
+              <button type="submit" className="btn-primary-action" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw size={18} className="spin" /> Verifying PIN...
+                  </>
+                ) : (
+                  <>
+                    <Lock size={18} /> Unlock Manager Dashboard
+                  </>
+                )}
               </button>
 
               <button

@@ -5,12 +5,10 @@ import { Navigation } from './components/Navigation';
 import { AlertBanner } from './components/Common/AlertBanner';
 import { ManagerPinModal } from './components/Common/ManagerPinModal';
 import { GuestReviewCard } from './components/GuestFlow/GuestReviewCard';
-import { MetricsOverview } from './components/Dashboard/MetricsOverview';
-import { TagAnalytics } from './components/Dashboard/TagAnalytics';
-import { KeywordStudio } from './components/Dashboard/KeywordStudio';
+import { TabbedDashboard } from './components/Dashboard/TabbedDashboard';
 
 function MainContent() {
-  const { activeTab, feedbacks, settings } = useFeedback();
+  const { activeTab } = useFeedback();
 
   return (
     <main>
@@ -19,33 +17,18 @@ function MainContent() {
           <GuestReviewCard />
         </div>
       ) : (
-        <div className="dashboard-container">
-          <div className="dashboard-header">
-            <div className="dashboard-title-group">
-              <h1>{settings.hotelName} — Guest Insights</h1>
-              <p>Real-time analytics, keyword trends, duty manager alerts & policy-compliant review routing</p>
-            </div>
-          </div>
-
-          <MetricsOverview
-            feedbacks={feedbacks}
-            alertThreshold={settings.alertThreshold}
-          />
-
-          <TagAnalytics feedbacks={feedbacks} />
-
-          <KeywordStudio />
-        </div>
+        <TabbedDashboard />
       )}
     </main>
   );
 }
 
-function MultiTenantWrapper() {
-  const { tenantId, locationId } = useParams();
-  
+function HotelWrapper() {
+  const { hotelSlug } = useParams();
+  const activeSlug = hotelSlug || 'sree-jee-stay';
+
   return (
-    <FeedbackProvider tenantId={tenantId} locationId={locationId}>
+    <FeedbackProvider hotelSlug={activeSlug}>
       <div className="app-root">
         <Navigation />
         <AlertBanner />
@@ -56,12 +39,17 @@ function MultiTenantWrapper() {
   );
 }
 
+function QrRedirectWrapper() {
+  const { hotelSlug } = useParams();
+  return <Navigate to={`/${hotelSlug || 'sree-jee-stay'}`} replace />;
+}
+
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/demo" replace />} />
-      <Route path="/:tenantId" element={<MultiTenantWrapper />} />
-      <Route path="/:tenantId/:locationId" element={<MultiTenantWrapper />} />
+      <Route path="/" element={<Navigate to="/sree-jee-stay" replace />} />
+      <Route path="/r/:hotelSlug" element={<QrRedirectWrapper />} />
+      <Route path="/:hotelSlug" element={<HotelWrapper />} />
     </Routes>
   );
 }
