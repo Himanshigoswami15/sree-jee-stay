@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Settings, Keyword } from '../models/index.js';
 import { getHotel } from './hotelService.js';
 import { logEvent } from './auditService.js';
@@ -9,6 +10,30 @@ export async function getSettings(identifier = DEFAULT_HOTEL_ID) {
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
   const hotelSlug = hotel ? hotel.hotelSlug : hotelId;
+
+  const fallbackSettings = {
+    hotelId,
+    hotelSlug,
+    hotelName: hotel ? hotel.name : 'Sree Jee Stay - Homestay in Varanasi',
+    logoUrl: hotel ? hotel.logoUrl : '',
+    themeColor: hotel ? hotel.themeColor : '#2563eb',
+    googlePlaceId: hotel ? hotel.googlePlaceId : (process.env.VITE_GOOGLE_PLACE_ID || ''),
+    googleReviewUrl: hotel ? hotel.googleReviewUrl : 'https://g.page/r/CTERYeDefsTREAE/review',
+    tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
+    managerEmail: 'himanshigoswami9057@gmail.com',
+    managerPhone: '+91 98765 43210',
+    alertThreshold: 3,
+    preventDuplicateReviews: true,
+    tone: hotel ? hotel.tone : 'friendly',
+    providers: [
+      { type: 'google', isEnabled: true },
+      { type: 'tripadvisor', isEnabled: true },
+    ],
+  };
+
+  if (mongoose.connection.readyState !== 1) {
+    return fallbackSettings;
+  }
 
   try {
     let settings = await Settings.findOne({ hotelId });
@@ -57,25 +82,7 @@ export async function getSettings(identifier = DEFAULT_HOTEL_ID) {
     logger.warn(`[SettingsService] DB query failed, returning fallback settings for "${hotelId}": ${err.message}`);
   }
 
-  return {
-    hotelId,
-    hotelSlug,
-    hotelName: hotel ? hotel.name : 'Sree Jee Stay - Homestay in Varanasi',
-    logoUrl: hotel ? hotel.logoUrl : '',
-    themeColor: hotel ? hotel.themeColor : '#2563eb',
-    googlePlaceId: hotel ? hotel.googlePlaceId : (process.env.VITE_GOOGLE_PLACE_ID || ''),
-    googleReviewUrl: hotel ? hotel.googleReviewUrl : 'https://g.page/r/CTERYeDefsTREAE/review',
-    tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
-    managerEmail: 'himanshigoswami9057@gmail.com',
-    managerPhone: '+91 98765 43210',
-    alertThreshold: 3,
-    preventDuplicateReviews: true,
-    tone: hotel ? hotel.tone : 'friendly',
-    providers: [
-      { type: 'google', isEnabled: true },
-      { type: 'tripadvisor', isEnabled: true },
-    ],
-  };
+  return fallbackSettings;
 }
 
 export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings, req = null) {

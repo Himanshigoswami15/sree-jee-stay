@@ -6,7 +6,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/sree_j
 const MONGOOSE_OPTIONS = {
   maxPoolSize: 10,
   minPoolSize: 2,
-  serverSelectionTimeoutMS: 5000,
+  serverSelectionTimeoutMS: 1500,
   socketTimeoutMS: 45000,
   retryWrites: true,
 };
@@ -15,11 +15,12 @@ const MONGOOSE_OPTIONS = {
 mongoose.set('bufferCommands', false);
 
 let connectionPromise = null;
+let lastFailedAt = 0;
 
 /**
  * Connect to MongoDB with state checks and retry logic
  */
-export async function connectDB(retries = 3, delay = 1500) {
+export async function connectDB(retries = 1, delay = 500) {
   if (mongoose.connection.readyState === 1) {
     return true;
   }
@@ -29,13 +30,18 @@ export async function connectDB(retries = 3, delay = 1500) {
 
   // On Vercel, if MONGODB_URI is not set or points to localhost, skip connection attempt immediately
   if (isVercel && isLocalUri) {
-    logger.warn('[Vercel] Local MONGODB_URI detected in Vercel serverless environment. Skipping MongoDB connection. To enable database persistence, configure MONGODB_URI with a MongoDB Atlas connection string in Vercel project settings.');
+    logger.warn('[Vercel] Local MONGODB_URI detected in Vercel serverless environment. Skipping MongoDB connection. Configure MONGODB_URI in Vercel project settings for Atlas persistence.');
+    return false;
+  }
+
+  // If local MongoDB connection failed recently (< 15s ago), fast-fail to keep server responsive
+  if (isLocalUri && (Date.now() - lastFailedAt < 15000)) {
     return false;
   }
 
   if (mongoose.connection.readyState === 2) {
     let elapsed = 0;
-    while (mongoose.connection.readyState === 2 && elapsed < 3000) {
+    while (mongoose.connection.readyState === 2 && elapsed < 2000) {
       await new Promise((r) => setTimeout(r, 100));
       elapsed += 100;
     }
@@ -52,18 +58,20 @@ export async function connectDB(retries = 3, delay = 1500) {
         logger.info(`[MongoDB] Connection attempt ${attempt}/${retries}...`);
         await mongoose.connect(MONGODB_URI, MONGOOSE_OPTIONS);
         logger.info(`[MongoDB] Connected successfully to: ${MONGODB_URI.replace(/\/\/.*@/, '//***@')}`);
+        lastFailedAt = 0;
         return true;
       } catch (err) {
-        logger.error(`[MongoDB] Connection attempt ${attempt} failed: ${err.message}`);
+        logger.warn(`[MongoDB] Connection attempt ${attempt} failed: ${err.message}`);
         if (attempt < retries) {
           await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 1.5;
         } else {
-          logger.error('[MongoDB] All connection attempts exhausted.');
-          throw err;
+          logger.warn('[MongoDB] Database offline. Operating in high-performance in-memory mode.');
+          lastFailedAt = Date.now();
+          return false;
         }
       }
     }
+    return false;
   })().finally(() => {
     connectionPromise = null;
   });

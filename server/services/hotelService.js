@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { Hotel, Settings, User, Keyword, ReviewTemplate } from '../models/index.js';
 import { logger } from '../utils/logger.js';
@@ -8,21 +9,7 @@ import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
   const cleanId = (identifier || DEFAULT_HOTEL_ID).toLowerCase().trim();
 
-  try {
-    let hotel = await Hotel.findOne({
-      $or: [{ hotelId: cleanId }, { hotelSlug: cleanId }]
-    });
-
-    if (!hotel && DEFAULT_HOTELS.includes(cleanId)) {
-      hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: 'Sree Jee Stay - Homestay in Varanasi' });
-    }
-
-    if (hotel) return hotel;
-  } catch (err) {
-    logger.warn(`[HotelService] DB query failed, returning fallback hotel for "${cleanId}": ${err.message}`);
-  }
-
-  return {
+  const fallback = {
     hotelId: cleanId,
     hotelSlug: cleanId,
     name: 'Sree Jee Stay - Homestay in Varanasi',
@@ -41,6 +28,26 @@ export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
       { type: 'tripadvisor', isEnabled: true },
     ],
   };
+
+  if (mongoose.connection.readyState !== 1) {
+    return fallback;
+  }
+
+  try {
+    let hotel = await Hotel.findOne({
+      $or: [{ hotelId: cleanId }, { hotelSlug: cleanId }]
+    });
+
+    if (!hotel && DEFAULT_HOTELS.includes(cleanId)) {
+      hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: 'Sree Jee Stay - Homestay in Varanasi' });
+    }
+
+    if (hotel) return hotel;
+  } catch (err) {
+    logger.warn(`[HotelService] DB query failed, returning fallback hotel for "${cleanId}": ${err.message}`);
+  }
+
+  return fallback;
 }
 
 export async function createHotel(data) {
