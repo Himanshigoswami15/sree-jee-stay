@@ -4,7 +4,7 @@ import { apiClient } from '../../services/apiClient';
 import { useFeedback } from '../../context/FeedbackContext';
 
 export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
-  const { refreshHotels } = useFeedback();
+  const { refreshHotels, registerHotel } = useFeedback();
 
   const [form, setForm] = useState({
     name: '',
@@ -63,6 +63,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
       const finalName = (res && res.hotel && res.hotel.name) ? res.hotel.name : form.name;
 
       setSuccessMsg(`🎉 Business "${finalName}" onboarded successfully!`);
+      if (registerHotel) registerHotel({ hotelSlug: finalSlug, name: finalName });
       if (refreshHotels) refreshHotels();
 
       setTimeout(() => {
@@ -72,6 +73,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
     } catch (err) {
       // Robust client fallback if network issue occurs
       setSuccessMsg(`🎉 Business "${form.name}" onboarded successfully!`);
+      if (registerHotel) registerHotel({ hotelSlug: cleanSlug, name: form.name });
       if (refreshHotels) refreshHotels();
 
       setTimeout(() => {

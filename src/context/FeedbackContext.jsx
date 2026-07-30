@@ -7,11 +7,26 @@ import { apiClient } from '../services/apiClient';
 
 const FeedbackContext = createContext();
 
+const DEFAULT_REGISTERED_HOTELS = [
+  { hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' }
+];
+
+function getInitialHotels() {
+  try {
+    const saved = localStorage.getItem('jj_registered_hotels');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return DEFAULT_REGISTERED_HOTELS;
+}
+
 export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   const [feedbacks, setFeedbacks] = useState([]);
   const [settings, setSettings] = useState(() => getHotelConfig(hotelSlug));
   const [keywords, setKeywords] = useState(RATING_KEYWORDS);
-  const [registeredHotels, setRegisteredHotels] = useState([]);
+  const [registeredHotels, setRegisteredHotels] = useState(getInitialHotels);
   const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState('guest'); // 'guest' | 'dashboard'
@@ -25,9 +40,22 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   const fetchHotelsList = useCallback(async () => {
     try {
       const res = await apiClient('/api/hotels');
-      if (res.success && Array.isArray(res.hotels)) {
-        setRegisteredHotels(res.hotels);
+      let list = [];
+      if (res && res.success && Array.isArray(res.hotels) && res.hotels.length > 0) {
+        list = res.hotels.map(h => ({
+          hotelSlug: h.hotelSlug || h.hotelId,
+          name: h.name || h.hotelName || h.hotelSlug || 'Registered Hotel'
+        }));
       }
+
+      if (!list.some(h => h.hotelSlug === 'sree-jee-stay')) {
+        list.unshift({ hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' });
+      }
+
+      setRegisteredHotels(list);
+      try {
+        localStorage.setItem('jj_registered_hotels', JSON.stringify(list));
+      } catch (e) {}
     } catch (e) {}
   }, []);
 
@@ -329,6 +357,22 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
     fetchData();
   };
 
+  const registerHotel = (newHotel) => {
+    if (!newHotel || (!newHotel.hotelSlug && !newHotel.slug)) return;
+    const slug = newHotel.hotelSlug || newHotel.slug;
+    const name = newHotel.name || newHotel.hotelName || slug;
+
+    setRegisteredHotels((prev) => {
+      const exists = prev.some(h => h.hotelSlug === slug);
+      if (exists) return prev;
+      const updated = [...prev, { hotelSlug: slug, name }];
+      try {
+        localStorage.setItem('jj_registered_hotels', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
+
   return (
     <FeedbackContext.Provider
       value={{
@@ -337,6 +381,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
         keywords,
         registeredHotels,
         refreshHotels: fetchHotelsList,
+        registerHotel,
         loading,
         activeTab,
         setActiveTab: switchTab,
