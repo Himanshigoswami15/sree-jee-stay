@@ -6,6 +6,10 @@ import { DEFAULT_HOTELS, DEFAULT_HOTEL_ID, BCRYPT_SALT_ROUNDS, DEFAULT_ADMIN_PIN
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 
+const inMemoryHotelsMap = new Map([
+  ['sree-jee-stay', { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi', themeColor: '#2563eb' }]
+]);
+
 export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
   const cleanId = (identifier || DEFAULT_HOTEL_ID).toLowerCase().trim();
 
@@ -117,22 +121,24 @@ export async function onboardHotel(data) {
   const managerEmail = (data.managerEmail || `${hotelId}@jjreviewsystem.com`).toLowerCase().trim();
   const password = data.password || DEFAULT_ADMIN_PIN;
 
+  inMemoryHotelsMap.set(slug, {
+    hotelId,
+    hotelSlug: slug,
+    name,
+    logoUrl: data.logoUrl || '',
+    themeColor: data.themeColor || '#2563eb',
+    googlePlaceId: data.googlePlaceId || '',
+    googleReviewUrl: googleReviewUrl || 'https://g.page/r/CTERYeDefsTREAE/review',
+    managerEmail,
+    tone: data.tone || 'friendly',
+  });
+
   if (mongoose.connection.readyState !== 1) {
     logger.warn(`[HotelService] DB offline mode: onboarded "${name}" (slug: ${slug}) dynamically.`);
     return {
       success: true,
       message: `Hotel "${name}" onboarded successfully.`,
-      hotel: {
-        hotelId,
-        hotelSlug: slug,
-        name,
-        logoUrl: data.logoUrl || '',
-        themeColor: data.themeColor || '#2563eb',
-        googlePlaceId: data.googlePlaceId || '',
-        googleReviewUrl: googleReviewUrl || 'https://g.page/r/CTERYeDefsTREAE/review',
-        managerEmail,
-        tone: data.tone || 'friendly',
-      },
+      hotel: inMemoryHotelsMap.get(slug),
     };
   }
 
@@ -273,35 +279,54 @@ export async function onboardHotel(data) {
 }
 
 export async function getAllHotels() {
-  if (mongoose.connection.readyState !== 1) {
-    return [
-      { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' }
-    ];
-  }
+  const resultList = [];
 
-  try {
-    const hotels = await Hotel.find({}).sort({ createdAt: -1, name: 1 }).lean();
-    if (!hotels || hotels.length === 0) {
-      return [
-        { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' }
-      ];
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const hotels = await Hotel.find({}).sort({ createdAt: -1, name: 1 }).lean();
+      if (hotels && hotels.length > 0) {
+        hotels.forEach((h) => {
+          resultList.push({
+            id: h._id ? h._id.toString() : h.hotelSlug,
+            hotelId: h.hotelId || h.hotelSlug,
+            hotelSlug: h.hotelSlug || h.hotelId,
+            name: h.name || h.hotelSlug,
+            logoUrl: h.logoUrl || '',
+            themeColor: h.themeColor || '#2563eb',
+            managerEmail: h.managerEmail || '',
+          });
+        });
+      }
+    } catch (err) {
+      logger.warn(`[HotelService] getAllHotels failed: ${err.message}`);
     }
-
-    return hotels.map((h) => ({
-      id: h._id ? h._id.toString() : h.hotelSlug,
-      hotelId: h.hotelId || h.hotelSlug,
-      hotelSlug: h.hotelSlug || h.hotelId,
-      name: h.name || 'Sree Jee Stay - Homestay in Varanasi',
-      logoUrl: h.logoUrl || '',
-      themeColor: h.themeColor || '#2563eb',
-      managerEmail: h.managerEmail || '',
-    }));
-  } catch (err) {
-    logger.warn(`[HotelService] getAllHotels failed: ${err.message}`);
-    return [
-      { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' }
-    ];
   }
+
+  // Merge in-memory map items so newly onboarded hotels are never lost
+  inMemoryHotelsMap.forEach((h, slug) => {
+    if (!resultList.some(item => item.hotelSlug === slug)) {
+      resultList.push({
+        id: slug,
+        hotelId: h.hotelId || slug,
+        hotelSlug: slug,
+        name: h.name || slug,
+        logoUrl: h.logoUrl || '',
+        themeColor: h.themeColor || '#2563eb',
+        managerEmail: h.managerEmail || '',
+      });
+    }
+  });
+
+  if (!resultList.some(item => item.hotelSlug === 'sree-jee-stay')) {
+    resultList.unshift({
+      id: 'sree-jee-stay',
+      hotelId: 'sree-jee-stay',
+      hotelSlug: 'sree-jee-stay',
+      name: 'Sree Jee Stay - Homestay in Varanasi',
+    });
+  }
+
+  return resultList;
 }
 
 export async function updateHotel(hotelId, updateData) {

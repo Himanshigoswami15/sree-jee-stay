@@ -40,22 +40,32 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   const fetchHotelsList = useCallback(async () => {
     try {
       const res = await apiClient('/api/hotels');
-      let list = [];
+      let serverHotels = [];
       if (res && res.success && Array.isArray(res.hotels) && res.hotels.length > 0) {
-        list = res.hotels.map(h => ({
+        serverHotels = res.hotels.map(h => ({
           hotelSlug: h.hotelSlug || h.hotelId,
           name: h.name || h.hotelName || h.hotelSlug || 'Registered Hotel'
         }));
       }
 
-      if (!list.some(h => h.hotelSlug === 'sree-jee-stay')) {
-        list.unshift({ hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' });
-      }
+      setRegisteredHotels((prev) => {
+        const mergedMap = new Map();
+        mergedMap.set('sree-jee-stay', { hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' });
 
-      setRegisteredHotels(list);
-      try {
-        localStorage.setItem('jj_registered_hotels', JSON.stringify(list));
-      } catch (e) {}
+        (prev || []).forEach(h => {
+          if (h && h.hotelSlug) mergedMap.set(h.hotelSlug, h);
+        });
+
+        serverHotels.forEach(h => {
+          if (h && h.hotelSlug) mergedMap.set(h.hotelSlug, h);
+        });
+
+        const mergedList = Array.from(mergedMap.values());
+        try {
+          localStorage.setItem('jj_registered_hotels', JSON.stringify(mergedList));
+        } catch (e) {}
+        return mergedList;
+      });
     } catch (e) {}
   }, []);
 
