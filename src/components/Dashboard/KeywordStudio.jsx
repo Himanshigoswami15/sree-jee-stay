@@ -41,8 +41,8 @@ export function KeywordStudio() {
   const [previewSelectedTags, setPreviewSelectedTags] = useState([]);
 
   const currentList = activeTab === 'positive'
-    ? (keywords.positive || [])
-    : (keywords.negative || []);
+    ? (keywords?.positive || [])
+    : (keywords?.negative || []);
 
   const handleStartInlineEdit = (tag) => {
     const id = tag.id || tag.tagId;

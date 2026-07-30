@@ -487,8 +487,8 @@ export function generateReviewText({
   let opening = pickVariation(availableOpenings, variationSeed);
 
   const selectedList = isPositive
-    ? (keywordsList.positive || RATING_KEYWORDS.positive)
-    : (keywordsList.negative || RATING_KEYWORDS.negative);
+    ? (keywordsList?.positive || RATING_KEYWORDS.positive || [])
+    : (keywordsList?.negative || RATING_KEYWORDS.negative || []);
 
   let tagSnippets = selectedTags
     .map((tagId, idx) => {

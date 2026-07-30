@@ -12,11 +12,11 @@ export function TabbedDashboard() {
 
   // Business Profile Form State
   const [businessForm, setBusinessForm] = useState({
-    hotelName: settings.hotelName || '',
-    googlePlaceId: settings.googlePlaceId || '',
-    logoUrl: settings.logoUrl || '',
-    themeColor: settings.themeColor || '#2563eb',
-    tone: settings.tone || 'friendly',
+    hotelName: settings?.hotelName || '',
+    googlePlaceId: settings?.googlePlaceId || '',
+    logoUrl: settings?.logoUrl || '',
+    themeColor: settings?.themeColor || '#2563eb',
+    tone: settings?.tone || 'friendly',
   });
   const [businessSaved, setBusinessSaved] = useState(false);
   const [linkValidation, setLinkValidation] = useState(null);
@@ -29,18 +29,18 @@ export function TabbedDashboard() {
     conversionRate: 0,
   });
 
-  const hotelSlug = settings.hotelSlug || 'sree-jee-stay';
+  const hotelSlug = settings?.hotelSlug || 'sree-jee-stay';
 
   useEffect(() => {
     setBusinessForm({
-      hotelName: settings.hotelName || '',
-      googlePlaceId: settings.googlePlaceId || '',
-      logoUrl: settings.logoUrl || '',
-      themeColor: settings.themeColor || '#2563eb',
-      tone: settings.tone || 'friendly',
+      hotelName: settings?.hotelName || '',
+      googlePlaceId: settings?.googlePlaceId || '',
+      logoUrl: settings?.logoUrl || '',
+      themeColor: settings?.themeColor || '#2563eb',
+      tone: settings?.tone || 'friendly',
     });
 
-    if (settings.googlePlaceId) {
+    if (settings?.googlePlaceId) {
       setLinkValidation(validateGoogleReviewLink(settings.googlePlaceId));
     }
   }, [settings]);
@@ -82,7 +82,7 @@ export function TabbedDashboard() {
             JJ Review System — Canva for Review QR Codes
           </div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>
-            {settings.hotelName || 'Business'} Review Dashboard
+            {settings?.hotelName || 'Business'} Review Dashboard
           </h1>
         </div>
 
