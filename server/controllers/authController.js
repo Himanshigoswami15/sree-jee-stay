@@ -3,27 +3,29 @@ import * as authService from '../services/authService.js';
 import { DEFAULT_HOTEL_ID } from '../config/constants.js';
 
 function setAuthCookies(res, accessToken, refreshToken) {
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 15 * 60 * 1000,
   });
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 }
 
 function setCsrfCookie(res) {
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
   const csrfToken = crypto.randomBytes(32).toString('hex');
   res.cookie('csrf-token', csrfToken, {
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 }

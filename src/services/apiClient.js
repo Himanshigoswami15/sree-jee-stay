@@ -23,6 +23,11 @@ export async function apiClient(endpoint, options = {}) {
     ...(options.headers || {}),
   };
 
+  const savedToken = typeof window !== 'undefined' ? localStorage.getItem('jj_access_token') : null;
+  if (savedToken && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${savedToken}`;
+  }
+
   if (!CSRF_SAFE_METHODS.has(options.method || 'GET')) {
     const csrfToken = getCsrfToken();
     if (csrfToken) {
@@ -52,6 +57,11 @@ export async function apiClient(endpoint, options = {}) {
       });
 
       if (refreshRes.ok) {
+        const refreshData = await refreshRes.json().catch(() => ({}));
+        if (refreshData?.accessToken && typeof window !== 'undefined') {
+          localStorage.setItem('jj_access_token', refreshData.accessToken);
+          config.headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
+        }
         config._isRetry = true;
         const csrfToken = getCsrfToken();
         if (csrfToken) {
@@ -65,6 +75,10 @@ export async function apiClient(endpoint, options = {}) {
     let data = {};
     if (contentType.includes('application/json')) {
       data = await response.json();
+    }
+
+    if (data?.accessToken && typeof window !== 'undefined') {
+      localStorage.setItem('jj_access_token', data.accessToken);
     }
 
     if (!response.ok) {

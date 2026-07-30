@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { verifyAccessToken } from '../utils/tokenHelper.js';
 import { User } from '../models/index.js';
 import { logger } from '../utils/logger.js';
@@ -27,15 +28,15 @@ export async function authenticate(req, res, next) {
 
     const decoded = verifyAccessToken(token);
 
-    if (decoded.userId) {
-      const user = await User.findById(decoded.userId);
-      if (!user) {
-        return fail(res, 401, 'User account no longer exists.');
-      }
-
-      if (decoded.tokenVersion !== undefined && decoded.tokenVersion !== user.tokenVersion) {
-        logger.warn(`[Auth Middleware] Revoked session detected for user ${user.email} (tokenVersion mismatch).`);
-        return fail(res, 401, 'Session expired due to password update. Please log in again with your new password.', 'TOKEN_REVOKED');
+    if (decoded.userId && mongoose.connection.readyState === 1 && !String(decoded.userId).startsWith('fallback_')) {
+      try {
+        const user = await User.findById(decoded.userId);
+        if (user && decoded.tokenVersion !== undefined && decoded.tokenVersion !== user.tokenVersion) {
+          logger.warn(`[Auth Middleware] Revoked session detected for user ${user.email} (tokenVersion mismatch).`);
+          return fail(res, 401, 'Session expired due to password update. Please log in again with your new password.', 'TOKEN_REVOKED');
+        }
+      } catch (dbErr) {
+        logger.warn(`[Auth Middleware] User DB check skipped: ${dbErr.message}`);
       }
     }
 
