@@ -3,6 +3,7 @@ import { logger } from '../utils/logger.js';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/sree_jee_stay';
 
+// Mongoose option configuration with fast serverSelectionTimeoutMS
 const MONGOOSE_OPTIONS = {
   maxPoolSize: 10,
   minPoolSize: 2,
@@ -10,9 +11,6 @@ const MONGOOSE_OPTIONS = {
   socketTimeoutMS: 45000,
   retryWrites: true,
 };
-
-// Prevent Mongoose from buffering commands indefinitely when DB is disconnected
-mongoose.set('bufferCommands', false);
 
 let connectionPromise = null;
 let lastFailedAt = 0;
