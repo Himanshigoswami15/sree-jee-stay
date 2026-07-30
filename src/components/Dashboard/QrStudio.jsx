@@ -32,14 +32,14 @@ export function QrStudio() {
   const hotelName = settings?.hotelName || 'Sree Jee Stay';
 
   const fetchQrAndAnalytics = async () => {
-    try {
-      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sree-jee-stay.vercel.app';
-      const redirectUrl = `${origin}/r/${hotelSlug}`;
-      setTargetUrl(redirectUrl);
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sree-jee-stay.vercel.app';
+    const redirectUrl = `${origin}/${hotelSlug}`;
+    setTargetUrl(redirectUrl);
 
-      // Instant client-side QR generation
+    try {
+      // Instant, guaranteed client-side QR code generation
       const dataUrl = await QRCode.toDataURL(redirectUrl, {
-        width: 300,
+        width: 320,
         margin: 2,
         color: { dark: '#0f172a', light: '#ffffff' },
       });
@@ -52,11 +52,11 @@ export function QrStudio() {
       });
       setSvgString(svg);
     } catch (e) {
-      console.warn('[QrStudio] Client-side QR generation fallback:', e);
+      console.warn('[QrStudio] Client-side QR generation error:', e);
     }
 
     try {
-      // Fetch server-side QR & Analytics data
+      // Fetch optional server-side token & analytics data
       const qrRes = await apiClient('/api/review/generate-qr', {
         method: 'POST',
         body: JSON.stringify({ hotelSlug }),
@@ -64,9 +64,6 @@ export function QrStudio() {
 
       if (qrRes?.success) {
         if (qrRes.qrToken) setQrToken(qrRes.qrToken);
-        if (qrRes.targetUrl) setTargetUrl(qrRes.targetUrl);
-        if (qrRes.pngUrl) setPngUrl(qrRes.pngUrl);
-        if (qrRes.svgString) setSvgString(qrRes.svgString);
         if (qrRes.scansCount !== undefined) setScansCount(qrRes.scansCount);
       }
 
