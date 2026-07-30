@@ -158,27 +158,53 @@ export function GuestReviewCard() {
 
           {/* Auto-Generated Review Box */}
           {isHighRating && (
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '1rem', textAlign: 'left' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569' }}>
-                  Auto-Written Review Text:
+            <div style={{ background: '#ffffff', border: '1.5px solid #e2e8f0', borderRadius: '16px', padding: '1.15rem', textAlign: 'left', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.825rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Sparkles size={16} color={primaryColor} /> Auto-Written Review Text:
                 </span>
                 <button
                   type="button"
                   onClick={handleCopy}
-                  style={{ background: 'transparent', border: 'none', color: primaryColor, cursor: 'pointer', fontSize: '0.75rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                  style={{
+                    background: copied ? '#ecfdf5' : '#eeeffe',
+                    border: copied ? '1px solid #a7f3d0' : '1px solid #c7d2fe',
+                    color: copied ? '#059669' : primaryColor,
+                    cursor: 'pointer',
+                    fontSize: '0.775rem',
+                    fontWeight: 800,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.4rem 0.85rem',
+                    borderRadius: '20px',
+                    transition: 'all 0.2s ease',
+                  }}
                 >
-                  {copied ? <Check size={13} /> : <Copy size={13} />}
-                  {copied ? 'Copied!' : 'Copy Text'}
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copied ? 'Copied to Clipboard!' : 'Copy Text'}
                 </button>
               </div>
 
               <textarea
-                className="form-input"
-                rows={3}
+                className="review-textarea"
                 value={generatedReview}
                 onChange={(e) => setCustomNote(e.target.value)}
-                style={{ fontSize: '0.85rem', lineHeight: '1.4', resize: 'none' }}
+                placeholder="Your review text will appear here automatically..."
+                style={{
+                  width: '100%',
+                  minHeight: '115px',
+                  fontSize: '0.925rem',
+                  lineHeight: '1.5',
+                  fontWeight: '600',
+                  padding: '0.85rem 1rem',
+                  borderRadius: '12px',
+                  border: '1.5px solid #cbd5e1',
+                  boxSizing: 'border-box',
+                  color: '#0f172a',
+                  background: '#f8fafc',
+                  resize: 'vertical',
+                }}
               />
             </div>
           )}
