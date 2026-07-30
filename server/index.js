@@ -30,6 +30,14 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
 app.use(mongoSanitizer);
 
+// Vercel Serverless URL Path Normalizer
+app.use((req, _res, next) => {
+  if (req.url.startsWith('/api/index.js')) {
+    req.url = req.url.replace('/api/index.js', '/api');
+  }
+  next();
+});
+
 // Database Connection Middleware for Vercel Serverless Functions & Local Dev
 app.use(async (_req, _res, next) => {
   try {
