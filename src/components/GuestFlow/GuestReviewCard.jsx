@@ -14,25 +14,25 @@ export function GuestReviewCard() {
   const [copied, setCopied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const primaryColor = settings.themeColor || '#2563eb';
+  const primaryColor = settings?.themeColor || '#2563eb';
   const isHighRating = rating >= 4;
 
   const availableTags = isHighRating
-    ? (keywords.positive || [])
-    : (keywords.negative || []);
+    ? (keywords?.positive || [])
+    : (keywords?.negative || []);
 
   const generatedReview = generateReviewText({
     rating,
     selectedTags,
     customNote,
-    hotelName: settings.hotelName,
-    tone: settings.tone || 'friendly',
-    reviewLength: settings.reviewLength || 'short',
-    includeEmojis: settings.includeEmojis !== false,
-    mentionStaff: settings.mentionStaff !== false,
-    mentionCleanliness: settings.mentionCleanliness !== false,
-    mentionFood: settings.mentionFood !== false,
-    mentionLocation: settings.mentionLocation !== false,
+    hotelName: settings?.hotelName || 'Sree Jee Stay',
+    tone: settings?.tone || 'friendly',
+    reviewLength: settings?.reviewLength || 'short',
+    includeEmojis: settings?.includeEmojis !== false,
+    mentionStaff: settings?.mentionStaff !== false,
+    mentionCleanliness: settings?.mentionCleanliness !== false,
+    mentionFood: settings?.mentionFood !== false,
+    mentionLocation: settings?.mentionLocation !== false,
     keywordsList: keywords,
   });
 
@@ -70,7 +70,7 @@ export function GuestReviewCard() {
   return (
     <div style={{ maxWidth: '440px', margin: '1.5rem auto', background: '#ffffff', borderRadius: '24px', padding: '2rem 1.5rem', boxShadow: '0 12px 35px rgba(0, 0, 0, 0.08)', border: '1px solid #f1f5f9', textAlign: 'center' }}>
       {/* BRANDING HEADER */}
-      {settings.logoUrl ? (
+      {settings?.logoUrl ? (
         <img
           src={settings.logoUrl}
           alt="Business Logo"
@@ -78,12 +78,12 @@ export function GuestReviewCard() {
         />
       ) : (
         <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: primaryColor, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', fontWeight: 800, margin: '0 auto 0.75rem', boxShadow: '0 4px 12px rgba(37,99,235,0.2)' }}>
-          {(settings.hotelName || 'B')[0]}
+          {(settings?.hotelName || 'Sree Jee Stay')[0]}
         </div>
       )}
 
       <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.25rem' }}>
-        {settings.hotelName || 'Sree Jee Stay'}
+        {settings?.hotelName || 'Sree Jee Stay'}
       </h2>
 
       <p style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: 600, margin: '0 0 1.5rem' }}>

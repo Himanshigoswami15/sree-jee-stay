@@ -21,8 +21,9 @@ export function Navigation() {
   const [isRegistryOpen, setIsRegistryOpen] = useState(false);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
 
-  const unresolvedAlertCount = feedbacks.filter(
-    (f) => f.rating <= settings.alertThreshold && !f.managerResolved
+  const alertThreshold = settings?.alertThreshold ?? 3;
+  const unresolvedAlertCount = (feedbacks || []).filter(
+    (f) => f && f.rating <= alertThreshold && !f.managerResolved
   ).length;
 
   const handleSelectHotel = (slug) => {
