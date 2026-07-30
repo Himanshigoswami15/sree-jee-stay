@@ -184,6 +184,9 @@ export function ManagerPinModal() {
                     required
                   />
                 </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.35rem', fontWeight: 600 }}>
+                  Default Security PIN: <strong>9008</strong>
+                </div>
                 {loginError && (
                   <div style={{ fontSize: '0.8rem', color: '#fb7185', marginTop: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
                     <AlertCircle size={14} /> {loginError}

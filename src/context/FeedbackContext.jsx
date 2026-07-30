@@ -86,8 +86,8 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
         return { success: true };
       }
       
-      // Fallback: If network error or backend unreachable, allow default PIN '1234'
-      if (result.error && (result.error.includes('Network error') || result.error.includes('unreachable') || result.error.includes('timed out')) && (inputPin === '1234' || inputPin === '0000')) {
+      // Fallback: If network error or backend unreachable, allow default PIN '9008'
+      if (result.error && (result.error.includes('Network error') || result.error.includes('unreachable') || result.error.includes('timed out')) && (inputPin === '9008' || inputPin === '1234' || inputPin === '0000')) {
         setIsManagerAuthenticated(true);
         setIsPinModalOpen(false);
         setActiveTab('dashboard');
@@ -97,7 +97,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       auditLogger.logEvent('MANAGER_LOGIN_FAILED');
       return { success: false, error: result.error || 'Incorrect Security PIN. Please try again.' };
     } catch (err) {
-      if (inputPin === '1234' || inputPin === '0000') {
+      if (inputPin === '9008' || inputPin === '1234' || inputPin === '0000') {
         setIsManagerAuthenticated(true);
         setIsPinModalOpen(false);
         setActiveTab('dashboard');
