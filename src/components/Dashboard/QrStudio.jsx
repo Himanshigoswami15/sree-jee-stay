@@ -139,7 +139,7 @@ export function QrStudio() {
             JJ Review System — Enterprise QR Studio
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-            {hotelName} Permanent QR Code & Scan Analytics
+            {hotelName} Review QR Code & Analytics
           </h2>
         </div>
         <button
@@ -213,7 +213,7 @@ export function QrStudio() {
         <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'center' }}>
           <div className="chart-title" style={{ justifyContent: 'center' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2563eb' }}>
-              <QrCode size={20} color="#2563eb" /> Single Permanent Hotel QR Code
+              <QrCode size={20} color="#2563eb" /> Review QR Code
             </span>
           </div>
 
