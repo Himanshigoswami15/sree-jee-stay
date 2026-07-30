@@ -34,12 +34,13 @@ export function Navigation() {
   return (
     <>
       <header className="app-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        {/* TOP ROW: BRAND TITLE + HOTEL SWITCHER */}
+        <div className="header-top-row">
           <div className="brand-title" onClick={() => navigate('/sree-jee-stay')} style={{ cursor: 'pointer' }}>
             <div className="brand-icon" style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)' }}>
-              <Sparkles size={20} color="#ffffff" />
+              <Sparkles size={18} color="#ffffff" />
             </div>
-            <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            <span className="brand-text">
               JJ Review System
             </span>
           </div>
@@ -52,20 +53,20 @@ export function Navigation() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.4rem',
+                gap: '0.35rem',
                 background: '#eff6ff',
                 border: '1px solid #bfdbfe',
                 color: '#1d4ed8',
-                padding: '0.35rem 0.75rem',
+                padding: '0.35rem 0.65rem',
                 borderRadius: '20px',
-                fontSize: '0.8rem',
+                fontSize: '0.775rem',
                 fontWeight: 700,
                 cursor: 'pointer',
               }}
             >
-              <Building2 size={14} color="#1d4ed8" />
-              <span>{settings.hotelName || 'Sree Jee Stay'}</span>
-              <ChevronDown size={13} color="#1d4ed8" />
+              <Building2 size={13} color="#1d4ed8" />
+              <span className="hotel-switcher-label">{settings?.hotelName || 'Sree Jee Stay'}</span>
+              <ChevronDown size={12} color="#1d4ed8" />
             </button>
 
             {isSwitcherOpen && (
@@ -73,12 +74,12 @@ export function Navigation() {
                 style={{
                   position: 'absolute',
                   top: '115%',
-                  left: 0,
+                  right: 0,
                   background: '#ffffff',
                   border: '1px solid #e2e8f0',
                   borderRadius: '12px',
                   boxShadow: '0 10px 25px rgba(15, 23, 42, 0.15)',
-                  minWidth: '240px',
+                  minWidth: '220px',
                   zIndex: 100,
                   padding: '0.5rem',
                 }}
@@ -109,7 +110,7 @@ export function Navigation() {
                     }}
                   >
                     <Building2 size={14} color={h.hotelSlug === settings.hotelSlug ? '#166534' : '#64748b'} />
-                    <span style={{ flex: 1 }}>{h.name}</span>
+                    <span style={{ flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{h.name}</span>
                   </button>
                 ))}
 
@@ -143,15 +144,17 @@ export function Navigation() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+        {/* ACTIONS ROW: NAV TABS + ADD HOTEL + SETTINGS/LOCK */}
+        <div className="header-actions-row">
           <nav className="nav-tabs">
             <button
               type="button"
               className={`nav-tab-btn ${activeTab === 'guest' ? 'active' : ''}`}
               onClick={() => setActiveTab('guest')}
             >
-              <Building2 size={16} />
-              <span>Guest Review Page</span>
+              <Building2 size={15} />
+              <span className="nav-tab-text-full">Guest Review Page</span>
+              <span className="nav-tab-text-mobile">Review Page</span>
             </button>
 
             <button
@@ -159,11 +162,12 @@ export function Navigation() {
               className={`nav-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveTab('dashboard')}
             >
-              {isManagerAuthenticated ? <LayoutDashboard size={16} /> : <Lock size={15} color={activeTab === 'dashboard' ? '#ffffff' : '#1d4ed8'} />}
-              <span>Hotel Dashboard</span>
+              {isManagerAuthenticated ? <LayoutDashboard size={15} /> : <Lock size={14} color={activeTab === 'dashboard' ? '#ffffff' : '#1d4ed8'} />}
+              <span className="nav-tab-text-full">Hotel Dashboard</span>
+              <span className="nav-tab-text-mobile">Dashboard</span>
               {!isManagerAuthenticated && (
-                <span style={{ fontSize: '0.7rem', color: activeTab === 'dashboard' ? '#ffffff' : '#1d4ed8', background: activeTab === 'dashboard' ? 'rgba(255, 255, 255, 0.25)' : '#e0f2fe', padding: '0.1rem 0.45rem', borderRadius: '8px', fontWeight: 800 }}>
-                  Protected
+                <span className="protected-badge">
+                  Lock
                 </span>
               )}
               {isManagerAuthenticated && unresolvedAlertCount > 0 && (
@@ -186,69 +190,30 @@ export function Navigation() {
           {/* Master Hotel Registry Action Button */}
           <button
             type="button"
+            className="btn-add-hotel-header"
             onClick={() => setIsRegistryOpen(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              background: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              color: '#1d4ed8',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '20px',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              height: '38px',
-            }}
           >
-            <Plus size={14} color="#1d4ed8" /> Add Hotel
+            <Plus size={14} color="#1d4ed8" /> <span className="add-hotel-text">Add Hotel</span>
           </button>
 
           {isManagerAuthenticated && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '38px',
-                  height: '38px',
-                  background: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '12px',
-                  color: '#475569',
-                  cursor: 'pointer',
-                }}
+                className="icon-btn-header"
                 title="Hotel Settings"
               >
-                <Settings size={18} />
+                <Settings size={16} />
               </button>
 
               <button
                 type="button"
                 onClick={lockDashboard}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  padding: '0.4rem 0.85rem',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  background: '#fef2f2',
-                  color: '#dc2626',
-                  border: '1px solid #fca5a5',
-                  borderRadius: '20px',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  height: '38px',
-                }}
+                className="lock-btn-header"
                 title="Lock Dashboard"
               >
-                <LogOut size={14} /> Lock
+                <LogOut size={13} /> <span className="add-hotel-text">Lock</span>
               </button>
             </div>
           )}
