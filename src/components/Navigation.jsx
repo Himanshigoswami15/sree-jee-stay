@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Settings, Sparkles, Lock, LogOut, Building2, Plus, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Settings, Sparkles, Lock, LogOut, Building2, Plus, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFeedback } from '../context/FeedbackContext';
 import { SettingsModal } from './Common/SettingsModal';
@@ -79,40 +79,51 @@ export function Navigation() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '12px',
                   boxShadow: '0 10px 25px rgba(15, 23, 42, 0.15)',
-                  minWidth: '220px',
+                  minWidth: '240px',
+                  maxWidth: '300px',
                   zIndex: 100,
                   padding: '0.5rem',
                 }}
               >
                 <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', padding: '0.35rem 0.65rem', textTransform: 'uppercase' }}>
-                  Registered Hotels
+                  Registered Hotels ({registeredHotels.length})
                 </div>
 
-                {registeredHotels.map((h) => (
-                  <button
-                    key={h.hotelSlug}
-                    type="button"
-                    onClick={() => handleSelectHotel(h.hotelSlug)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      width: '100%',
-                      padding: '0.55rem 0.65rem',
-                      border: 'none',
-                      background: h.hotelSlug === settings.hotelSlug ? '#f0fdf4' : 'transparent',
-                      color: h.hotelSlug === settings.hotelSlug ? '#166534' : '#0f172a',
-                      fontWeight: h.hotelSlug === settings.hotelSlug ? 800 : 600,
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontSize: '0.825rem',
-                    }}
-                  >
-                    <Building2 size={14} color={h.hotelSlug === settings.hotelSlug ? '#166534' : '#64748b'} />
-                    <span style={{ flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{h.name}</span>
-                  </button>
-                ))}
+                <div style={{ maxHeight: '240px', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  {registeredHotels.map((h) => {
+                    const isSelected = h.hotelSlug === settings.hotelSlug || h.hotelId === settings.hotelSlug;
+                    return (
+                      <button
+                        key={h.hotelSlug || h.hotelId}
+                        type="button"
+                        onClick={() => handleSelectHotel(h.hotelSlug || h.hotelId)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          width: '100%',
+                          padding: '0.5rem 0.65rem',
+                          border: 'none',
+                          background: isSelected ? '#f0fdf4' : 'transparent',
+                          color: isSelected ? '#166534' : '#0f172a',
+                          fontWeight: isSelected ? 800 : 600,
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontSize: '0.825rem',
+                          margin: '2px 0',
+                        }}
+                      >
+                        <Building2 size={15} color={isSelected ? '#166534' : '#64748b'} style={{ flexShrink: 0 }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                          <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontWeight: 800, fontSize: '0.8rem' }}>{h.name}</span>
+                          <span style={{ fontSize: '0.675rem', color: '#64748b', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>/{h.hotelSlug || h.hotelId}</span>
+                        </div>
+                        {isSelected && <CheckCircle2 size={14} color="#166534" style={{ flexShrink: 0 }} />}
+                      </button>
+                    );
+                  })}
+                </div>
 
                 <div style={{ borderTop: '1px solid #f1f5f9', marginTop: '0.35rem', paddingTop: '0.35rem' }}>
                   <button

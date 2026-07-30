@@ -273,16 +273,35 @@ export async function onboardHotel(data) {
 }
 
 export async function getAllHotels() {
-  const hotels = await Hotel.find({}).sort({ name: 1 });
-  return hotels.map((h) => ({
-    id: h._id.toString(),
-    hotelId: h.hotelId,
-    hotelSlug: h.hotelSlug,
-    name: h.name,
-    logoUrl: h.logoUrl || '',
-    themeColor: h.themeColor || '#2563eb',
-    managerEmail: h.managerEmail,
-  }));
+  if (mongoose.connection.readyState !== 1) {
+    return [
+      { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' }
+    ];
+  }
+
+  try {
+    const hotels = await Hotel.find({}).sort({ createdAt: -1, name: 1 }).lean();
+    if (!hotels || hotels.length === 0) {
+      return [
+        { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' }
+      ];
+    }
+
+    return hotels.map((h) => ({
+      id: h._id ? h._id.toString() : h.hotelSlug,
+      hotelId: h.hotelId || h.hotelSlug,
+      hotelSlug: h.hotelSlug || h.hotelId,
+      name: h.name || 'Sree Jee Stay - Homestay in Varanasi',
+      logoUrl: h.logoUrl || '',
+      themeColor: h.themeColor || '#2563eb',
+      managerEmail: h.managerEmail || '',
+    }));
+  } catch (err) {
+    logger.warn(`[HotelService] getAllHotels failed: ${err.message}`);
+    return [
+      { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' }
+    ];
+  }
 }
 
 export async function updateHotel(hotelId, updateData) {
