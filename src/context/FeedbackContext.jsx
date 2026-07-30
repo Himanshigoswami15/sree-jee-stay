@@ -40,7 +40,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
   const fetchHotelsList = useCallback(async () => {
     try {
-      const res = await apiClient('/api/hotels');
+      const res = await apiClient(`/api/hotels?_t=${Date.now()}`);
       let serverHotels = [];
       if (res && res.success && Array.isArray(res.hotels) && res.hotels.length > 0) {
         serverHotels = res.hotels.map(h => ({
