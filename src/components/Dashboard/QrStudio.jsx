@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QrCode, Download, Printer, Copy, Check, ExternalLink, Sparkles, RefreshCw, BarChart3, Smartphone, Clock, Globe } from 'lucide-react';
+import QRCode from 'qrcode';
 import { useFeedback } from '../../context/FeedbackContext';
 import { apiClient } from '../../services/apiClient';
 
@@ -27,34 +28,54 @@ export function QrStudio() {
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
 
-  const hotelSlug = settings.hotelSlug || 'sree-jee-stay';
-  const hotelName = settings.hotelName || 'Sree Jee Stay';
+  const hotelSlug = settings?.hotelSlug || 'sree-jee-stay';
+  const hotelName = settings?.hotelName || 'Sree Jee Stay';
 
   const fetchQrAndAnalytics = async () => {
     try {
-      setLoading(true);
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sree-jee-stay.vercel.app';
+      const redirectUrl = `${origin}/r/${hotelSlug}`;
+      setTargetUrl(redirectUrl);
 
-      // 1. Fetch / Generate unique QR Token
+      // Instant client-side QR generation
+      const dataUrl = await QRCode.toDataURL(redirectUrl, {
+        width: 300,
+        margin: 2,
+        color: { dark: '#0f172a', light: '#ffffff' },
+      });
+      setPngUrl(dataUrl);
+
+      const svg = await QRCode.toString(redirectUrl, {
+        type: 'svg',
+        margin: 2,
+        color: { dark: '#0f172a', light: '#ffffff' },
+      });
+      setSvgString(svg);
+    } catch (e) {
+      console.warn('[QrStudio] Client-side QR generation fallback:', e);
+    }
+
+    try {
+      // Fetch server-side QR & Analytics data
       const qrRes = await apiClient('/api/review/generate-qr', {
         method: 'POST',
         body: JSON.stringify({ hotelSlug }),
       });
 
-      if (qrRes.success) {
-        setQrToken(qrRes.qrToken);
-        setTargetUrl(qrRes.targetUrl);
-        setPngUrl(qrRes.pngUrl);
-        setSvgString(qrRes.svgString);
-        setScansCount(qrRes.scansCount || 0);
+      if (qrRes?.success) {
+        if (qrRes.qrToken) setQrToken(qrRes.qrToken);
+        if (qrRes.targetUrl) setTargetUrl(qrRes.targetUrl);
+        if (qrRes.pngUrl) setPngUrl(qrRes.pngUrl);
+        if (qrRes.svgString) setSvgString(qrRes.svgString);
+        if (qrRes.scansCount !== undefined) setScansCount(qrRes.scansCount);
       }
 
-      // 2. Fetch Scan Analytics
       const analyticsRes = await apiClient(`/api/review/analytics?hotelSlug=${encodeURIComponent(hotelSlug)}`);
-      if (analyticsRes.success && analyticsRes.analytics) {
+      if (analyticsRes?.success && analyticsRes.analytics) {
         setAnalytics(analyticsRes.analytics);
       }
     } catch (err) {
-      console.warn('[QrStudio] Error fetching QR or analytics data:', err);
+      console.warn('[QrStudio] Error fetching analytics:', err);
     } finally {
       setLoading(false);
       setRegenerating(false);
@@ -73,12 +94,21 @@ export function QrStudio() {
   };
 
   const handleDownloadPng = () => {
-    const link = document.createElement('a');
-    link.href = `/api/review/download/png?hotelSlug=${encodeURIComponent(hotelSlug)}`;
-    link.download = `${hotelSlug}-qr-code.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (pngUrl) {
+      const link = document.createElement('a');
+      link.href = pngUrl;
+      link.download = `${hotelSlug}-qr-code.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const link = document.createElement('a');
+      link.href = `/api/review/download/png?hotelSlug=${encodeURIComponent(hotelSlug)}`;
+      link.download = `${hotelSlug}-qr-code.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const handleDownloadPdf = () => {
