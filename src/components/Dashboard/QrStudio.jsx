@@ -208,41 +208,48 @@ export function QrStudio() {
       </div>
 
       {/* QR STUDIO CONTENT GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-        {/* LEFT COLUMN: PERMANENT QR CODE & DOWNLOAD ACTIONS */}
+      <div style={{ maxWidth: '640px', margin: '0 auto', width: '100%' }}>
+        {/* RECEPTION STANDEE & TENT CARD PREVIEW */}
         <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'center' }}>
           <div className="chart-title" style={{ justifyContent: 'center' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2563eb' }}>
-              <QrCode size={20} color="#2563eb" /> Review QR Code
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#16a34a' }}>
+              <Printer size={20} color="#16a34a" /> Reception Standee & Tent Card
             </span>
           </div>
 
-          {/* QR Display Card */}
-          <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', border: '2px solid #e2e8f0', display: 'inline-block', margin: '0 auto' }}>
-            {pngUrl ? (
+          {/* Printable Tent Card Mockup Frame */}
+          <div style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', border: '2px solid #2563eb', borderRadius: '16px', padding: '1.5rem', textAlign: 'center', boxShadow: '0 4px 15px rgba(37, 99, 235, 0.08)' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+              ⭐ Love your experience?
+            </div>
+            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
+              {hotelName}
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#059669', marginTop: '4px', fontWeight: 800 }}>
+              Scan to leave a Google Review
+            </div>
+
+            {pngUrl && (
               <img
                 src={pngUrl}
-                alt="Hotel QR Code"
-                style={{ width: '220px', height: '220px', borderRadius: '8px', display: 'block' }}
+                alt="QR Code"
+                style={{ width: '170px', height: '170px', margin: '0.85rem auto', display: 'block', borderRadius: '8px', border: '1px solid #e2e8f0' }}
               />
-            ) : (
-              <div style={{ width: '220px', height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-                Generating QR...
-              </div>
             )}
 
-            {/* Token Badge */}
-            {qrToken && (
-              <div style={{ marginTop: '0.85rem', background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.775rem', fontWeight: 800, display: 'inline-block' }}>
-                Token: {qrToken}
-              </div>
-            )}
+            <div style={{ fontSize: '1.1rem', letterSpacing: '2px', marginBottom: '0.4rem' }}>
+              ⭐⭐⭐⭐⭐
+            </div>
+
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', background: '#f1f5f9', padding: '0.35rem 0.65rem', borderRadius: '8px', display: 'inline-block' }}>
+              1. Scan QR  →  2. Tap Highlights  →  3. Post to Google
+            </div>
           </div>
 
-          {/* QR Target Link Bar */}
+          {/* Target Link & Copy Bar */}
           <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '0.35rem 0.65rem', gap: '0.5rem' }}>
             <span style={{ fontSize: '0.75rem', color: '#475569', fontWeight: 700, flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-              {targetUrl || `${window.location.origin}/r/${qrToken || hotelSlug}`}
+              {targetUrl || `${window.location.origin}/${hotelSlug}`}
             </span>
             <button
               type="button"
@@ -282,48 +289,6 @@ export function QrStudio() {
             >
               <Printer size={13} /> PDF Tent Card
             </button>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: PRINTABLE TENT CARD & STANDEE PREVIEW */}
-        <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div className="chart-title">
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#16a34a' }}>
-              <Printer size={20} color="#16a34a" /> Reception Standee & Tent Card Preview
-            </span>
-          </div>
-
-          {/* Printable Tent Card Mockup Frame */}
-          <div style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', border: '2px solid #2563eb', borderRadius: '16px', padding: '1.5rem', textAlign: 'center', boxShadow: '0 4px 15px rgba(37, 99, 235, 0.08)' }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
-              ⭐ Love your experience?
-            </div>
-            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
-              {hotelName}
-            </div>
-            <div style={{ fontSize: '0.85rem', color: '#059669', marginTop: '4px', fontWeight: 800 }}>
-              Scan to leave a Google Review
-            </div>
-
-            {pngUrl && (
-              <img
-                src={pngUrl}
-                alt="QR Standee Preview"
-                style={{ width: '150px', height: '150px', margin: '0.85rem auto', display: 'block', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-              />
-            )}
-
-            <div style={{ fontSize: '1.1rem', letterSpacing: '2px', marginBottom: '0.4rem' }}>
-              ⭐⭐⭐⭐⭐
-            </div>
-
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', background: '#f1f5f9', padding: '0.35rem 0.65rem', borderRadius: '8px', display: 'inline-block' }}>
-              1. Scan QR  →  2. Tap Highlights  →  3. Post to Google
-            </div>
-          </div>
-
-          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.85rem 1rem', borderRadius: '12px', fontSize: '0.775rem', color: '#166534', lineHeight: '1.4' }}>
-            ✨ <strong>Permanent QR Code Guarantee:</strong> Print this QR code once on table tents, reception standees, or room keycards. You can update your Google Place ID or writing tone anytime in Hotel Settings without re-printing!
           </div>
         </div>
       </div>

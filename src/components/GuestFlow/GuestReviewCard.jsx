@@ -68,7 +68,7 @@ export function GuestReviewCard() {
   };
 
   return (
-    <div style={{ maxWidth: '440px', margin: '1.5rem auto', background: '#ffffff', borderRadius: '24px', padding: '2rem 1.5rem', boxShadow: '0 12px 35px rgba(0, 0, 0, 0.08)', border: '1px solid #f1f5f9', textAlign: 'center' }}>
+    <div className="guest-card" style={{ maxWidth: '440px', width: '100%', margin: '1rem auto', background: '#ffffff', borderRadius: '24px', padding: '1.75rem 1.25rem', boxShadow: '0 12px 35px rgba(0, 0, 0, 0.08)', border: '1px solid #f1f5f9', textAlign: 'center', boxSizing: 'border-box' }}>
       {/* BRANDING HEADER */}
       {settings?.logoUrl ? (
         <img

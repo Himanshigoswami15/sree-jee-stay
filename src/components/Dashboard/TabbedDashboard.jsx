@@ -86,42 +86,42 @@ export function TabbedDashboard() {
           </h1>
         </div>
 
-        {/* Opinionated 4-Section Sub-Navigation Tabs */}
-        <div style={{ display: 'flex', gap: '0.5rem', background: '#f1f5f9', padding: '6px', borderRadius: '14px', border: '1px solid #e2e8f0', flexWrap: 'wrap', marginTop: '0.85rem' }}>
+        {/* Sub-Navigation Tabs */}
+        <div style={{ display: 'flex', gap: '0.4rem', background: '#f1f5f9', padding: '6px', borderRadius: '14px', border: '1px solid #e2e8f0', overflowX: 'auto', WebkitOverflowScrolling: 'touch', marginTop: '0.85rem' }}>
           <button
             type="button"
             className={`nav-tab-btn ${activeSection === 'business' ? 'active' : ''}`}
             onClick={() => setActiveSection('business')}
-            style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', fontWeight: 700 }}
+            style={{ fontSize: '0.825rem', padding: '0.45rem 0.85rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
-            <Building2 size={16} /> 1. Business Profile
+            <Building2 size={15} /> 1. Business Profile
           </button>
 
           <button
             type="button"
             className={`nav-tab-btn ${activeSection === 'highlights' ? 'active' : ''}`}
             onClick={() => setActiveSection('highlights')}
-            style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', fontWeight: 700 }}
+            style={{ fontSize: '0.825rem', padding: '0.45rem 0.85rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
-            <Star size={16} color="#f59e0b" fill="#f59e0b" /> 2. Review Highlights
+            <Star size={15} color="#f59e0b" fill="#f59e0b" /> 2. Review Highlights
           </button>
 
           <button
             type="button"
             className={`nav-tab-btn ${activeSection === 'qr' ? 'active' : ''}`}
             onClick={() => setActiveSection('qr')}
-            style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', fontWeight: 700 }}
+            style={{ fontSize: '0.825rem', padding: '0.45rem 0.85rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
-            <QrCode size={16} color="#2563eb" /> 3. Print QR Poster
+            <QrCode size={15} color="#2563eb" /> 3. Print QR Poster
           </button>
 
           <button
             type="button"
             className={`nav-tab-btn ${activeSection === 'analytics' ? 'active' : ''}`}
             onClick={() => setActiveSection('analytics')}
-            style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', fontWeight: 700 }}
+            style={{ fontSize: '0.825rem', padding: '0.45rem 0.85rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
-            <BarChart3 size={16} color="#059669" /> 4. Scan Analytics
+            <BarChart3 size={15} color="#059669" /> 4. Scan Analytics
           </button>
         </div>
       </div>
