@@ -7,7 +7,8 @@ import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 
 const inMemoryHotelsMap = new Map([
-  ['sree-jee-stay', { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi', themeColor: '#2563eb' }]
+  ['sree-jee-stay', { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi', themeColor: '#2563eb' }],
+  ['jj-elevates', { hotelId: 'jj-elevates', hotelSlug: 'jj-elevates', name: 'JJ elevates', themeColor: '#2563eb' }]
 ]);
 
 export async function getHotel(identifier = DEFAULT_HOTEL_ID) {

@@ -37,6 +37,24 @@ export const hotels = {
       { type: 'tripadvisor', isEnabled: true },
     ],
   },
+  'jj-elevates': {
+    hotelId: 'jj-elevates',
+    hotelSlug: 'jj-elevates',
+    name: 'JJ elevates',
+    themeColor: '#2563eb',
+    googlePlaceId: GOOGLE_PLACE_ID,
+    tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
+    managerEmail: 'himanshigoswami9057@gmail.com',
+    managerPhone: '+91 98765 43210',
+    alertThreshold: 3,
+    antiGatingNoticeEnabled: true,
+    preventDuplicateReviews: true,
+    tone: 'friendly',
+    providers: [
+      { type: 'google', isEnabled: true },
+      { type: 'tripadvisor', isEnabled: true },
+    ],
+  },
 };
 
 export function getHotelConfig(identifier = 'sree-jee-stay') {

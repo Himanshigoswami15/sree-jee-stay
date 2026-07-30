@@ -8,7 +8,8 @@ import { apiClient } from '../services/apiClient';
 const FeedbackContext = createContext();
 
 const DEFAULT_REGISTERED_HOTELS = [
-  { hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' }
+  { hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' },
+  { hotelSlug: 'jj-elevates', name: 'JJ elevates' }
 ];
 
 function getInitialHotels() {
