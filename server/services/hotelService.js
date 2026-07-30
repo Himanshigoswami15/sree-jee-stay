@@ -13,10 +13,39 @@ const inMemoryHotelsMap = new Map([
 export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
   const cleanId = (identifier || DEFAULT_HOTEL_ID).toLowerCase().trim();
 
+  // Check in-memory map first for newly onboarded hotels
+  if (inMemoryHotelsMap.has(cleanId)) {
+    const mem = inMemoryHotelsMap.get(cleanId);
+    return {
+      hotelId: cleanId,
+      hotelSlug: cleanId,
+      name: mem.name || cleanId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+      logoUrl: mem.logoUrl || '',
+      themeColor: mem.themeColor || '#2563eb',
+      googlePlaceId: mem.googlePlaceId || '',
+      googleReviewUrl: mem.googleReviewUrl || (mem.googlePlaceId ? generateGoogleReviewUrl(mem.googlePlaceId) : 'https://g.page/r/CTERYeDefsTREAE/review'),
+      tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
+      managerEmail: mem.managerEmail || 'himanshigoswami9057@gmail.com',
+      managerPhone: '+91 98765 43210',
+      alertThreshold: 3,
+      antiGatingNoticeEnabled: true,
+      preventDuplicateReviews: true,
+      tone: mem.tone || 'friendly',
+      providers: [
+        { type: 'google', isEnabled: true },
+        { type: 'tripadvisor', isEnabled: true },
+      ],
+    };
+  }
+
+  const formattedTitle = cleanId === 'sree-jee-stay'
+    ? 'Sree Jee Stay - Homestay in Varanasi'
+    : cleanId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
   const fallback = {
     hotelId: cleanId,
     hotelSlug: cleanId,
-    name: 'Sree Jee Stay - Homestay in Varanasi',
+    name: formattedTitle,
     themeColor: '#2563eb',
     googlePlaceId: process.env.VITE_GOOGLE_PLACE_ID || 'https://g.page/r/CTERYeDefsTREAE/review',
     googleReviewUrl: 'https://g.page/r/CTERYeDefsTREAE/review',
@@ -43,7 +72,7 @@ export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
     });
 
     if (!hotel && DEFAULT_HOTELS.includes(cleanId)) {
-      hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: 'Sree Jee Stay - Homestay in Varanasi' });
+      hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: formattedTitle });
     }
 
     if (hotel) return hotel;
