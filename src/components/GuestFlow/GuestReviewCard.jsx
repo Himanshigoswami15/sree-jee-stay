@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, CheckCircle, ExternalLink, MessageSquare, Copy, Check, HeartHandshake } from 'lucide-react';
+import { Star, CheckCircle, ExternalLink, MessageSquare, Copy, Check, HeartHandshake, Sparkles } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { generateReviewText } from '../../utils/reviewGenerator';
 

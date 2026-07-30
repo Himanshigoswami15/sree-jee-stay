@@ -186,20 +186,43 @@ export function Navigation() {
           {/* Master Hotel Registry Action Button */}
           <button
             type="button"
-            className="btn-secondary-action"
             onClick={() => setIsRegistryOpen(true)}
-            style={{ fontSize: '0.8rem', padding: '0.5rem 0.75rem', border: '1px solid #bfdbfe', background: '#eff6ff', color: '#1d4ed8', fontWeight: 800 }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              color: '#1d4ed8',
+              padding: '0.4rem 0.85rem',
+              borderRadius: '20px',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              height: '38px',
+            }}
           >
-            <Plus size={14} /> Add Hotel
+            <Plus size={14} color="#1d4ed8" /> Add Hotel
           </button>
 
           {isManagerAuthenticated && (
-            <>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
               <button
                 type="button"
-                className="nav-tab-btn"
                 onClick={() => setIsSettingsOpen(true)}
-                style={{ padding: '0.5rem' }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '38px',
+                  height: '38px',
+                  background: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '12px',
+                  color: '#475569',
+                  cursor: 'pointer',
+                }}
                 title="Hotel Settings"
               >
                 <Settings size={18} />
@@ -207,15 +230,27 @@ export function Navigation() {
 
               <button
                 type="button"
-                className="btn-toast-action"
                 onClick={lockDashboard}
-                style={{ padding: '0.45rem 0.75rem', fontSize: '0.75rem', background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.3)' }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.4rem 0.85rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  background: '#fef2f2',
+                  color: '#dc2626',
+                  border: '1px solid #fca5a5',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  height: '38px',
+                }}
                 title="Lock Dashboard"
               >
-                <LogOut size={13} style={{ display: 'inline', marginRight: '4px' }} />
-                Lock
+                <LogOut size={14} /> Lock
               </button>
-            </>
+            </div>
           )}
         </div>
       </header>

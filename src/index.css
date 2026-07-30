@@ -956,21 +956,24 @@ body {
 
 @media (max-width: 768px) {
   .app-header {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
     padding: 0.65rem 0.85rem;
-    gap: 0.65rem;
+    gap: 0.5rem;
   }
 
   .nav-tabs {
-    width: 100%;
+    flex: 1;
+    min-width: 220px;
   }
 
   .nav-tab-btn {
     flex: 1;
     justify-content: center;
     font-size: 0.825rem;
-    padding: 0.5rem;
+    padding: 0.45rem 0.65rem;
   }
 
   .dashboard-container {
