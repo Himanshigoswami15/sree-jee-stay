@@ -28,6 +28,7 @@ export function Navigation() {
 
   const handleSelectHotel = (slug) => {
     setIsSwitcherOpen(false);
+    lockDashboard();
     navigate(`/${slug}`);
   };
 

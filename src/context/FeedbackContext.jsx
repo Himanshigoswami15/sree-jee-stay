@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { RATING_KEYWORDS } from '../utils/reviewGenerator';
 import { getHotelConfig } from '../config/hotelConfig';
 import { AuditLogger } from '../utils/auditLogger';
@@ -129,6 +129,19 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       setLoading(false);
     }
   }, [hotelSlug, fetchHotelsList]);
+
+  const prevHotelSlugRef = useRef(hotelSlug);
+
+  useEffect(() => {
+    if (prevHotelSlugRef.current !== hotelSlug) {
+      prevHotelSlugRef.current = hotelSlug;
+      setIsManagerAuthenticated(false);
+      logoutApi();
+      if (activeTab === 'dashboard') {
+        setIsPinModalOpen(true);
+      }
+    }
+  }, [hotelSlug, activeTab]);
 
   useEffect(() => {
     apiClient('/api/auth/me').then((res) => {
