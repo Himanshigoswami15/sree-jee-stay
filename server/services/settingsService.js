@@ -5,6 +5,8 @@ import { logEvent } from './auditService.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 import { DEFAULT_HOTEL_ID } from '../config/constants.js';
+import { connectDB } from '../config/db.js';
+import { logger } from '../utils/logger.js';
 
 const memorySettingsStore = new Map();
 const memoryKeywordsStore = new Map();
@@ -33,6 +35,10 @@ export async function getSettings(identifier = DEFAULT_HOTEL_ID) {
       { type: 'tripadvisor', isEnabled: true },
     ],
   };
+
+  if (mongoose.connection.readyState !== 1) {
+    await connectDB(1, 500).catch(() => {});
+  }
 
   if (mongoose.connection.readyState !== 1) {
     if (memorySettingsStore.has(hotelId)) return memorySettingsStore.get(hotelId);
@@ -101,15 +107,25 @@ export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings,
     updatedData.googleReviewUrl = generateGoogleReviewUrl(newSettings.googleReviewUrl);
   }
 
-  let settings = await Settings.findOne({ hotelId });
-  if (settings) {
-    Object.assign(settings, updatedData);
-    settings = await settings.save();
-  } else {
-    settings = await Settings.create(updatedData);
+  let settings = null;
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await connectDB(1, 500).catch(() => {});
+    }
+    if (mongoose.connection.readyState === 1) {
+      settings = await Settings.findOne({ hotelId });
+      if (settings) {
+        Object.assign(settings, updatedData);
+        settings = await settings.save();
+      } else {
+        settings = await Settings.create(updatedData);
+      }
+    }
+  } catch (err) {
+    logger.warn(`[SettingsService] MongoDB updateSettings error: ${err.message}`);
   }
 
-  await logEvent(hotelId, 'SETTINGS_UPDATED', newSettings, req);
+  await logEvent(hotelId, 'SETTINGS_UPDATED', newSettings, req).catch(() => {});
 
   const resultSettings = {
     hotelId: settings ? settings.hotelId : hotelId,
