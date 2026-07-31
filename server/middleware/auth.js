@@ -71,3 +71,28 @@ export function authorize(...allowedRoles) {
     next();
   };
 }
+
+export async function optionalAuth(req, res, next) {
+  try {
+    let token = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice(7);
+    } else if (req.cookies && req.cookies.accessToken) {
+      token = req.cookies.accessToken;
+    }
+
+    if (token) {
+      const decoded = verifyAccessToken(token);
+      req.user = {
+        userId: decoded.userId,
+        hotelId: decoded.hotelId,
+        hotelSlug: decoded.hotelSlug,
+        role: decoded.role,
+        email: decoded.email,
+      };
+      req.hotelId = decoded.hotelId;
+    }
+  } catch (err) {}
+  next();
+}

@@ -27,13 +27,16 @@ export function QrStudio() {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
+  const [targetMode, setTargetMode] = useState('live'); // 'live' | 'local'
 
   const hotelSlug = settings?.hotelSlug || 'sree-jee-stay';
   const hotelName = settings?.hotelName || 'Sree Jee Stay';
 
-  const fetchQrAndAnalytics = async () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://sree-jee-stay.vercel.app';
-    const redirectUrl = `${origin}/${hotelSlug}`;
+  const fetchQrAndAnalytics = async (overrideMode = targetMode) => {
+    let redirectUrl = `https://sree-jee-stay.vercel.app/${hotelSlug}`;
+    if (overrideMode === 'local' && typeof window !== 'undefined') {
+      redirectUrl = `${window.location.origin}/${hotelSlug}`;
+    }
     setTargetUrl(redirectUrl);
 
     try {
@@ -215,6 +218,53 @@ export function QrStudio() {
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#16a34a' }}>
               <Printer size={20} color="#16a34a" /> Reception Standee & Tent Card
             </span>
+          </div>
+
+          {/* Target Domain Selector Bar */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0.65rem 0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Globe size={14} color="#2563eb" /> QR Code Scannable Domain:
+            </span>
+            <div style={{ display: 'flex', gap: '0.35rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setTargetMode('live');
+                  fetchQrAndAnalytics('live');
+                }}
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: targetMode === 'live' ? 800 : 600,
+                  padding: '0.3rem 0.65rem',
+                  borderRadius: '16px',
+                  border: targetMode === 'live' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                  background: targetMode === 'live' ? '#eff6ff' : '#ffffff',
+                  color: targetMode === 'live' ? '#2563eb' : '#475569',
+                  cursor: 'pointer',
+                }}
+              >
+                🌐 Live Web URL (Scannable on Phone)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTargetMode('local');
+                  fetchQrAndAnalytics('local');
+                }}
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: targetMode === 'local' ? 800 : 600,
+                  padding: '0.3rem 0.65rem',
+                  borderRadius: '16px',
+                  border: targetMode === 'local' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                  background: targetMode === 'local' ? '#eff6ff' : '#ffffff',
+                  color: targetMode === 'local' ? '#2563eb' : '#475569',
+                  cursor: 'pointer',
+                }}
+              >
+                💻 Localhost
+              </button>
+            </div>
           </div>
 
           {/* Printable Tent Card Mockup Frame */}
