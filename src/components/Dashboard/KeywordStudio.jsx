@@ -772,7 +772,7 @@ export function KeywordStudio() {
               Load {INDUSTRY_TEMPLATES[selectedTemplateKey]?.name} Preset?
             </h3>
             <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: '1.4', margin: '0 0 1.25rem' }}>
-              This will pre-populate 8 optimized highlights tailored for <strong>{INDUSTRY_TEMPLATES[selectedTemplateKey]?.name}</strong>. You can customize them anytime!
+              This will pre-populate {INDUSTRY_TEMPLATES[selectedTemplateKey]?.keywords?.length || 8} optimized highlights tailored for <strong>{INDUSTRY_TEMPLATES[selectedTemplateKey]?.name}</strong>. You can customize them anytime!
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
               <button
