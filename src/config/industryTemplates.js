@@ -110,5 +110,20 @@ export const INDUSTRY_TEMPLATES = {
       { id: 'gbp', label: '📍 Local GBP Optimization', category: 'Google Business Profile (GBP)', snippet: 'Optimized our Google Business Profile and local search visibility effortlessly' },
       { id: 'branding', label: '🎨 Creative Content & Design', category: 'Branding', snippet: 'Produced stunning graphic designs, engaging content, and strong brand positioning' },
     ]
+  },
+
+  packers: {
+    name: 'Packers & Movers',
+    icon: '🚚',
+    keywords: [
+      { id: 'safe_packing', label: '📦 Safe & Secure Packing', category: 'Service', snippet: 'All items and fragile goods were packed safely with high-quality bubble wrap and care' },
+      { id: 'timely_delivery', label: '⏱️ On-Time Delivery', category: 'Timeline', snippet: 'The moving team arrived promptly and delivered all goods on time without delays' },
+      { id: 'careful_handling', label: '🛡️ Zero Damage Handling', category: 'Service', snippet: 'Handled our furniture, electronics, and valuables with extreme care and zero damage' },
+      { id: 'prof_team', label: '💪 Professional & Polite Team', category: 'Customer Support', snippet: 'The packing and loading staff were professional, polite, hardworking, and efficient' },
+      { id: 'fair_pricing', label: '💰 Transparent & Fair Pricing', category: 'Pricing', snippet: 'Offered clear, transparent pricing with no hidden charges or unexpected fees' },
+      { id: 'smooth_relocation', label: '🚚 Hassle-Free Relocation', category: 'Performance', snippet: 'Made our home/office relocation completely smooth, seamless, and stress-free' },
+      { id: 'loading_unloading', label: '🏗️ Quick Loading & Unloading', category: 'Service', snippet: 'Loading, transport, and unloading were carried out swiftly and systematically' },
+      { id: 'vehicle_transport', label: '🚗 Safe Vehicle Transport', category: 'Service', snippet: 'Our car/bike was transported safely and delivered in perfect condition' },
+    ]
   }
 };
