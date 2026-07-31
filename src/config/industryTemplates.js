@@ -93,5 +93,22 @@ export const INDUSTRY_TEMPLATES = {
       { id: 'work', label: '💼 Good Work Spot', category: 'Comfort', snippet: 'Comfortable seating with power outlets for working' },
       { id: 'treats', label: '🍰 Delicious Treats', category: 'Dining', snippet: 'Scrumptious snacks and beverages served with care' },
     ]
+  },
+
+  marketing: {
+    name: 'Marketing Agency',
+    icon: '🚀',
+    keywords: [
+      { id: 'leads', label: '🎯 High-Quality Leads', category: 'Lead Generation', snippet: 'Delivered steady, high-converting leads that grew our business' },
+      { id: 'seo', label: '🚀 Top SEO Rankings', category: 'SEO', snippet: 'Boosted our Google search rankings and organic traffic significantly' },
+      { id: 'google_ads', label: '📈 Profitable Google Ads', category: 'Google Ads', snippet: 'Managed Google Ads campaigns with outstanding ROI and lower cost per click' },
+      { id: 'meta_ads', label: '📱 High ROAS Meta Ads', category: 'Meta Ads', snippet: 'Created high-converting Meta and Instagram ad campaigns with great ROAS' },
+      { id: 'strategy', label: '💡 Smart Growth Strategy', category: 'Strategy', snippet: 'Formulated a customized, data-driven marketing strategy tailored to our goals' },
+      { id: 'results', label: '📊 Proven ROI & Results', category: 'Results', snippet: 'Delivered measurable results, clear monthly reports, and exceptional ROI' },
+      { id: 'communication', label: '💬 Clear Communication', category: 'Communication', snippet: 'Maintained transparent, prompt, and proactive communication at every step' },
+      { id: 'account_mgmt', label: '🤝 Dedicated Account Mgr', category: 'Account Management', snippet: 'Our dedicated account manager was incredibly supportive, knowledgeable, and responsive' },
+      { id: 'gbp', label: '📍 Local GBP Optimization', category: 'Google Business Profile (GBP)', snippet: 'Optimized our Google Business Profile and local search visibility effortlessly' },
+      { id: 'branding', label: '🎨 Creative Content & Design', category: 'Branding', snippet: 'Produced stunning graphic designs, engaging content, and strong brand positioning' },
+    ]
   }
 };

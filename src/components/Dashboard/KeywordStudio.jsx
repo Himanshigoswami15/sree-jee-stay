@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Sparkles, Plus, Trash2, Check, ThumbsUp, AlertCircle, Edit2,
   ArrowUp, ArrowDown, Smartphone, CheckCircle2,
-  Hotel, Utensils, Stethoscope, Scissors, Dumbbell, Coffee, X, Star, Eye
+  Hotel, Utensils, Stethoscope, Scissors, Dumbbell, Coffee, X, Star, Eye, Rocket
 } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { INDUSTRY_TEMPLATES } from '../../config/industryTemplates';
@@ -169,6 +169,7 @@ export function KeywordStudio() {
       case 'salon': return <Scissors size={16} />;
       case 'gym': return <Dumbbell size={16} />;
       case 'cafe': return <Coffee size={16} />;
+      case 'marketing': return <Rocket size={16} />;
       default: return <Sparkles size={16} />;
     }
   };
