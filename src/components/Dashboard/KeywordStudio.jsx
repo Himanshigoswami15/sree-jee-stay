@@ -8,6 +8,39 @@ import { useFeedback } from '../../context/FeedbackContext';
 import { INDUSTRY_TEMPLATES } from '../../config/industryTemplates';
 import { generateReviewText, evaluateReviewStrength } from '../../utils/reviewGenerator';
 
+const ALL_CATEGORIES = [
+  'SEO',
+  'Google Ads',
+  'Meta Ads',
+  'Social Media',
+  'Website',
+  'Service',
+  'Communication',
+  'Project Management',
+  'Results',
+  'Pricing',
+  'Content Writing',
+  'Graphic Design',
+  'Branding',
+  'Lead Generation',
+  'Local SEO',
+  'Google Business Profile (GBP)',
+  'Reporting',
+  'Strategy',
+  'Technical Support',
+  'Customer Support',
+  'Timeline',
+  'Performance',
+  'Account Management',
+  'Consultation',
+  'Transparency',
+  'Amenities',
+  'Cleanliness',
+  'Dining',
+  'Comfort',
+  'General',
+];
+
 export function KeywordStudio() {
   const {
     keywords,
@@ -24,6 +57,7 @@ export function KeywordStudio() {
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [editingTagId, setEditingTagId] = useState(null);
   const [inlineLabel, setInlineLabel] = useState('');
+  const [inlineCategory, setInlineCategory] = useState('General');
 
   // Modals & Banners
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
@@ -48,6 +82,7 @@ export function KeywordStudio() {
     const id = tag.id || tag.tagId;
     setEditingTagId(id);
     setInlineLabel(tag.label);
+    setInlineCategory(tag.category || 'General');
   };
 
   const handleSaveInlineEdit = async (tag) => {
@@ -56,7 +91,7 @@ export function KeywordStudio() {
 
     await updateKeyword(activeTab, id, {
       label: inlineLabel.trim(),
-      category: tag.category || 'General',
+      category: inlineCategory,
       snippet: tag.snippet || inlineLabel.trim(),
     });
 
@@ -353,12 +388,11 @@ export function KeywordStudio() {
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                 >
-                  <option value="Service">Service</option>
-                  <option value="Amenities">Amenities</option>
-                  <option value="Cleanliness">Cleanliness</option>
-                  <option value="Dining">Dining</option>
-                  <option value="Comfort">Comfort</option>
-                  <option value="General">General</option>
+                  {ALL_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -416,29 +450,43 @@ export function KeywordStudio() {
                   transition: 'all 0.2s ease-in-out'
                 }}
               >
-                {/* INLINE EDITABLE LABEL */}
+                {/* INLINE EDITABLE LABEL & CATEGORY */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                   {isEditing ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flex: 1 }}>
-                      <input
-                        type="text"
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <input
+                          type="text"
+                          className="form-input"
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem', fontWeight: 800 }}
+                          value={inlineLabel}
+                          onChange={(e) => setInlineLabel(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveInlineEdit(tag);
+                            if (e.key === 'Escape') setEditingTagId(null);
+                          }}
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveInlineEdit(tag)}
+                          style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: '6px', padding: '0.3rem 0.5rem', cursor: 'pointer' }}
+                        >
+                          <Check size={14} />
+                        </button>
+                      </div>
+                      <select
                         className="form-input"
-                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem', fontWeight: 800 }}
-                        value={inlineLabel}
-                        onChange={(e) => setInlineLabel(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSaveInlineEdit(tag);
-                          if (e.key === 'Escape') setEditingTagId(null);
-                        }}
-                        autoFocus
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleSaveInlineEdit(tag)}
-                        style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: '6px', padding: '0.3rem 0.5rem', cursor: 'pointer' }}
+                        style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', fontWeight: 700 }}
+                        value={inlineCategory}
+                        onChange={(e) => setInlineCategory(e.target.value)}
                       >
-                        <Check size={14} />
-                      </button>
+                        {ALL_CATEGORIES.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   ) : (
                     <div
@@ -451,20 +499,22 @@ export function KeywordStudio() {
                     </div>
                   )}
 
-                  <span
-                    style={{
-                      fontSize: '0.725rem',
-                      fontWeight: 700,
-                      background: '#e0e7ff',
-                      color: '#4f46e5',
-                      border: '1px solid #c7d2fe',
-                      padding: '0.15rem 0.6rem',
-                      borderRadius: '12px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    {tag.category || 'General'}
-                  </span>
+                  {!isEditing && (
+                    <span
+                      style={{
+                        fontSize: '0.725rem',
+                        fontWeight: 700,
+                        background: '#e0e7ff',
+                        color: '#4f46e5',
+                        border: '1px solid #c7d2fe',
+                        padding: '0.15rem 0.6rem',
+                        borderRadius: '12px',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {tag.category || 'General'}
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ fontSize: '0.825rem', color: '#475569', fontStyle: 'italic', lineHeight: '1.4', fontWeight: 500 }}>

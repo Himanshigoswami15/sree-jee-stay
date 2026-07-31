@@ -23,10 +23,28 @@ function getInitialHotels() {
   return DEFAULT_REGISTERED_HOTELS;
 }
 
+function getSavedStorage(key, fallback) {
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return fallback;
+}
+
+function saveStorage(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {}
+}
+
 export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [settings, setSettings] = useState(() => getHotelConfig(hotelSlug));
-  const [keywords, setKeywords] = useState(RATING_KEYWORDS);
+  const settingsKey = `jj_settings_${hotelSlug}`;
+  const keywordsKey = `jj_keywords_${hotelSlug}`;
+  const feedbacksKey = `jj_feedbacks_${hotelSlug}`;
+
+  const [feedbacks, setFeedbacks] = useState(() => getSavedStorage(feedbacksKey, []));
+  const [settings, setSettings] = useState(() => getSavedStorage(settingsKey, getHotelConfig(hotelSlug)));
+  const [keywords, setKeywords] = useState(() => getSavedStorage(keywordsKey, RATING_KEYWORDS));
   const [registeredHotels, setRegisteredHotels] = useState(getInitialHotels);
   const [loading, setLoading] = useState(true);
 
@@ -72,22 +90,38 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    const sKey = `jj_settings_${hotelSlug}`;
+    const kKey = `jj_keywords_${hotelSlug}`;
+    const fKey = `jj_feedbacks_${hotelSlug}`;
+
+    const cachedSettings = getSavedStorage(sKey, null);
+    if (cachedSettings) setSettings(cachedSettings);
+
+    const cachedKeywords = getSavedStorage(kKey, null);
+    if (cachedKeywords) setKeywords(cachedKeywords);
+
+    const cachedFeedbacks = getSavedStorage(fKey, null);
+    if (cachedFeedbacks) setFeedbacks(cachedFeedbacks);
+
     try {
       fetchHotelsList();
 
       const settingsRes = await apiClient(`/api/settings?hotelSlug=${encodeURIComponent(hotelSlug)}`);
       if (settingsRes.success && settingsRes.settings) {
         setSettings(settingsRes.settings);
+        saveStorage(sKey, settingsRes.settings);
       }
 
       const keywordsRes = await apiClient(`/api/keywords?hotelSlug=${encodeURIComponent(hotelSlug)}`);
       if (keywordsRes.success && keywordsRes.keywords) {
         setKeywords(keywordsRes.keywords);
+        saveStorage(kKey, keywordsRes.keywords);
       }
 
       const feedbackRes = await apiClient(`/api/feedback?hotelSlug=${encodeURIComponent(hotelSlug)}`);
       if (feedbackRes.success && feedbackRes.feedbacks) {
         setFeedbacks(feedbackRes.feedbacks);
+        saveStorage(fKey, feedbackRes.feedbacks);
       }
     } catch (err) {
       console.warn('[FeedbackContext] Error loading initial data from server:', err);
@@ -213,24 +247,35 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       };
     }
 
-    if (res.success && res.submission) {
-      setFeedbacks((prev) => [res.submission, ...prev]);
+    const submission = (res.success && res.submission) ? res.submission : {
+      id: `fb_${Date.now()}`,
+      hotelSlug,
+      rating: newFb.rating,
+      tags: newFb.tags || [],
+      reviewText: newFb.reviewText || '',
+      guestContact: newFb.guestContact || '',
+      postedPublic: newFb.postedPublic || false,
+      timestamp: new Date().toISOString(),
+    };
 
-      const isLowRating = res.submission.rating <= settings.alertThreshold;
-      if (isLowRating) {
-        setManagerAlertToast({
-          id: res.submission.id,
-          rating: res.submission.rating,
-          tags: res.submission.tags,
-          timestamp: res.submission.timestamp,
-          message: `🚨 Low Rating Alert! Guest submitted ${res.submission.rating}-Star Feedback.`,
-        });
-      }
+    setFeedbacks((prev) => {
+      const updated = [submission, ...prev];
+      saveStorage(`jj_feedbacks_${hotelSlug}`, updated);
+      return updated;
+    });
 
-      return { success: true, submission: res.submission };
+    const isLowRating = submission.rating <= settings.alertThreshold;
+    if (isLowRating) {
+      setManagerAlertToast({
+        id: submission.id,
+        rating: submission.rating,
+        tags: submission.tags,
+        timestamp: submission.timestamp,
+        message: `🚨 Low Rating Alert! Guest submitted ${submission.rating}-Star Feedback.`,
+      });
     }
 
-    return { success: false, error: res.error || 'Failed to submit feedback.' };
+    return { success: true, submission };
   };
 
   const addKeyword = async (type, tagData) => {
@@ -239,27 +284,25 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       body: JSON.stringify({ hotelSlug, type, ...tagData }),
     });
 
-    if (res.success && res.keyword) {
-      setKeywords((prev) => ({
+    const newKeyword = (res.success && res.keyword) ? res.keyword : {
+      id: tagData.id || tagData.tagId || `custom_${Date.now()}`,
+      tagId: tagData.id || tagData.tagId || `custom_${Date.now()}`,
+      label: tagData.label,
+      category: tagData.category || 'General',
+      snippet: tagData.snippet || tagData.label,
+      snippets: tagData.snippets || [tagData.snippet || tagData.label],
+    };
+
+    setKeywords((prev) => {
+      const updated = {
         ...prev,
-        [type]: [...(prev[type] || []), res.keyword],
-      }));
-      return { success: true };
-    } else {
-      // Optimistic local state fallback
-      const fallbackKeyword = {
-        id: `custom_${Date.now()}`,
-        tagId: `custom_${Date.now()}`,
-        label: tagData.label,
-        category: tagData.category || 'General',
-        snippet: tagData.snippet || tagData.label,
+        [type]: [...(prev[type] || []), newKeyword],
       };
-      setKeywords((prev) => ({
-        ...prev,
-        [type]: [...(prev[type] || []), fallbackKeyword],
-      }));
-      return { success: true };
-    }
+      saveStorage(`jj_keywords_${hotelSlug}`, updated);
+      return updated;
+    });
+
+    return { success: true, keyword: newKeyword };
   };
 
   const updateKeyword = async (type, tagId, updatedFields) => {
@@ -268,41 +311,46 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       body: JSON.stringify({ hotelSlug, type, ...updatedFields }),
     });
 
-    if (res.success && res.keyword) {
-      setKeywords((prev) => ({
+    const updatedTag = (res.success && res.keyword) ? res.keyword : updatedFields;
+
+    setKeywords((prev) => {
+      const updated = {
         ...prev,
-        [type]: (prev[type] || []).map((k) => (k.id === tagId ? { ...k, ...res.keyword } : k)),
-      }));
-      return { success: true };
-    } else {
-      // Local optimistic update fallback
-      setKeywords((prev) => ({
-        ...prev,
-        [type]: (prev[type] || []).map((k) => (k.id === tagId ? { ...k, ...updatedFields } : k)),
-      }));
-      return { success: true };
-    }
+        [type]: (prev[type] || []).map((k) => ((k.id === tagId || k.tagId === tagId) ? { ...k, ...updatedTag } : k)),
+      };
+      saveStorage(`jj_keywords_${hotelSlug}`, updated);
+      return updated;
+    });
+
+    return { success: true };
   };
 
   const deleteKeyword = async (type, tagId) => {
-    const res = await apiClient(`/api/keywords/${tagId}?hotelSlug=${encodeURIComponent(hotelSlug)}&type=${type}`, {
+    apiClient(`/api/keywords/${tagId}?hotelSlug=${encodeURIComponent(hotelSlug)}&type=${type}`, {
       method: 'DELETE',
     });
 
-    if (res.success || true) {
-      setKeywords((prev) => ({
+    setKeywords((prev) => {
+      const updated = {
         ...prev,
         [type]: (prev[type] || []).filter((t) => t.id !== tagId && t.tagId !== tagId),
-      }));
-      return { success: true };
-    }
+      };
+      saveStorage(`jj_keywords_${hotelSlug}`, updated);
+      return updated;
+    });
+
+    return { success: true };
   };
 
   const reorderKeywords = async (type, newOrderedList) => {
-    setKeywords((prev) => ({
-      ...prev,
-      [type]: newOrderedList,
-    }));
+    setKeywords((prev) => {
+      const updated = {
+        ...prev,
+        [type]: newOrderedList,
+      };
+      saveStorage(`jj_keywords_${hotelSlug}`, updated);
+      return updated;
+    });
 
     await apiClient('/api/keywords/reorder', {
       method: 'POST',
@@ -317,19 +365,25 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     const newKeywordsList = template.keywords.map((k, idx) => ({
       id: k.id,
+      tagId: k.id,
       label: k.label,
       category: k.category,
       snippet: k.snippet,
+      snippets: k.snippets || [k.snippet || k.label],
       sortOrder: idx,
       isActive: true,
     }));
 
-    setKeywords((prev) => ({
-      ...prev,
-      positive: newKeywordsList,
-    }));
+    setKeywords((prev) => {
+      const updated = {
+        ...prev,
+        positive: newKeywordsList,
+      };
+      saveStorage(`jj_keywords_${hotelSlug}`, updated);
+      return updated;
+    });
 
-    const res = await apiClient('/api/keywords/template', {
+    await apiClient('/api/keywords/template', {
       method: 'POST',
       body: JSON.stringify({ hotelSlug, templateKey, keywords: newKeywordsList }),
     });
@@ -341,11 +395,13 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
     const res = await apiClient(`/api/feedback/${id}/resolve`, { method: 'POST' });
 
     if (res.success) {
-      setFeedbacks((prev) =>
-        prev.map((item) =>
+      setFeedbacks((prev) => {
+        const updated = prev.map((item) =>
           item.id === id ? { ...item, managerResolved: true, status: 'Manager Resolved' } : item
-        )
-      );
+        );
+        saveStorage(`jj_feedbacks_${hotelSlug}`, updated);
+        return updated;
+      });
     }
   };
 
@@ -359,9 +415,10 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       body: JSON.stringify({ hotelSlug, ...newSettings }),
     });
 
-    if (res.success && res.settings) {
-      setSettings(res.settings);
-    }
+    const finalSettings = (res.success && res.settings) ? res.settings : { ...settings, ...newSettings };
+
+    setSettings(finalSettings);
+    saveStorage(`jj_settings_${hotelSlug}`, finalSettings);
   };
 
   const resetToDemoData = () => {
