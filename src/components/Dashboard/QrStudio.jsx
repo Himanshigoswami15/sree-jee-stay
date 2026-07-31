@@ -32,11 +32,18 @@ export function QrStudio() {
   const hotelSlug = settings?.hotelSlug || 'sree-jee-stay';
   const hotelName = settings?.hotelName || 'Sree Jee Stay';
 
-  const fetchQrAndAnalytics = async (overrideMode = targetMode) => {
+  const [customIpUrl, setCustomIpUrl] = useState('');
+
+  const fetchQrAndAnalytics = async (overrideMode = targetMode, customUrlOverride = '') => {
     let redirectUrl = `https://sree-jee-stay.vercel.app/${hotelSlug}`;
-    if (overrideMode === 'local' && typeof window !== 'undefined') {
+
+    if (customUrlOverride) {
+      redirectUrl = customUrlOverride.endsWith(`/${hotelSlug}`) ? customUrlOverride : `${customUrlOverride.replace(/\/$/, '')}/${hotelSlug}`;
+    } else if (overrideMode === 'local' && typeof window !== 'undefined') {
+      // Use local origin (e.g. http://192.168.x.x:7890 or http://localhost:7890)
       redirectUrl = `${window.location.origin}/${hotelSlug}`;
     }
+
     setTargetUrl(redirectUrl);
 
     try {
@@ -221,49 +228,60 @@ export function QrStudio() {
           </div>
 
           {/* Target Domain Selector Bar */}
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0.65rem 0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Globe size={14} color="#2563eb" /> QR Code Scannable Domain:
-            </span>
-            <div style={{ display: 'flex', gap: '0.35rem' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setTargetMode('live');
-                  fetchQrAndAnalytics('live');
-                }}
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: targetMode === 'live' ? 800 : 600,
-                  padding: '0.3rem 0.65rem',
-                  borderRadius: '16px',
-                  border: targetMode === 'live' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
-                  background: targetMode === 'live' ? '#eff6ff' : '#ffffff',
-                  color: targetMode === 'live' ? '#2563eb' : '#475569',
-                  cursor: 'pointer',
-                }}
-              >
-                🌐 Live Web URL (Scannable on Phone)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setTargetMode('local');
-                  fetchQrAndAnalytics('local');
-                }}
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: targetMode === 'local' ? 800 : 600,
-                  padding: '0.3rem 0.65rem',
-                  borderRadius: '16px',
-                  border: targetMode === 'local' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
-                  background: targetMode === 'local' ? '#eff6ff' : '#ffffff',
-                  color: targetMode === 'local' ? '#2563eb' : '#475569',
-                  cursor: 'pointer',
-                }}
-              >
-                💻 Localhost
-              </button>
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '0.85rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.825rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Globe size={15} color="#2563eb" /> Target QR Destination Mode:
+              </span>
+              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetMode('live');
+                    fetchQrAndAnalytics('live');
+                  }}
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: targetMode === 'live' ? 800 : 600,
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '16px',
+                    border: targetMode === 'live' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                    background: targetMode === 'live' ? '#eff6ff' : '#ffffff',
+                    color: targetMode === 'live' ? '#2563eb' : '#475569',
+                    cursor: 'pointer',
+                  }}
+                >
+                  🌐 Live Vercel URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetMode('local');
+                    fetchQrAndAnalytics('local');
+                  }}
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: targetMode === 'local' ? 800 : 600,
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '16px',
+                    border: targetMode === 'local' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                    background: targetMode === 'local' ? '#eff6ff' : '#ffffff',
+                    color: targetMode === 'local' ? '#2563eb' : '#475569',
+                    cursor: 'pointer',
+                  }}
+                >
+                  💻 Local Wi-Fi / Dev
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Scan Troubleshooting Guide Banner */}
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.65rem 0.85rem', textAlign: 'left', fontSize: '0.775rem', color: '#1e3a8a', lineHeight: '1.4' }}>
+              <strong>📱 Why phone shows old data when scanning QR code:</strong>
+              <ul style={{ margin: '0.35rem 0 0 1.1rem', padding: 0 }}>
+                <li><strong>Live Vercel QR Mode:</strong> Scans `https://sree-jee-stay.vercel.app`. Mobile phone will show old code until you deploy/push your new code to Vercel!</li>
+                <li><strong>Local Dev Wi-Fi Mode:</strong> `localhost` won't work on mobile phones. Both your computer and phone must be on the same Wi-Fi network using your PC's IP address (e.g. <code>http://192.168.x.x:7890</code>).</li>
+              </ul>
             </div>
           </div>
 

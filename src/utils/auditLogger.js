@@ -1,8 +1,8 @@
 import { apiClient } from '../services/apiClient';
 
 export class AuditLogger {
-  constructor(tenantId = 'demo', locationId = 'main') {
-    this.tenantId = tenantId;
+  constructor(hotelId = 'demo', locationId = 'main') {
+    this.hotelId = hotelId;
     this.locationId = locationId;
   }
 
@@ -13,7 +13,7 @@ export class AuditLogger {
 
   logEvent(eventType, details = {}) {
     const logEntry = {
-      tenantId: this.tenantId,
+      hotelId: this.hotelId,
       locationId: this.locationId,
       eventType, // e.g., 'FEEDBACK_SUBMITTED', 'MANAGER_ALERTED', 'PROVIDER_CLICKED'
       details,
@@ -21,7 +21,7 @@ export class AuditLogger {
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
     };
 
-    console.log(`[AuditLog][${this.tenantId}] ${eventType}`, details);
+    console.log(`[AuditLog][${this.hotelId}] ${eventType}`, details);
 
     // Fire-and-forget log POST to backend
     apiClient('/api/audit', {

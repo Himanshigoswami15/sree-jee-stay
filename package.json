@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "migrate": "node scripts/migrate.js",
     "seed": "node scripts/seed.js",
-    "validate-place-id": "node scripts/validatePlaceId.js"
+    "validate-place-id": "node scripts/validatePlaceId.js",
+    "verify-atlas": "node scripts/verifyAtlas.js"
   },
   "dependencies": {
     "@openrouter/sdk": "^1.1.6",

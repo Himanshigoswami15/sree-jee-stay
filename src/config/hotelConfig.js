@@ -64,24 +64,6 @@ export function getHotelConfig(identifier = 'sree-jee-stay') {
     return hotels[cleanId];
   }
 
-  // Check localStorage for registered hotels
-  try {
-    const saved = localStorage.getItem('jj_registered_hotels');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const found = parsed.find((h) => h.hotelSlug === cleanId || h.hotelId === cleanId);
-      if (found) {
-        return {
-          ...hotels['sree-jee-stay'],
-          hotelId: cleanId,
-          hotelSlug: cleanId,
-          name: found.name,
-          hotelName: found.name,
-        };
-      }
-    }
-  } catch (e) {}
-
   // Format clean title from slug e.g. "jj-elevates" -> "JJ Elevates"
   const formattedTitle = cleanId.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
@@ -93,3 +75,4 @@ export function getHotelConfig(identifier = 'sree-jee-stay') {
     hotelName: formattedTitle,
   };
 }
+

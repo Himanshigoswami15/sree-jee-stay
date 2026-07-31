@@ -412,15 +412,3 @@ export async function applyKeywordTemplate(identifier = DEFAULT_HOTEL_ID, templa
   await logEvent(hotelId, 'KEYWORD_TEMPLATE_APPLIED', { templateKey, count: docs.length }, req).catch(() => {});
   return { success: true, count: docs.length };
 }
-    snippets: item.snippets || [item.snippet || item.label],
-    sortOrder: idx,
-    isActive: true,
-  }));
-
-  if (docs.length > 0) {
-    await Keyword.insertMany(docs);
-  }
-
-  await logEvent(hotelId, 'KEYWORD_TEMPLATE_APPLIED', { templateKey, count: docs.length }, req);
-  return { success: true, count: docs.length };
-}
