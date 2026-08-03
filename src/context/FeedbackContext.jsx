@@ -330,7 +330,13 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       body: JSON.stringify({ hotelSlug, type, ...tagData }),
     });
 
-    const newKeyword = (res.success && res.keyword) ? res.keyword : {
+    if (res && res.success && res.keywords) {
+      setKeywords(res.keywords);
+      saveStorage(`jj_keywords_${hotelSlug}`, res.keywords);
+      return { success: true, keyword: res.keyword };
+    }
+
+    const newKeyword = {
       id: tagData.id || tagData.tagId || `custom_${Date.now()}`,
       tagId: tagData.id || tagData.tagId || `custom_${Date.now()}`,
       label: tagData.label,
@@ -357,7 +363,13 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       body: JSON.stringify({ hotelSlug, type, ...updatedFields }),
     });
 
-    const updatedTag = (res.success && res.keyword) ? res.keyword : updatedFields;
+    if (res && res.success && res.keywords) {
+      setKeywords(res.keywords);
+      saveStorage(`jj_keywords_${hotelSlug}`, res.keywords);
+      return { success: true };
+    }
+
+    const updatedTag = updatedFields;
 
     setKeywords((prev) => {
       const updated = {
@@ -372,9 +384,15 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   };
 
   const deleteKeyword = async (type, tagId) => {
-    apiClient(`/api/keywords/${tagId}?hotelSlug=${encodeURIComponent(hotelSlug)}&type=${type}`, {
+    const res = await apiClient(`/api/keywords/${tagId}?hotelSlug=${encodeURIComponent(hotelSlug)}&type=${type}`, {
       method: 'DELETE',
     });
+
+    if (res && res.success && res.keywords) {
+      setKeywords(res.keywords);
+      saveStorage(`jj_keywords_${hotelSlug}`, res.keywords);
+      return { success: true };
+    }
 
     setKeywords((prev) => {
       const updated = {
@@ -420,6 +438,17 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       isActive: true,
     }));
 
+    const res = await apiClient('/api/keywords/template', {
+      method: 'POST',
+      body: JSON.stringify({ hotelSlug, templateKey, keywords: newKeywordsList }),
+    });
+
+    if (res && res.success && res.keywords) {
+      setKeywords(res.keywords);
+      saveStorage(`jj_keywords_${hotelSlug}`, res.keywords);
+      return { success: true, count: res.count || newKeywordsList.length };
+    }
+
     setKeywords((prev) => {
       const updated = {
         ...prev,
@@ -427,11 +456,6 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       };
       saveStorage(`jj_keywords_${hotelSlug}`, updated);
       return updated;
-    });
-
-    await apiClient('/api/keywords/template', {
-      method: 'POST',
-      body: JSON.stringify({ hotelSlug, templateKey, keywords: newKeywordsList }),
     });
 
     return { success: true, count: newKeywordsList.length };

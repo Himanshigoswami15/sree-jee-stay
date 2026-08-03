@@ -184,20 +184,29 @@ export async function getKeywords(identifier = DEFAULT_HOTEL_ID) {
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
-  if (mongoose.connection.readyState !== 1) {
-    if (memoryKeywordsStore.has(hotelId)) return memoryKeywordsStore.get(hotelId);
-    if (memoryKeywordsStore.has(identifier)) return memoryKeywordsStore.get(identifier);
-  }
-
   try {
-    const keywords = await Keyword.find({ hotelId, isActive: true }).sort({ sortOrder: 1 });
+    const keywords = await Keyword.find({
+      $or: [{ hotelId }, { hotelId: identifier }],
+      isActive: true,
+    }).sort({ sortOrder: 1 });
 
     if (keywords.length === 0) {
       await seedDefaultKeywords(hotelId).catch(() => {});
-      const seeded = await Keyword.find({ hotelId, isActive: true }).sort({ sortOrder: 1 });
-      if (seeded.length > 0) return groupKeywords(seeded);
+      const seeded = await Keyword.find({
+        $or: [{ hotelId }, { hotelId: identifier }],
+        isActive: true,
+      }).sort({ sortOrder: 1 });
+      if (seeded.length > 0) {
+        const grouped = groupKeywords(seeded);
+        memoryKeywordsStore.set(hotelId, grouped);
+        memoryKeywordsStore.set(identifier, grouped);
+        return grouped;
+      }
     } else {
-      return groupKeywords(keywords);
+      const grouped = groupKeywords(keywords);
+      memoryKeywordsStore.set(hotelId, grouped);
+      memoryKeywordsStore.set(identifier, grouped);
+      return grouped;
     }
   } catch (err) {
     logger.warn(`[SettingsService] DB query failed, returning fallback keywords for "${hotelId}": ${err.message}`);
@@ -272,7 +281,7 @@ async function seedDefaultKeywords(hotelId) {
 export async function addKeyword(identifier = DEFAULT_HOTEL_ID, type, tagData, req = null) {
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
-  const tagId = tagData.tagId || 'custom_' + Date.now().toString(36);
+  const tagId = tagData.tagId || tagData.id || 'custom_' + Date.now().toString(36);
 
   let newKw = {
     id: tagId,
@@ -292,34 +301,31 @@ export async function addKeyword(identifier = DEFAULT_HOTEL_ID, type, tagData, r
       category: tagData.category || 'General',
       snippet: tagData.snippet || tagData.label,
       snippets: tagData.snippets || [tagData.snippet || tagData.label],
+      sortOrder: Date.now(),
+      isActive: true,
     });
     newKw = {
       id: keyword.tagId,
+      tagId: keyword.tagId,
       label: keyword.label,
       category: keyword.category,
       snippet: keyword.snippet,
       snippets: keyword.snippets,
     };
-  } catch (err) {}
+  } catch (err) {
+    logger.error(`[SettingsService] Error adding keyword for "${identifier}": ${err.message}`);
+  }
 
-  const current = memoryKeywordsStore.get(hotelId) || groupKeywords(
-    RATING_KEYWORDS.positive.map((k, idx) => ({ ...k, tagId: k.id, type: 'positive', sortOrder: idx })).concat(
-      RATING_KEYWORDS.negative.map((k, idx) => ({ ...k, tagId: k.id, type: 'negative', sortOrder: idx }))
-    )
-  );
-
-  const updatedGroup = {
-    ...current,
-    [type]: [...(current[type] || []), newKw],
-  };
-  memoryKeywordsStore.set(hotelId, updatedGroup);
-  memoryKeywordsStore.set(identifier, updatedGroup);
+  memoryKeywordsStore.delete(hotelId);
+  memoryKeywordsStore.delete(identifier);
+  const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_ADDED', { type, label: tagData.label }, req).catch(() => {});
 
   return {
     success: true,
     keyword: newKw,
+    keywords: updatedGroup,
   };
 }
 
@@ -327,23 +333,21 @@ export async function deleteKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, 
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
-  await Keyword.deleteOne({ hotelId, tagId }).catch(() => {});
+  try {
+    await Keyword.deleteMany({
+      $or: [{ hotelId }, { hotelId: identifier }],
+      tagId,
+    });
+  } catch (err) {
+    logger.error(`[SettingsService] Error deleting keyword "${tagId}" for "${identifier}": ${err.message}`);
+  }
 
-  const current = memoryKeywordsStore.get(hotelId) || groupKeywords(
-    RATING_KEYWORDS.positive.map((k, idx) => ({ ...k, tagId: k.id, type: 'positive', sortOrder: idx })).concat(
-      RATING_KEYWORDS.negative.map((k, idx) => ({ ...k, tagId: k.id, type: 'negative', sortOrder: idx }))
-    )
-  );
-
-  const updatedGroup = {
-    ...current,
-    [type]: (current[type] || []).filter((t) => t.id !== tagId && t.tagId !== tagId),
-  };
-  memoryKeywordsStore.set(hotelId, updatedGroup);
-  memoryKeywordsStore.set(identifier, updatedGroup);
+  memoryKeywordsStore.delete(hotelId);
+  memoryKeywordsStore.delete(identifier);
+  const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_DELETED', { type, tagId }, req).catch(() => {});
-  return { success: true, message: 'Keyword tag deleted successfully.' };
+  return { success: true, message: 'Keyword tag deleted successfully.', keywords: updatedGroup };
 }
 
 export async function updateKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, tagData, req = null) {
@@ -351,8 +355,11 @@ export async function updateKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, 
   const hotelId = hotel ? hotel.hotelId : identifier;
 
   try {
-    await Keyword.findOneAndUpdate(
-      { hotelId, tagId },
+    await Keyword.updateMany(
+      {
+        $or: [{ hotelId }, { hotelId: identifier }],
+        tagId,
+      },
       {
         $set: {
           label: tagData.label,
@@ -360,29 +367,22 @@ export async function updateKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, 
           snippet: tagData.snippet || tagData.label,
           snippets: tagData.snippets || [tagData.snippet || tagData.label],
         },
-      },
-      { new: true }
+      }
     );
-  } catch (err) {}
+  } catch (err) {
+    logger.error(`[SettingsService] Error updating keyword "${tagId}" for "${identifier}": ${err.message}`);
+  }
 
-  const current = memoryKeywordsStore.get(hotelId) || groupKeywords(
-    RATING_KEYWORDS.positive.map((k, idx) => ({ ...k, tagId: k.id, type: 'positive', sortOrder: idx })).concat(
-      RATING_KEYWORDS.negative.map((k, idx) => ({ ...k, tagId: k.id, type: 'negative', sortOrder: idx }))
-    )
-  );
-
-  const updatedGroup = {
-    ...current,
-    [type]: (current[type] || []).map((k) => (k.id === tagId || k.tagId === tagId ? { ...k, ...tagData } : k)),
-  };
-  memoryKeywordsStore.set(hotelId, updatedGroup);
-  memoryKeywordsStore.set(identifier, updatedGroup);
+  memoryKeywordsStore.delete(hotelId);
+  memoryKeywordsStore.delete(identifier);
+  const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_UPDATED', { type, tagId, label: tagData.label }, req).catch(() => {});
 
   return {
     success: true,
-    keyword: { id: tagId, ...tagData },
+    keyword: { id: tagId, tagId, ...tagData },
+    keywords: updatedGroup,
   };
 }
 
@@ -391,8 +391,11 @@ export async function reorderKeywords(identifier = DEFAULT_HOTEL_ID, type, tagId
   const hotelId = hotel ? hotel.hotelId : identifier;
 
   const ops = tagIds.map((tagId, index) => ({
-    updateOne: {
-      filter: { hotelId, tagId },
+    updateMany: {
+      filter: {
+        $or: [{ hotelId }, { hotelId: identifier }],
+        tagId,
+      },
       update: { $set: { sortOrder: index } },
     },
   }));
@@ -400,6 +403,9 @@ export async function reorderKeywords(identifier = DEFAULT_HOTEL_ID, type, tagId
   if (ops.length > 0) {
     await Keyword.bulkWrite(ops).catch(() => {});
   }
+
+  memoryKeywordsStore.delete(hotelId);
+  memoryKeywordsStore.delete(identifier);
 
   await logEvent(hotelId, 'KEYWORD_REORDERED', { type, count: tagIds.length }, req).catch(() => {});
   return { success: true };
@@ -409,34 +415,34 @@ export async function applyKeywordTemplate(identifier = DEFAULT_HOTEL_ID, templa
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
-  await Keyword.deleteMany({
-    $or: [{ hotelId }, { hotelId: identifier }]
-  }).catch(() => {});
+  try {
+    await Keyword.deleteMany({
+      $or: [{ hotelId }, { hotelId: identifier }]
+    });
 
-  const docs = customKeywords.map((item, idx) => ({
-    hotelId,
-    type: 'positive',
-    tagId: item.id || 'tmpl_' + idx + '_' + Date.now().toString(36),
-    label: item.label,
-    category: item.category || 'General',
-    snippet: item.snippet || item.label,
-    snippets: item.snippets || [item.snippet || item.label],
-    sortOrder: idx,
-    isActive: true,
-  }));
+    const docs = customKeywords.map((item, idx) => ({
+      hotelId,
+      type: 'positive',
+      tagId: item.id || item.tagId || 'tmpl_' + idx + '_' + Date.now().toString(36),
+      label: item.label,
+      category: item.category || 'General',
+      snippet: item.snippet || item.label,
+      snippets: item.snippets || [item.snippet || item.label],
+      sortOrder: idx,
+      isActive: true,
+    }));
 
-  if (docs.length > 0) {
-    await Keyword.insertMany(docs).catch(() => {});
+    if (docs.length > 0) {
+      await Keyword.insertMany(docs);
+    }
+  } catch (err) {
+    logger.error(`[SettingsService] Error applying keyword template for "${identifier}": ${err.message}`);
   }
 
-  const current = memoryKeywordsStore.get(hotelId) || { positive: [], negative: [] };
-  const updatedGroup = {
-    ...current,
-    positive: customKeywords,
-  };
-  memoryKeywordsStore.set(hotelId, updatedGroup);
-  memoryKeywordsStore.set(identifier, updatedGroup);
+  memoryKeywordsStore.delete(hotelId);
+  memoryKeywordsStore.delete(identifier);
+  const updatedGroup = await getKeywords(identifier);
 
-  await logEvent(hotelId, 'KEYWORD_TEMPLATE_APPLIED', { templateKey, count: docs.length }, req).catch(() => {});
-  return { success: true, count: docs.length };
+  await logEvent(hotelId, 'KEYWORD_TEMPLATE_APPLIED', { templateKey, count: customKeywords.length }, req).catch(() => {});
+  return { success: true, count: customKeywords.length, keywords: updatedGroup };
 }
