@@ -35,12 +35,15 @@ export function QrStudio() {
   const [customIpUrl, setCustomIpUrl] = useState('');
 
   const fetchQrAndAnalytics = async (overrideMode = targetMode, customUrlOverride = '') => {
-    let redirectUrl = `https://sree-jee-stay.vercel.app/${hotelSlug}`;
+    const currentOrigin = (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost:7890'))
+      ? window.location.origin
+      : (typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://sree-jee-stay.vercel.app');
+
+    let redirectUrl = `${currentOrigin}/${hotelSlug}`;
 
     if (customUrlOverride) {
       redirectUrl = customUrlOverride.endsWith(`/${hotelSlug}`) ? customUrlOverride : `${customUrlOverride.replace(/\/$/, '')}/${hotelSlug}`;
     } else if (overrideMode === 'local' && typeof window !== 'undefined') {
-      // Use local origin (e.g. http://192.168.x.x:7890 or http://localhost:7890)
       redirectUrl = `${window.location.origin}/${hotelSlug}`;
     }
 

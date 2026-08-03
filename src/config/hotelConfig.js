@@ -5,6 +5,7 @@ export const hotels = {
     hotelId: 'sree-jee-stay',
     hotelSlug: 'sree-jee-stay',
     name: 'Sree Jee Stay - Homestay in Varanasi',
+    hotelName: 'Sree Jee Stay - Homestay in Varanasi',
     themeColor: '#2563eb',
     googlePlaceId: GOOGLE_PLACE_ID,
     tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
@@ -23,6 +24,7 @@ export const hotels = {
     hotelId: 'demo',
     hotelSlug: 'demo',
     name: 'Sree Jee Stay - Homestay in Varanasi',
+    hotelName: 'Sree Jee Stay - Homestay in Varanasi',
     themeColor: '#2563eb',
     googlePlaceId: GOOGLE_PLACE_ID,
     tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
@@ -41,6 +43,7 @@ export const hotels = {
     hotelId: 'jj-elevates',
     hotelSlug: 'jj-elevates',
     name: 'JJ elevates',
+    hotelName: 'JJ elevates',
     themeColor: '#2563eb',
     googlePlaceId: GOOGLE_PLACE_ID,
     tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
@@ -61,11 +64,17 @@ export function getHotelConfig(identifier = 'sree-jee-stay') {
   const cleanId = (identifier || 'sree-jee-stay').toLowerCase().trim();
 
   if (hotels[cleanId]) {
-    return hotels[cleanId];
+    const conf = hotels[cleanId];
+    return {
+      ...conf,
+      hotelName: conf.hotelName || conf.name || 'JJ elevates',
+    };
   }
 
   // Format clean title from slug e.g. "jj-elevates" -> "JJ Elevates"
-  const formattedTitle = cleanId.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const formattedTitle = cleanId === 'jj-elevates'
+    ? 'JJ elevates'
+    : cleanId.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
   return {
     ...hotels['sree-jee-stay'],
