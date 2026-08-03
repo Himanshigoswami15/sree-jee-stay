@@ -277,15 +277,6 @@ export function QrStudio() {
                 </button>
               </div>
             </div>
-
-            {/* Mobile Scan Troubleshooting Guide Banner */}
-            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.65rem 0.85rem', textAlign: 'left', fontSize: '0.775rem', color: '#1e3a8a', lineHeight: '1.4' }}>
-              <strong>📱 Why phone shows old data when scanning QR code:</strong>
-              <ul style={{ margin: '0.35rem 0 0 1.1rem', padding: 0 }}>
-                <li><strong>Live Vercel QR Mode:</strong> Scans `https://sree-jee-stay.vercel.app`. Mobile phone will show old code until you deploy/push your new code to Vercel!</li>
-                <li><strong>Local Dev Wi-Fi Mode:</strong> `localhost` won't work on mobile phones. Both your computer and phone must be on the same Wi-Fi network using your PC's IP address (e.g. <code>http://192.168.x.x:7890</code>).</li>
-              </ul>
-            </div>
           </div>
 
           {/* Printable Tent Card Mockup Frame */}
