@@ -1,4 +1,4 @@
-import { generateGoogleReviewUrl } from './googleReview';
+import { generateGoogleReviewUrl } from './googleReview.js';
 
 export function getActiveProviders(tenantSettings) {
   if (!tenantSettings || !tenantSettings.providers) {
