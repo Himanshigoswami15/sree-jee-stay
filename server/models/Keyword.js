@@ -25,8 +25,8 @@ const keywordSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: KEYWORD_CATEGORIES,
     default: 'General',
+    trim: true,
   },
   snippet: {
     type: String,

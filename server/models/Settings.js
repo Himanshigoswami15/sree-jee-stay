@@ -71,8 +71,8 @@ const settingsSchema = new mongoose.Schema({
   },
   tone: {
     type: String,
-    enum: ['professional', 'friendly', 'luxury', 'budget', 'family', 'business'],
     default: 'friendly',
+    trim: true,
   },
   reviewLength: {
     type: String,
@@ -114,7 +114,7 @@ const settingsSchema = new mongoose.Schema({
   providers: [{
     type: {
       type: String,
-      enum: ['google', 'tripadvisor', 'booking', 'facebook', 'trustpilot'],
+      trim: true,
     },
     isEnabled: {
       type: Boolean,

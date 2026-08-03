@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { KEYWORD_CATEGORIES, WRITING_TONES } from '../config/constants.js';
 
 export const updateSettingsSchema = z.object({
   hotelName: z.string().min(1, 'Hotel name is required').optional(),
@@ -12,7 +11,7 @@ export const updateSettingsSchema = z.object({
   managerPhone: z.string().optional(),
   alertThreshold: z.number().int().min(1).max(5).optional(),
   preventDuplicateReviews: z.boolean().optional(),
-  tone: z.enum(WRITING_TONES).optional(),
+  tone: z.string().optional(),
   reviewLength: z.enum(['short', 'detailed']).optional(),
   includeEmojis: z.boolean().optional(),
   mentionStaff: z.boolean().optional(),
@@ -23,7 +22,7 @@ export const updateSettingsSchema = z.object({
   footerText: z.string().optional(),
   language: z.string().optional(),
   providers: z.array(z.object({
-    type: z.enum(['google', 'tripadvisor', 'booking', 'facebook', 'trustpilot']),
+    type: z.string(),
     isEnabled: z.boolean(),
   })).optional(),
 });
@@ -31,7 +30,7 @@ export const updateSettingsSchema = z.object({
 export const addKeywordSchema = z.object({
   type: z.enum(['positive', 'negative']),
   label: z.string().min(1, 'Label is required'),
-  category: z.enum(KEYWORD_CATEGORIES).default('General'),
+  category: z.string().default('General'),
   snippet: z.string().optional(),
   snippets: z.array(z.string()).optional(),
 });
