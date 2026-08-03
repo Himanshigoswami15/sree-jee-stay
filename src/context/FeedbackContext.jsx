@@ -94,14 +94,19 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
     const kKey = `jj_keywords_${hotelSlug}`;
     const fKey = `jj_feedbacks_${hotelSlug}`;
 
-    const cachedSettings = getSavedStorage(sKey, null);
-    if (cachedSettings) setSettings(cachedSettings);
-
-    const cachedKeywords = getSavedStorage(kKey, null);
-    if (cachedKeywords) setKeywords(cachedKeywords);
-
-    const cachedFeedbacks = getSavedStorage(fKey, null);
-    if (cachedFeedbacks) setFeedbacks(cachedFeedbacks);
+    // Seed state from cache only if state is uninitialized
+    if (!settings || !settings.hotelName) {
+      const cachedSettings = getSavedStorage(sKey, null);
+      if (cachedSettings) setSettings(cachedSettings);
+    }
+    if (!keywords || (!keywords.positive?.length && !keywords.negative?.length)) {
+      const cachedKeywords = getSavedStorage(kKey, null);
+      if (cachedKeywords) setKeywords(cachedKeywords);
+    }
+    if (!feedbacks || !feedbacks.length) {
+      const cachedFeedbacks = getSavedStorage(fKey, null);
+      if (cachedFeedbacks) setFeedbacks(cachedFeedbacks);
+    }
 
     try {
       fetchHotelsList();

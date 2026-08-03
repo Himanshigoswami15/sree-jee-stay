@@ -11,6 +11,17 @@ const inMemoryHotelsMap = new Map([
   ['jj-elevates', { hotelId: 'jj-elevates', hotelSlug: 'jj-elevates', name: 'JJ elevates', themeColor: '#2563eb' }]
 ]);
 
+export function updateInMemoryHotel(identifier, updatedData) {
+  const cleanId = String(identifier || '').toLowerCase().trim();
+  if (!cleanId) return;
+  const current = inMemoryHotelsMap.get(cleanId) || { hotelId: cleanId, hotelSlug: cleanId };
+  inMemoryHotelsMap.set(cleanId, {
+    ...current,
+    ...updatedData,
+    name: updatedData.name || updatedData.hotelName || current.name,
+  });
+}
+
 export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
   const cleanId = (identifier || DEFAULT_HOTEL_ID).toLowerCase().trim();
 

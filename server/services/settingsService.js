@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Settings, Keyword, Hotel } from '../models/index.js';
-import { getHotel } from './hotelService.js';
+import { getHotel, updateInMemoryHotel } from './hotelService.js';
 import { logEvent } from './auditService.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
@@ -172,7 +172,10 @@ export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings,
   };
 
   memorySettingsStore.set(hotelId, resultSettings);
+  memorySettingsStore.set(hotelSlug, resultSettings);
   memorySettingsStore.set(identifier, resultSettings);
+  updateInMemoryHotel(hotelSlug, resultSettings);
+  updateInMemoryHotel(hotelId, resultSettings);
 
   // Broadcast real-time SSE event to all connected devices across the network
   broadcastSystemEvent(hotelSlug, 'SETTINGS_UPDATED', { settings: resultSettings });
