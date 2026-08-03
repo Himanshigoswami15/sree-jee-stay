@@ -163,10 +163,31 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     fetchData();
 
-    // Auto-sync interval across devices (15 seconds)
+    // 5-second auto-polling for fast cross-device sync with MongoDB
     const syncInterval = setInterval(() => {
       fetchData();
-    }, 15000);
+    }, 5000);
+
+    // BroadcastChannel listener for instant cross-tab sync
+    let bc = null;
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        bc = new BroadcastChannel('jj_system_sync');
+        bc.onmessage = (event) => {
+          if (event.data && (event.data.hotelSlug === hotelSlug || !event.data.hotelSlug)) {
+            fetchData();
+          }
+        };
+      } catch (e) {}
+    }
+
+    // Storage event listener for cross-window sync
+    const handleStorageChange = (e) => {
+      if (e.key && e.key.includes(hotelSlug)) {
+        fetchData();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
 
     // Auto-sync when user returns to or focuses the tab/device
     const handleFocus = () => {
@@ -178,6 +199,8 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     return () => {
       clearInterval(syncInterval);
+      if (bc) bc.close();
+      window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleFocus);
     };
@@ -485,10 +508,20 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       body: JSON.stringify({ hotelSlug, ...newSettings }),
     });
 
-    const finalSettings = (res.success && res.settings) ? res.settings : { ...settings, ...newSettings };
+    const finalSettings = (res && res.success && res.settings) ? res.settings : { ...settings, ...newSettings };
 
     setSettings(finalSettings);
     saveStorage(`jj_settings_${hotelSlug}`, finalSettings);
+
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const bc = new BroadcastChannel('jj_system_sync');
+        bc.postMessage({ type: 'SETTINGS_UPDATED', hotelSlug, settings: finalSettings });
+        bc.close();
+      } catch (e) {}
+    }
+
+    return { success: true, settings: finalSettings };
   };
 
   const resetToDemoData = () => {

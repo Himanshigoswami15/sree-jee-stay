@@ -57,11 +57,11 @@ export function TabbedDashboard() {
     fetchAnalytics();
   }, [hotelSlug]);
 
-  const handleSaveBusiness = (e) => {
+  const handleSaveBusiness = async (e) => {
     e.preventDefault();
-    updateSettings(businessForm);
+    await updateSettings(businessForm);
     setBusinessSaved(true);
-    setTimeout(() => setBusinessSaved(false), 2000);
+    setTimeout(() => setBusinessSaved(false), 2500);
   };
 
   const handlePlaceIdChange = (val) => {
