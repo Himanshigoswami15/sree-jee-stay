@@ -117,51 +117,7 @@ export function AutoReviewEditor({
         </div>
       </div>
 
-      {/* Tone Selection Pills */}
-      {onChangeTone && (
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.35rem',
-            marginBottom: '0.75rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '0.725rem',
-              fontWeight: 700,
-              color: '#64748b',
-              alignSelf: 'center',
-              marginRight: '0.2rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
-            }}
-          >
-            <SlidersHorizontal size={12} /> Vibe:
-          </span>
-          {tones.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onChangeTone(t.id)}
-              style={{
-                fontSize: '0.725rem',
-                padding: '0.25rem 0.55rem',
-                borderRadius: '12px',
-                border: currentTone === t.id ? '1.5px solid #4f46e5' : '1px solid #e2e8f0',
-                background: currentTone === t.id ? '#e0e7ff' : '#f8fafc',
-                color: currentTone === t.id ? '#3730a3' : '#475569',
-                fontWeight: currentTone === t.id ? 800 : 600,
-                cursor: 'pointer',
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      )}
+
 
       {/* Editable Text Box */}
       <textarea
