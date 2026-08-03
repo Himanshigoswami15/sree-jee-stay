@@ -27,12 +27,19 @@ export async function generateQr(req, res, next) {
 
 export async function resolveScan(req, res, next) {
   try {
-    const token = req.params.token || req.params[0] || '';
-    const result = await qrService.logScanEvent(token, req);
-    const targetSlug = (result && (result.hotelSlug || result.hotelId)) ? (result.hotelSlug || result.hotelId) : 'sree-jee-stay';
+    const rawToken = req.params.token || req.params[0] || req.query.hotelSlug || '';
+    const cleanToken = String(rawToken).toLowerCase().trim();
+
+    if (!cleanToken) {
+      return res.redirect('/sree-jee-stay');
+    }
+
+    const result = await qrService.logScanEvent(cleanToken, req);
+    const targetSlug = (result && (result.hotelSlug || result.hotelId)) ? (result.hotelSlug || result.hotelId) : cleanToken;
     return res.redirect(`/${targetSlug}`);
   } catch (err) {
-    return res.redirect('/sree-jee-stay');
+    const fallbackToken = req.params?.token ? String(req.params.token).toLowerCase() : 'sree-jee-stay';
+    return res.redirect(`/${fallbackToken}`);
   }
 }
 

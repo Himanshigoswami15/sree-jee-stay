@@ -67,34 +67,39 @@ function parseUserAgent(uaStr = '') {
  * Record a QR Scan event and update scan counters
  */
 export async function logScanEvent(tokenOrSlug, req) {
-  const cleanStr = (tokenOrSlug || DEFAULT_HOTEL_ID).trim();
+  const cleanStr = String(tokenOrSlug || '').trim();
+  const lowerStr = cleanStr.toLowerCase();
 
-  // Try matching uniqueToken first, then hotelSlug/hotelId
-  let qr = await QrCode.findOne({ uniqueToken: cleanStr });
-  let hotel = null;
+  if (!cleanStr) {
+    return { hotelId: DEFAULT_HOTEL_ID, hotelSlug: DEFAULT_HOTEL_ID, hotelName: 'Sree Jee Stay' };
+  }
 
-  if (qr) {
-    hotel = await Hotel.findOne({ hotelId: qr.hotelId });
-  } else {
-    hotel = await getHotel(cleanStr);
-    if (hotel) {
-      qr = await getOrCreateQrToken(hotel.hotelId);
+  // 1. Try matching hotel directly by slug or hotelId first
+  let hotel = await getHotel(lowerStr);
+
+  // 2. If not found by slug, search QrCode collection by uniqueToken
+  let qr = null;
+  if (!hotel || (hotel.hotelId === DEFAULT_HOTEL_ID && lowerStr !== DEFAULT_HOTEL_ID)) {
+    qr = await QrCode.findOne({ uniqueToken: cleanStr.toUpperCase() });
+    if (qr) {
+      hotel = await getHotel(qr.hotelId);
     }
   }
 
-  if (!hotel) {
-    hotel = await getHotel(DEFAULT_HOTEL_ID);
-  }
+  // 3. Determine target slug: prioritize matched hotel slug, or cleanStr if it contains hyphens/words, fallback to DEFAULT
+  const targetSlug = (hotel && hotel.hotelSlug)
+    ? hotel.hotelSlug
+    : ((hotel && hotel.hotelId) ? hotel.hotelId : (lowerStr.includes('-') || lowerStr.length > 5 ? lowerStr : DEFAULT_HOTEL_ID));
 
-  const hotelId = hotel.hotelId;
+  const finalHotelId = (hotel && hotel.hotelId) ? hotel.hotelId : targetSlug;
   const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
   const ua = req.headers['user-agent'] || '';
   const { device, browser } = parseUserAgent(ua);
 
-  // Log scan event
-  await QRScan.create({
-    hotel: hotel._id,
-    hotelId,
+  // Log scan event asynchronously
+  QRScan.create({
+    hotel: hotel ? hotel._id : null,
+    hotelId: finalHotelId,
     qrToken: qr ? qr.uniqueToken : cleanStr,
     ip: String(ip).split(',')[0].trim(),
     device,
@@ -106,17 +111,15 @@ export async function logScanEvent(tokenOrSlug, req) {
   if (qr) {
     qr.scansCount += 1;
     qr.lastScannedAt = new Date();
-    await qr.save().catch(() => {});
+    qr.save().catch(() => {});
   }
 
-  logger.info(`📱 [QR Scan Logged] Hotel "${hotelId}" scanned via token "${cleanStr}" (${device}/${browser}).`);
-
-  const resolvedSlug = (hotel && (hotel.hotelSlug || hotel.hotelId)) ? (hotel.hotelSlug || hotel.hotelId) : DEFAULT_HOTEL_ID;
+  logger.info(`📱 [QR Scan Logged] Resolved to slug "${targetSlug}" via input "${cleanStr}" (${device}/${browser}).`);
 
   return {
-    hotelId: (hotel && hotel.hotelId) ? hotel.hotelId : resolvedSlug,
-    hotelSlug: resolvedSlug,
-    hotelName: (hotel && hotel.name) ? hotel.name : resolvedSlug,
+    hotelId: finalHotelId,
+    hotelSlug: targetSlug,
+    hotelName: (hotel && hotel.name) ? hotel.name : targetSlug,
     qrToken: qr ? qr.uniqueToken : cleanStr,
   };
 }
