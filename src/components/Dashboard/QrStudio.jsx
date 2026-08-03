@@ -19,6 +19,7 @@ export function QrStudio() {
   const [isSavingLink, setIsSavingLink] = useState(false);
   const [isRegistryOpen, setIsRegistryOpen] = useState(false);
   const [scansCount, setScansCount] = useState(0);
+  const [portalOpened, setPortalOpened] = useState(false); // toast when portal auto-opens
 
   const [analytics, setAnalytics] = useState({
     totalScans: 0,
@@ -94,6 +95,41 @@ export function QrStudio() {
     generateQrCode();
     fetchAnalytics();
   }, [hotelSlug, targetMode, activeReviewUrl]);
+
+  // Auto-open review portal when a valid URL is pasted
+  const handlePasteReviewUrl = (e) => {
+    const pastedText = e.clipboardData?.getData('text') || '';
+    if (!pastedText.trim()) return;
+
+    // Use setTimeout so state updates first
+    setTimeout(() => {
+      const trimmed = pastedText.trim();
+      const isUrl = trimmed.startsWith('http://') || trimmed.startsWith('https://');
+      const extractedId = extractPlaceId(trimmed);
+      const openUrl = extractedId
+        ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(extractedId)}`
+        : isUrl ? trimmed : null;
+
+      if (openUrl) {
+        window.open(openUrl, '_blank', 'noopener,noreferrer');
+        setPortalOpened(true);
+        setTimeout(() => setPortalOpened(false), 4000);
+      }
+    }, 100);
+  };
+
+  // Manually test/open the current review portal
+  const handleOpenPortalPreview = () => {
+    const url = inputReviewUrl.trim() || activeReviewUrl;
+    if (!url) return;
+    const extractedId = extractPlaceId(url);
+    const openUrl = extractedId
+      ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(extractedId)}`
+      : url;
+    window.open(openUrl, '_blank', 'noopener,noreferrer');
+    setPortalOpened(true);
+    setTimeout(() => setPortalOpened(false), 4000);
+  };
 
   const handleSaveReviewLink = async (e) => {
     if (e) e.preventDefault();
@@ -250,8 +286,16 @@ export function QrStudio() {
             Paste your Google Business review link, Google Maps link, TripAdvisor link, or Place ID below. The system immediately binds it to <strong>{hotelName}</strong> and updates your unique QR code!
           </p>
 
+          {/* Auto-Open Portal Toast */}
+          {portalOpened && (
+            <div style={{ background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '1.5px solid #93c5fd', color: '#1d4ed8', padding: '0.8rem 1rem', borderRadius: '12px', marginBottom: '0.75rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', boxShadow: '0 4px 14px rgba(37,99,235,0.12)', animation: 'fadeIn 0.3s ease' }}>
+              <ExternalLink size={18} color="#2563eb" />
+              <span>✅ Review portal opened in a new tab! Guests will land directly on the review page.</span>
+            </div>
+          )}
+
           {linkSaved && (
-            <div style={{ background: '#ecfdf5', border: '1px solid #6ee7b7', color: '#047857', padding: '0.75rem 1rem', borderRadius: '10px', marginBottom: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem' }}>
+            <div style={{ background: '#ecfdf5', border: '1px solid #6ee7b7', color: '#047857', padding: '0.75rem 1rem', borderRadius: '10px', marginBottom: '0.75rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem' }}>
               <CheckCircle2 size={18} color="#059669" /> Review link saved & QR code updated for {hotelName}!
             </div>
           )}
@@ -263,7 +307,8 @@ export function QrStudio() {
                 className="form-input"
                 value={inputReviewUrl}
                 onChange={(e) => setInputReviewUrl(e.target.value)}
-                placeholder="https://g.page/r/... or https://search.google.com/local/writereview?placeid=..."
+                onPaste={handlePasteReviewUrl}
+                placeholder="Paste Google review link / TripAdvisor link / Place ID here — auto-opens portal!"
                 style={{ flex: 1, fontWeight: 600, fontSize: '0.875rem' }}
                 required
               />
@@ -277,13 +322,41 @@ export function QrStudio() {
               </button>
             </div>
 
-            {/* Dynamic Link Status Indicator */}
-            {validation && (
-              <div style={{ fontSize: '0.775rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem', color: validation.isValid ? '#15803d' : '#b45309', background: validation.isValid ? '#f0fdf4' : '#fffbeb', padding: '0.5rem 0.75rem', borderRadius: '8px', border: validation.isValid ? '1px solid #bbf7d0' : '1px solid #fef3c7' }}>
-                {validation.isValid ? <CheckCircle2 size={14} color="#16a34a" /> : <AlertCircle size={14} color="#d97706" />}
-                <span>{validation.message}</span>
-              </div>
-            )}
+            {/* Action Row: Validation + Open Portal Button */}
+            <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              {/* Dynamic Link Status Indicator */}
+              {validation && (
+                <div style={{ flex: 1, fontSize: '0.775rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem', color: validation.isValid ? '#15803d' : '#b45309', background: validation.isValid ? '#f0fdf4' : '#fffbeb', padding: '0.5rem 0.75rem', borderRadius: '8px', border: validation.isValid ? '1px solid #bbf7d0' : '1px solid #fef3c7' }}>
+                  {validation.isValid ? <CheckCircle2 size={14} color="#16a34a" /> : <AlertCircle size={14} color="#d97706" />}
+                  <span>{validation.message}</span>
+                </div>
+              )}
+
+              {/* Open Review Portal Preview Button */}
+              {(inputReviewUrl || activeReviewUrl) && (
+                <button
+                  type="button"
+                  onClick={handleOpenPortalPreview}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.55rem 1rem',
+                    borderRadius: '10px',
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    boxShadow: '0 3px 10px rgba(37, 99, 235, 0.25)',
+                  }}
+                >
+                  <ExternalLink size={15} /> Open Review Portal
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
