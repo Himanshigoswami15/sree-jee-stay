@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import {
   Sparkles, Plus, Trash2, Check, ThumbsUp, AlertCircle, Edit2,
   ArrowUp, ArrowDown, Smartphone, CheckCircle2,
-  Hotel, Utensils, Stethoscope, Scissors, Dumbbell, Coffee, X, Star, Eye, Rocket
+  Hotel, Utensils, Stethoscope, Scissors, Dumbbell, Coffee, X, Star, Eye, Rocket, Save
 } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { INDUSTRY_TEMPLATES } from '../../config/industryTemplates';
 import { generateReviewText, evaluateReviewStrength } from '../../utils/reviewGenerator';
+import { apiClient } from '../../services/apiClient';
 
 const ALL_CATEGORIES = [
   'SEO',
@@ -64,6 +65,7 @@ export function KeywordStudio() {
   const [selectedTemplateKey, setSelectedTemplateKey] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [isSavingSystem, setIsSavingSystem] = useState(false);
 
   // Form State for new keyword
   const [newLabel, setNewLabel] = useState('');
@@ -96,8 +98,8 @@ export function KeywordStudio() {
     });
 
     setEditingTagId(null);
-    setStatusMessage(`Updated "${inlineLabel.trim()}"`);
-    setTimeout(() => setStatusMessage(''), 2500);
+    setStatusMessage(`✓ Saved "${inlineLabel.trim()}" to System & Guest Review Page.`);
+    setTimeout(() => setStatusMessage(''), 3000);
   };
 
   const handleAddSubmit = async (e) => {
@@ -110,7 +112,7 @@ export function KeywordStudio() {
       snippet: newSnippet.trim() || newLabel.trim(),
     });
 
-    setStatusMessage(`Added "${newLabel.trim()}" highlight.`);
+    setStatusMessage(`✓ Added & Saved "${newLabel.trim()}" to System & Guest Review Page.`);
     setNewLabel('');
     setNewCategory('Service');
     setNewSnippet('');
@@ -136,11 +138,35 @@ export function KeywordStudio() {
 
   const confirmApplyTemplate = async () => {
     if (!selectedTemplateKey) return;
+    setIsSavingSystem(true);
+    setStatusMessage('Saving industry preset to MongoDB System & Guest Review Page...');
     const res = await applyIndustryTemplate(selectedTemplateKey);
     setTemplateModalOpen(false);
-    if (res.success) {
-      setStatusMessage(`Loaded ${res.count} highlights for ${INDUSTRY_TEMPLATES[selectedTemplateKey]?.name}!`);
-      setTimeout(() => setStatusMessage(''), 3500);
+    setIsSavingSystem(false);
+    if (res && res.success) {
+      setStatusMessage(`✓ Applied & Saved ${res.count} highlights for "${INDUSTRY_TEMPLATES[selectedTemplateKey]?.name}" to System & Guest Review Page!`);
+      setTimeout(() => setStatusMessage(''), 4000);
+    }
+  };
+
+  const handleSaveAllKeywords = async () => {
+    setIsSavingSystem(true);
+    setStatusMessage('Saving all keywords & preset settings to System...');
+    try {
+      await apiClient('/api/keywords/template', {
+        method: 'POST',
+        body: JSON.stringify({
+          hotelSlug: settings.hotelSlug || 'sree-jee-stay',
+          templateKey: selectedTemplateKey || 'custom',
+          keywords: keywords?.positive || []
+        }),
+      });
+      setStatusMessage('✓ All Presets & Highlights Saved to System! Live on Guest Review Page & across all devices.');
+    } catch (err) {
+      setStatusMessage('Error saving keywords to system.');
+    } finally {
+      setIsSavingSystem(false);
+      setTimeout(() => setStatusMessage(''), 4000);
     }
   };
 
@@ -262,8 +288,31 @@ export function KeywordStudio() {
 
         {/* 1-CLICK INDUSTRY PRESETS */}
         <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '16px', marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Sparkles size={14} color="#4f46e5" /> Quick Load Industry Preset Highlights:
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.65rem' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Sparkles size={14} color="#4f46e5" /> Quick Load Industry Preset Highlights:
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveAllKeywords}
+              disabled={isSavingSystem}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                padding: '0.35rem 0.85rem',
+                borderRadius: '20px',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)',
+              }}
+            >
+              <Save size={14} /> {isSavingSystem ? 'Saving...' : 'Save All Highlights to System'}
+            </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {Object.keys(INDUSTRY_TEMPLATES).map((key) => {

@@ -409,7 +409,9 @@ export async function applyKeywordTemplate(identifier = DEFAULT_HOTEL_ID, templa
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
-  await Keyword.deleteMany({ hotelId, type: 'positive' }).catch(() => {});
+  await Keyword.deleteMany({
+    $or: [{ hotelId }, { hotelId: identifier }]
+  }).catch(() => {});
 
   const docs = customKeywords.map((item, idx) => ({
     hotelId,
