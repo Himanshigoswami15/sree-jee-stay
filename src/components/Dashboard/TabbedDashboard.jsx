@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, QrCode, MessageSquare, BarChart3, Save, CheckCircle2, Globe, Star } from 'lucide-react';
+import { Building2, QrCode, MessageSquare, Save, CheckCircle2, Star } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { QrStudio } from './QrStudio';
 import { FeedbackTable } from './FeedbackTable';
@@ -22,15 +22,9 @@ export function TabbedDashboard() {
   const [businessSaved, setBusinessSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [linkValidation, setLinkValidation] = useState(null);
+  const [_analytics, setAnalytics] = useState(null);
 
-  const [analytics, setAnalytics] = useState({
-    totalScans: 0,
-    todayScans: 0,
-    googleRedirects: 0,
-    conversionRate: 0,
-  });
-
-  const hotelSlug = settings?.hotelSlug || 'sree-jee-stay';
+  const hotelSlug = settings?.hotelSlug || '';
 
   useEffect(() => {
     setBusinessForm({

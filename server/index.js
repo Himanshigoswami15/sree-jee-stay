@@ -88,7 +88,7 @@ if (fs.existsSync(distPath)) {
 }
 
 // SPA fallback for non-API routes (e.g. /sree-jee-stay, /jj-elevates)
-app.get('*', (req, res, next) => {
+app.get('{*path}', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/r/')) {
     return next();
   }

@@ -1,11 +1,15 @@
 import * as qrService from '../services/qrService.js';
-import { DEFAULT_HOTEL_ID } from '../config/constants.js';
+import { AppError } from '../middleware/errorHandler.js';
 
 export async function generateQr(req, res, next) {
   try {
-    const identifier = req.query.hotelSlug || req.body.hotelSlug || req.body.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.hotelId;
+    if (!identifier) {
+      throw new AppError('Hotel identifier is required.', 400);
+    }
+
     const qr = await qrService.getOrCreateQrToken(identifier);
-    const host = req.headers.host || 'localhost:7890';
+    const host = req.headers.host || 'localhost:8080';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
     const targetUrl = `${protocol}://${host}/r/${qr.uniqueToken}`;
 
@@ -31,21 +35,28 @@ export async function resolveScan(req, res, next) {
     const cleanToken = String(rawToken).toLowerCase().trim();
 
     if (!cleanToken) {
-      return res.redirect('/sree-jee-stay');
+      return res.status(404).json({ success: false, error: 'QR Code token or hotel slug parameter required.' });
     }
 
     const result = await qrService.logScanEvent(cleanToken, req);
-    const targetSlug = (result && (result.hotelSlug || result.hotelId)) ? (result.hotelSlug || result.hotelId) : cleanToken;
+    if (!result || (!result.hotelSlug && !result.hotelId)) {
+      return res.redirect(`/${cleanToken}`);
+    }
+
+    const targetSlug = result.hotelSlug || result.hotelId;
     return res.redirect(`/${targetSlug}`);
   } catch (err) {
-    const fallbackToken = req.params?.token ? String(req.params.token).toLowerCase() : 'sree-jee-stay';
-    return res.redirect(`/${fallbackToken}`);
+    next(err);
   }
 }
 
 export async function getAnalytics(req, res, next) {
   try {
-    const identifier = req.query.hotelSlug || req.query.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.hotelId;
+    if (!identifier) {
+      throw new AppError('Hotel identifier is required.', 400);
+    }
+
     const analytics = await qrService.getScanAnalytics(identifier);
     return res.status(200).json({ success: true, analytics });
   } catch (err) {
@@ -55,9 +66,13 @@ export async function getAnalytics(req, res, next) {
 
 export async function downloadPng(req, res, next) {
   try {
-    const identifier = req.query.hotelSlug || req.query.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.hotelId;
+    if (!identifier) {
+      throw new AppError('Hotel identifier is required.', 400);
+    }
+
     const qr = await qrService.getOrCreateQrToken(identifier);
-    const host = req.headers.host || 'localhost:7890';
+    const host = req.headers.host || 'localhost:8080';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
     const targetUrl = `${protocol}://${host}/r/${qr.uniqueToken}`;
 
@@ -75,9 +90,13 @@ export async function downloadPng(req, res, next) {
 
 export async function downloadPdf(req, res, next) {
   try {
-    const identifier = req.query.hotelSlug || req.query.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.hotelId;
+    if (!identifier) {
+      throw new AppError('Hotel identifier is required.', 400);
+    }
+
     const qr = await qrService.getOrCreateQrToken(identifier);
-    const host = req.headers.host || 'localhost:7890';
+    const host = req.headers.host || 'localhost:8080';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
     const targetUrl = `${protocol}://${host}/r/${qr.uniqueToken}`;
 

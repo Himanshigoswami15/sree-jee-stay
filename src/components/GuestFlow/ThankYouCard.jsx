@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, CheckCircle2, RotateCcw, ExternalLink, Gift, Copy, Check, Sparkles, ShieldCheck } from 'lucide-react';
+import { Heart, CheckCircle2, RotateCcw, ExternalLink, Gift, Copy, Check, Sparkles } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { getActiveProviders } from '../../utils/providerRouter';
 

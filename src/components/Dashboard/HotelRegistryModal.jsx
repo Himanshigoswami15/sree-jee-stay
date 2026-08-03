@@ -59,6 +59,11 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
         body: JSON.stringify(payload),
       });
 
+      if (!res || !res.success) {
+        setError(res?.error || 'Failed to onboard business in MongoDB Atlas.');
+        return;
+      }
+
       const finalSlug = (res && res.hotel && res.hotel.hotelSlug) ? res.hotel.hotelSlug : cleanSlug;
       const finalName = (res && res.hotel && res.hotel.name) ? res.hotel.name : form.name;
 
@@ -71,15 +76,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
         onClose();
       }, 1200);
     } catch (err) {
-      // Robust client fallback if network issue occurs
-      setSuccessMsg(`🎉 Business "${form.name}" onboarded successfully!`);
-      if (registerHotel) registerHotel({ hotelSlug: cleanSlug, name: form.name });
-      if (refreshHotels) refreshHotels();
-
-      setTimeout(() => {
-        if (onHotelOnboarded) onHotelOnboarded(cleanSlug);
-        onClose();
-      }, 1200);
+      setError(err?.message || 'Error onboarding business to MongoDB Atlas.');
     } finally {
       setIsSubmitting(false);
     }

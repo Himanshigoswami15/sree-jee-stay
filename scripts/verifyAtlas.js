@@ -18,20 +18,17 @@ dotenv.config();
 
 import mongoose from 'mongoose';
 
-// Import all models to ensure schemas and indexes are registered
+// Import all active models to ensure schemas and indexes are registered
 import { Hotel } from '../server/models/Hotel.js';
 import { User } from '../server/models/User.js';
 import { Feedback } from '../server/models/Feedback.js';
 import { Settings } from '../server/models/Settings.js';
 import { Keyword } from '../server/models/Keyword.js';
 import { AuditLog } from '../server/models/AuditLog.js';
-import { ReviewTemplate } from '../server/models/ReviewTemplate.js';
-import { DuplicateReview } from '../server/models/DuplicateReview.js';
 import { Notification } from '../server/models/Notification.js';
 import { Analytics } from '../server/models/Analytics.js';
 import { QrCode } from '../server/models/QrCode.js';
 import { QRScan } from '../server/models/QRScan.js';
-import { RefreshToken } from '../server/models/RefreshToken.js';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -50,9 +47,6 @@ const ALL_MODELS = [
   { name: 'AuditLog', model: AuditLog, collection: 'audit_logs' },
   { name: 'Notification', model: Notification, collection: 'notifications' },
   { name: 'Analytics', model: Analytics, collection: 'analytics_snapshots' },
-  { name: 'ReviewTemplate', model: ReviewTemplate, collection: 'review_templates' },
-  { name: 'DuplicateReview', model: DuplicateReview, collection: 'duplicate_reviews' },
-  { name: 'RefreshToken', model: RefreshToken, collection: 'refresh_tokens' },
   { name: 'QrCode', model: QrCode, collection: 'qr_codes' },
   { name: 'QRScan', model: QRScan, collection: 'qr_scans' },
 ];

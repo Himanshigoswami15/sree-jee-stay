@@ -68,14 +68,15 @@ export function KeywordChips({ rating, selectedTags = [], onToggleTag }) {
         }}
       >
         {chipList.map((chip) => {
-          const isSelected = selectedTags.includes(chip.id);
-          const icon = TAG_ICONS[chip.id] || (isPositive ? '👍' : '💬');
+          const tagId = chip.id || chip.tagId;
+          const isSelected = selectedTags.includes(tagId);
+          const icon = TAG_ICONS[tagId] || (isPositive ? '👍' : '💬');
 
           return (
             <button
-              key={chip.id}
+              key={tagId}
               type="button"
-              onClick={() => onToggleTag(chip.id)}
+              onClick={() => onToggleTag(tagId)}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',

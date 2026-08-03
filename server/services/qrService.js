@@ -1,14 +1,10 @@
 import QRCode from 'qrcode';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { QrCode, QRScan, Hotel, Settings, Feedback } from '../models/index.js';
+import { QrCode, QRScan, Feedback } from '../models/index.js';
 import { getHotel } from './hotelService.js';
-import { AppError } from '../middleware/errorHandler.js';
 import { logger } from '../utils/logger.js';
-import { DEFAULT_HOTEL_ID } from '../config/constants.js';
+import { AppError } from '../middleware/errorHandler.js';
 
-/**
- * Helper to generate a 6-character random alphanumeric token
- */
 function generateToken() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let token = '';
@@ -18,12 +14,13 @@ function generateToken() {
   return token;
 }
 
-/**
- * Generate or fetch unique QR Token for a hotel
- */
-export async function getOrCreateQrToken(identifier = DEFAULT_HOTEL_ID) {
+export async function getOrCreateQrToken(identifier) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
+
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  if (!hotel) throw new AppError(`Hotel "${identifier}" not found.`, 404);
+
+  const hotelId = hotel.hotelId;
 
   let qr = await QrCode.findOne({ hotelId, status: 'active' });
   if (!qr) {
@@ -35,7 +32,7 @@ export async function getOrCreateQrToken(identifier = DEFAULT_HOTEL_ID) {
     }
 
     qr = await QrCode.create({
-      hotel: hotel ? hotel._id : null,
+      hotel: hotel._id,
       hotelId,
       uniqueToken: token,
       title: 'Permanent Hotel QR Code',
@@ -45,9 +42,6 @@ export async function getOrCreateQrToken(identifier = DEFAULT_HOTEL_ID) {
   return qr;
 }
 
-/**
- * Parse User-Agent string to detect Device & Browser
- */
 function parseUserAgent(uaStr = '') {
   const ua = uaStr.toLowerCase();
   let device = 'Desktop';
@@ -63,42 +57,36 @@ function parseUserAgent(uaStr = '') {
   return { device, browser };
 }
 
-/**
- * Record a QR Scan event and update scan counters
- */
 export async function logScanEvent(tokenOrSlug, req) {
   const cleanStr = String(tokenOrSlug || '').trim();
   const lowerStr = cleanStr.toLowerCase();
 
-  if (!cleanStr) {
-    return { hotelId: DEFAULT_HOTEL_ID, hotelSlug: DEFAULT_HOTEL_ID, hotelName: 'Sree Jee Stay' };
-  }
+  if (!cleanStr) return null;
 
   // 1. Try matching hotel directly by slug or hotelId first
   let hotel = await getHotel(lowerStr);
 
   // 2. If not found by slug, search QrCode collection by uniqueToken
   let qr = null;
-  if (!hotel || (hotel.hotelId === DEFAULT_HOTEL_ID && lowerStr !== DEFAULT_HOTEL_ID)) {
+  if (!hotel) {
     qr = await QrCode.findOne({ uniqueToken: cleanStr.toUpperCase() });
     if (qr) {
       hotel = await getHotel(qr.hotelId);
     }
   }
 
-  // 3. Determine target slug: prioritize matched hotel slug, or cleanStr if it contains hyphens/words, fallback to DEFAULT
-  const targetSlug = (hotel && hotel.hotelSlug)
-    ? hotel.hotelSlug
-    : ((hotel && hotel.hotelId) ? hotel.hotelId : (lowerStr.includes('-') || lowerStr.length > 5 ? lowerStr : DEFAULT_HOTEL_ID));
+  if (!hotel) return null;
 
-  const finalHotelId = (hotel && hotel.hotelId) ? hotel.hotelId : targetSlug;
+  const targetSlug = hotel.hotelSlug || hotel.hotelId;
+  const finalHotelId = hotel.hotelId;
+
   const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
   const ua = req.headers['user-agent'] || '';
   const { device, browser } = parseUserAgent(ua);
 
   // Log scan event asynchronously
   QRScan.create({
-    hotel: hotel ? hotel._id : null,
+    hotel: hotel._id,
     hotelId: finalHotelId,
     qrToken: qr ? qr.uniqueToken : cleanStr,
     ip: String(ip).split(',')[0].trim(),
@@ -119,17 +107,18 @@ export async function logScanEvent(tokenOrSlug, req) {
   return {
     hotelId: finalHotelId,
     hotelSlug: targetSlug,
-    hotelName: (hotel && hotel.name) ? hotel.name : targetSlug,
+    hotelName: hotel.name,
     qrToken: qr ? qr.uniqueToken : cleanStr,
   };
 }
 
-/**
- * Fetch detailed QR Scan Analytics for a hotel
- */
-export async function getScanAnalytics(identifier = DEFAULT_HOTEL_ID) {
+export async function getScanAnalytics(identifier) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
+
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  if (!hotel) throw new AppError(`Hotel "${identifier}" not found.`, 404);
+
+  const hotelId = hotel.hotelId;
 
   const scans = await QRScan.find({ hotelId }).sort({ timestamp: -1 });
   const totalScans = scans.length;
@@ -148,14 +137,13 @@ export async function getScanAnalytics(identifier = DEFAULT_HOTEL_ID) {
   const postedPublicCount = feedbacks.filter((f) => f.postedPublic).length;
   const conversionRate = totalScans > 0 ? Math.round((postedPublicCount / totalScans) * 100) : 0;
 
-  // Calculate top scan hour
   const hourCounts = {};
   scans.forEach((s) => {
     const hour = new Date(s.timestamp).getHours();
     hourCounts[hour] = (hourCounts[hour] || 0) + 1;
   });
 
-  let topHour = 19; // Default 7 PM
+  let topHour = 19;
   let maxCount = 0;
   Object.keys(hourCounts).forEach((h) => {
     if (hourCounts[h] > maxCount) {
@@ -179,9 +167,6 @@ export async function getScanAnalytics(identifier = DEFAULT_HOTEL_ID) {
   };
 }
 
-/**
- * Generate high-res PNG Data URL for a QR Code
- */
 export async function generateQrPngDataUrl(targetUrl) {
   return await QRCode.toDataURL(targetUrl, {
     errorCorrectionLevel: 'H',
@@ -194,9 +179,6 @@ export async function generateQrPngDataUrl(targetUrl) {
   });
 }
 
-/**
- * Generate SVG string for a QR Code
- */
 export async function generateQrSvgString(targetUrl) {
   return await QRCode.toString(targetUrl, {
     type: 'svg',
@@ -209,12 +191,13 @@ export async function generateQrSvgString(targetUrl) {
   });
 }
 
-/**
- * Export printable PDF Table Tent Card / Standee using pdf-lib
- */
-export async function exportPdfTentCard(identifier = DEFAULT_HOTEL_ID, targetUrl) {
+export async function exportPdfTentCard(identifier, targetUrl) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
+
   const hotel = await getHotel(identifier);
-  const hotelName = hotel ? hotel.name : 'Sree Jee Stay';
+  if (!hotel) throw new AppError(`Hotel "${identifier}" not found.`, 404);
+
+  const hotelName = hotel.name;
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([400, 600]);
@@ -222,7 +205,6 @@ export async function exportPdfTentCard(identifier = DEFAULT_HOTEL_ID, targetUrl
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  // Background card frame
   page.drawRectangle({
     x: 20,
     y: 20,
@@ -233,7 +215,6 @@ export async function exportPdfTentCard(identifier = DEFAULT_HOTEL_ID, targetUrl
     color: rgb(0.98, 0.99, 1.0),
   });
 
-  // Top header text
   page.drawText('LOVE YOUR EXPERIENCE?', {
     x: 105,
     y: 535,
@@ -258,7 +239,6 @@ export async function exportPdfTentCard(identifier = DEFAULT_HOTEL_ID, targetUrl
     color: rgb(0.05, 0.59, 0.41),
   });
 
-  // Embed PNG QR Code image
   const pngDataUrl = await generateQrPngDataUrl(targetUrl);
   const pngBase64 = pngDataUrl.split(',')[1];
   const pngImageBytes = Buffer.from(pngBase64, 'base64');
@@ -271,7 +251,6 @@ export async function exportPdfTentCard(identifier = DEFAULT_HOTEL_ID, targetUrl
     height: 250,
   });
 
-  // Footer instructions
   page.drawText('1. Scan QR   -->   2. Tap Highlights   -->   3. Post to Google', {
     x: 45,
     y: 150,

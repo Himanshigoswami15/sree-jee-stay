@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { KEYWORD_CATEGORIES } from '../config/constants.js';
 
 const keywordSchema = new mongoose.Schema({
   hotelId: {

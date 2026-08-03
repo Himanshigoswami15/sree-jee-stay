@@ -1,11 +1,14 @@
 import { Feedback, Settings } from '../models/index.js';
 import { getHotel } from './hotelService.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
-import { DEFAULT_HOTEL_ID } from '../config/constants.js';
+import { AppError } from '../middleware/errorHandler.js';
 
-export async function getDashboardMetrics(identifier = DEFAULT_HOTEL_ID) {
+export async function getDashboardMetrics(identifier) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  if (!hotel) throw new AppError(`Hotel "${identifier}" not found.`, 404);
+
+  const hotelId = hotel.hotelId;
 
   const settings = await Settings.findOne({ hotelId });
   const alertThreshold = settings?.alertThreshold || 3;
@@ -72,7 +75,7 @@ export async function getDashboardMetrics(identifier = DEFAULT_HOTEL_ID) {
 
   return {
     hotelId,
-    hotelName: settings?.hotelName || hotel?.name || 'Sree Jee Stay',
+    hotelName: settings?.hotelName || hotel.name,
     totalReviews,
     reviewsThisWeek,
     reviewsThisMonth,

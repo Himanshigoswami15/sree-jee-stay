@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Star, ShieldCheck, HeartHandshake, ExternalLink, Smartphone, Check, Copy, Sparkles, Building2, MapPin, Award } from 'lucide-react';
+import { Star, ShieldCheck, HeartHandshake, ExternalLink, Smartphone, Award } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useFeedback } from '../../context/FeedbackContext';
 import { generateReviewText } from '../../utils/reviewGenerator';
-import { copyToMobileClipboard } from '../../utils/clipboardHelper';
 import { getActiveProviders } from '../../utils/providerRouter';
 import { KeywordChips } from './KeywordChips';
 import { AutoReviewEditor } from './AutoReviewEditor';
 import { ThankYouCard } from './ThankYouCard';
+import { copyToMobileClipboard } from '../../utils/clipboardHelper';
 
 const SENTIMENT_CONFIG = {
   5: { label: 'Absolute Perfection! 🌟', color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', shadow: 'rgba(16, 185, 129, 0.25)' },
@@ -30,10 +30,8 @@ export function GuestReviewCard() {
   const [customNote, setCustomNote] = useState('');
   const [tone, setTone] = useState(settings?.tone || 'friendly');
   const [guestContact, setGuestContact] = useState('');
-  const [roomNumber, setRoomNumber] = useState(roomParam);
+  const [roomNumber] = useState(roomParam);
 
-  const [phrasingSeed, setPhrasingSeed] = useState(0);
-  const [copied, setCopied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const primaryColor = settings?.themeColor || '#4f46e5';
@@ -70,17 +68,7 @@ export function GuestReviewCard() {
   };
 
   const handleRefreshPhrasing = () => {
-    setPhrasingSeed((prev) => prev + 1);
     setCustomNote(''); // Regenerate natural variation
-  };
-
-  const handleCopyText = async () => {
-    if (!reviewText) return;
-    const ok = await copyToMobileClipboard(reviewText);
-    if (ok) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
   };
 
   const handlePostToProvider = async (provider) => {

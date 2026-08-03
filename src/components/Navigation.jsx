@@ -18,8 +18,8 @@ export function Navigation() {
 
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isRegistryOpen, setIsRegistryOpen] = useState(false);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
+  const [isRegistryOpen, setIsRegistryOpen] = useState(false);
 
   const alertThreshold = settings?.alertThreshold ?? 3;
   const unresolvedAlertCount = (feedbacks || []).filter(
@@ -32,12 +32,20 @@ export function Navigation() {
     navigate(`/${slug}`);
   };
 
+  const handleBrandClick = () => {
+    if (registeredHotels && registeredHotels.length > 0) {
+      navigate(`/${registeredHotels[0].hotelSlug}`);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <>
       <header className="app-header">
         {/* TOP ROW: BRAND TITLE + HOTEL SWITCHER */}
         <div className="header-top-row">
-          <div className="brand-title" onClick={() => navigate('/sree-jee-stay')} style={{ cursor: 'pointer' }}>
+          <div className="brand-title" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
             <div className="brand-icon" style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)' }}>
               <Sparkles size={18} color="#ffffff" />
             </div>
@@ -199,15 +207,6 @@ export function Navigation() {
             </button>
           </nav>
 
-          {/* Master Hotel Registry Action Button */}
-          <button
-            type="button"
-            className="btn-add-hotel-header"
-            onClick={() => setIsRegistryOpen(true)}
-          >
-            <Plus size={14} color="#1d4ed8" /> <span className="add-hotel-text">Add Hotel</span>
-          </button>
-
           {isManagerAuthenticated && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               <button
@@ -240,7 +239,10 @@ export function Navigation() {
       <HotelRegistryModal
         isOpen={isRegistryOpen}
         onClose={() => setIsRegistryOpen(false)}
-        onHotelOnboarded={(slug) => navigate(`/${slug}`)}
+        onHotelOnboarded={(slug) => {
+          lockDashboard();
+          navigate(`/${slug}`);
+        }}
       />
     </>
   );

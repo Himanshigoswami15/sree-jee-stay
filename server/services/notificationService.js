@@ -1,14 +1,17 @@
 import { Notification } from '../models/index.js';
 import { getHotel } from './hotelService.js';
 import { logger } from '../utils/logger.js';
-import { DEFAULT_HOTEL_ID } from '../config/constants.js';
 
-export async function createNotification(identifier = DEFAULT_HOTEL_ID, type, feedbackId = null, message) {
+export async function createNotification(identifier, type, feedbackId = null, message = '') {
+  if (!identifier) return null;
   try {
     const hotel = await getHotel(identifier);
-    const hotelId = hotel ? hotel.hotelId : identifier;
+    if (!hotel) return null;
+
+    const hotelId = hotel.hotelId;
 
     const notification = await Notification.create({
+      hotel: hotel._id,
       hotelId,
       type,
       feedbackId,
@@ -23,9 +26,12 @@ export async function createNotification(identifier = DEFAULT_HOTEL_ID, type, fe
   }
 }
 
-export async function getUnreadNotifications(identifier = DEFAULT_HOTEL_ID) {
+export async function getUnreadNotifications(identifier) {
+  if (!identifier) return [];
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  if (!hotel) return [];
+
+  const hotelId = hotel.hotelId;
 
   const notifications = await Notification.find({ hotelId, isRead: false })
     .sort({ createdAt: -1 })
@@ -40,9 +46,12 @@ export async function getUnreadNotifications(identifier = DEFAULT_HOTEL_ID) {
   }));
 }
 
-export async function markAsRead(notificationId, identifier = DEFAULT_HOTEL_ID) {
+export async function markAsRead(notificationId, identifier) {
+  if (!identifier) return { success: false };
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  if (!hotel) return { success: false };
+
+  const hotelId = hotel.hotelId;
 
   await Notification.updateOne(
     { _id: notificationId, hotelId },

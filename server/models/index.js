@@ -4,8 +4,6 @@ export { Feedback } from './Feedback.js';
 export { Settings } from './Settings.js';
 export { Keyword } from './Keyword.js';
 export { AuditLog } from './AuditLog.js';
-export { ReviewTemplate } from './ReviewTemplate.js';
-export { DuplicateReview } from './DuplicateReview.js';
 export { Notification } from './Notification.js';
 export { Analytics } from './Analytics.js';
 export { QrCode } from './QrCode.js';

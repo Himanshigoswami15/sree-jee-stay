@@ -1,35 +1,37 @@
 import bcrypt from 'bcryptjs';
 import { User } from '../models/index.js';
-import { RefreshToken, hashToken } from '../models/RefreshToken.js';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken, JWT_REFRESH_EXPIRY } from '../utils/tokenHelper.js';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/tokenHelper.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { logger } from '../utils/logger.js';
 import { logEvent } from './auditService.js';
-import { BCRYPT_SALT_ROUNDS, DEFAULT_ADMIN_PIN, MAX_LOGIN_ATTEMPTS, LOCK_DURATION_MS, DEFAULT_HOTEL_ID } from '../config/constants.js';
+import { BCRYPT_SALT_ROUNDS, DEFAULT_ADMIN_PIN, MAX_LOGIN_ATTEMPTS, LOCK_DURATION_MS } from '../config/constants.js';
 import { getHotel } from './hotelService.js';
-
 import mongoose from 'mongoose';
 
-export async function ensureDefaultUser(hotelId = DEFAULT_HOTEL_ID) {
-  const hotel = await getHotel(hotelId);
-  const resolvedHotelId = hotel ? hotel.hotelId : hotelId;
+export async function ensureDefaultUser(identifier) {
+  const hotel = await getHotel(identifier);
+  if (!hotel) {
+    throw new AppError(`Hotel "${identifier}" not found.`, 404);
+  }
+  const resolvedHotelId = hotel.hotelId;
 
   if (mongoose.connection.readyState !== 1) {
-    throw new AppError(`Database connection unavailable (readyState: ${mongoose.connection.readyState}). Cannot perform user authentication/registration.`, 503);
+    throw new AppError('Database connection unavailable.', 503);
   }
 
   let user = await User.findOne({ hotelId: resolvedHotelId });
   if (!user) {
     const hash = bcrypt.hashSync(DEFAULT_ADMIN_PIN, BCRYPT_SALT_ROUNDS);
     user = await User.create({
+      hotel: hotel._id,
       hotelId: resolvedHotelId,
-      email: `${resolvedHotelId}@jjreviewsystem.com`,
+      email: hotel.managerEmail || `${resolvedHotelId}@jjreviewsystem.com`,
       passwordHash: hash,
       role: 'owner',
       displayName: 'Hotel Manager',
       tokenVersion: 0,
     });
-    logger.info(`[AuthService] Default user created in MongoDB for hotel "${resolvedHotelId}".`);
+    logger.info(`[AuthService] Default manager user created in MongoDB for hotel "${resolvedHotelId}".`);
   }
   return user;
 }
@@ -45,7 +47,10 @@ function makeTokenPayload(user, hotel) {
   };
 }
 
-export async function login(identifier = DEFAULT_HOTEL_ID, password, email = null) {
+export async function login(identifier, password, email = null) {
+  if (!identifier) {
+    throw new AppError('Hotel identifier is required', 400);
+  }
   if (!password) {
     throw new AppError('Password or Security PIN is required', 400);
   }
@@ -55,16 +60,13 @@ export async function login(identifier = DEFAULT_HOTEL_ID, password, email = nul
   }
 
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
-  const isMasterPin = (password === '9008' || password === DEFAULT_ADMIN_PIN || password === '1234' || password === '0000');
-
-  await ensureDefaultUser(hotelId);
-  const query = email ? { hotelId, email: email.toLowerCase() } : { hotelId };
-  const user = await User.findOne(query);
-
-  if (!user) {
-    throw new AppError('Incorrect Security PIN / Password. Default PIN is 9008.', 401);
+  if (!hotel) {
+    throw new AppError(`Hotel "${identifier}" not found.`, 404);
   }
+  const hotelId = hotel.hotelId;
+  const isMasterPin = (password === '9008' || password === DEFAULT_ADMIN_PIN);
+
+  const user = await ensureDefaultUser(hotelId);
 
   if (user.isLocked && typeof user.isLocked === 'function' && user.isLocked()) {
     const minutesLeft = Math.ceil((user.lockedUntil - new Date()) / 60000);
@@ -108,10 +110,6 @@ export async function login(identifier = DEFAULT_HOTEL_ID, password, email = nul
     tokenVersion: user.tokenVersion || 0,
   });
 
-  await storeRefreshToken(refreshToken, user).catch((err) => {
-    logger.warn(`[AuthService] non-fatal storeRefreshToken error: ${err.message}`);
-  });
-
   logger.info(`[AuthService] User logged in successfully for hotel "${hotelId}".`);
 
   return {
@@ -122,7 +120,7 @@ export async function login(identifier = DEFAULT_HOTEL_ID, password, email = nul
     user: {
       id: user._id,
       hotelId: user.hotelId,
-      hotelSlug: hotel ? hotel.hotelSlug : user.hotelId,
+      hotelSlug: hotel.hotelSlug || user.hotelId,
       email: user.email,
       role: user.role,
       displayName: user.displayName,
@@ -130,40 +128,10 @@ export async function login(identifier = DEFAULT_HOTEL_ID, password, email = nul
   };
 }
 
-function parseDuration(duration) {
-  const match = (duration || '7d').match(/^(\d+)([dhms])$/);
-  if (!match) return 7 * 24 * 60 * 60 * 1000;
-  const n = parseInt(match[1], 10);
-  switch (match[2]) {
-    case 'd': return n * 86400000;
-    case 'h': return n * 3600000;
-    case 'm': return n * 60000;
-    case 's': return n * 1000;
-    default: return 7 * 86400000;
+export async function changePassword(identifier, oldPassword, newPassword, isOtpReset = false) {
+  if (!identifier) {
+    throw new AppError('Hotel identifier is required.', 400);
   }
-}
-
-async function storeRefreshToken(refreshToken, user) {
-  try {
-    if (!mongoose.connection || mongoose.connection.readyState !== 1) return;
-    if (!user || !user._id || !mongoose.Types.ObjectId.isValid(user._id)) return;
-
-    const decoded = verifyRefreshToken(refreshToken);
-    if (!decoded || !decoded.jti) return;
-
-    await RefreshToken.create({
-      userId: user._id,
-      hotelId: user.hotelId,
-      tokenHash: hashToken(refreshToken),
-      family: decoded.jti,
-      expiresAt: new Date(Date.now() + parseDuration(JWT_REFRESH_EXPIRY)),
-    });
-  } catch (err) {
-    logger.warn(`[AuthService] RefreshToken.create skipped: ${err.message}`);
-  }
-}
-
-export async function changePassword(identifier = DEFAULT_HOTEL_ID, oldPassword, newPassword, isOtpReset = false) {
   if (!newPassword || newPassword.length < 4) {
     throw new AppError('New Password / PIN must be at least 4 characters long.', 400);
   }
@@ -173,7 +141,10 @@ export async function changePassword(identifier = DEFAULT_HOTEL_ID, oldPassword,
   }
 
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  if (!hotel) {
+    throw new AppError(`Hotel "${identifier}" not found.`, 404);
+  }
+  const hotelId = hotel.hotelId;
 
   const user = await ensureDefaultUser(hotelId);
 
@@ -182,7 +153,7 @@ export async function changePassword(identifier = DEFAULT_HOTEL_ID, oldPassword,
       throw new AppError('Current password is required to set a new password.', 400);
     }
     const isOldValid = user.passwordHash ? bcrypt.compareSync(oldPassword, user.passwordHash) : false;
-    const isMasterOld = (oldPassword === '9008' || oldPassword === DEFAULT_ADMIN_PIN || oldPassword === '1234' || oldPassword === '0000');
+    const isMasterOld = (oldPassword === '9008' || oldPassword === DEFAULT_ADMIN_PIN);
     if (!isOldValid && !isMasterOld) {
       throw new AppError('Incorrect current password. Password update failed.', 401);
     }
@@ -193,8 +164,6 @@ export async function changePassword(identifier = DEFAULT_HOTEL_ID, oldPassword,
   user.lockedUntil = null;
   user.tokenVersion = (user.tokenVersion || 0) + 1;
   await user.save();
-
-  await RefreshToken.deleteMany({ userId: user._id });
 
   logger.info(`[AuthService] Password updated in MongoDB for hotel "${hotelId}". Incremented tokenVersion to ${user.tokenVersion} (all sessions revoked).`);
   logEvent(hotelId, 'PASSWORD_CHANGED', { userId: user._id.toString(), tokenVersion: user.tokenVersion, isOtpReset });
@@ -211,28 +180,16 @@ export async function refreshAccessToken(refreshToken) {
   }
 
   const decoded = verifyRefreshToken(refreshToken);
-  const tokenHash = hashToken(refreshToken);
-  const stored = await RefreshToken.findOne({ tokenHash });
-
-  if (!stored) {
-    const existingFamily = await RefreshToken.findOne({ family: decoded.jti });
-    if (existingFamily) {
-      await RefreshToken.deleteMany({ userId: existingFamily.userId });
-      await User.findByIdAndUpdate(existingFamily.userId, { $inc: { tokenVersion: 1 } });
-      logger.warn(`[AuthService] Refresh token reuse detected — all sessions revoked for user ${existingFamily.userId}.`);
-      logEvent(existingFamily.hotelId, 'TOKEN_THEFT_DETECTED', { userId: existingFamily.userId.toString() });
-    }
-    throw new AppError('Refresh token has been revoked. Please log in again.', 401);
+  if (!decoded || !decoded.userId) {
+    throw new AppError('Invalid refresh token.', 401);
   }
 
   const user = await User.findById(decoded.userId);
   if (!user) {
-    await RefreshToken.deleteOne({ tokenHash });
     throw new AppError('User account not found.', 404);
   }
 
-  if (decoded.tokenVersion !== undefined && decoded.tokenVersion !== user.tokenVersion) {
-    await RefreshToken.deleteMany({ userId: user._id });
+  if (decoded.tokenVersion !== user.tokenVersion) {
     throw new AppError('Session expired due to password update. Please log in again.', 401);
   }
 
@@ -245,32 +202,30 @@ export async function refreshAccessToken(refreshToken) {
     tokenVersion: user.tokenVersion,
   });
 
-  await RefreshToken.deleteOne({ tokenHash });
-  await storeRefreshToken(newRefreshToken, user);
-
   logEvent(user.hotelId, 'TOKEN_REFRESHED', { userId: user._id.toString() });
   return { success: true, accessToken: newAccessToken, refreshToken: newRefreshToken };
 }
 
 export async function logoutUser(req) {
-  const hotelId = req.user?.hotelId || DEFAULT_HOTEL_ID;
-  const userId = req.user?.userId || null;
-  if (userId) {
-    await RefreshToken.deleteMany({ userId });
+  const hotelId = req.user?.hotelId;
+  const userId = req.user?.userId;
+  if (hotelId) {
+    logEvent(hotelId, 'LOGOUT', { userId });
+    logger.info(`[AuthService] User logged out for hotel "${hotelId}".`);
   }
-  logEvent(hotelId, 'LOGOUT', { userId });
-  logger.info(`[AuthService] User logged out for hotel "${hotelId}".`);
   return { success: true, message: 'Logged out successfully' };
 }
 
-export async function getAuthStatus(identifier = DEFAULT_HOTEL_ID) {
+export async function getAuthStatus(identifier) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  if (!hotel) return { success: false, error: 'Hotel not found' };
+  const hotelId = hotel.hotelId;
   const user = await User.findOne({ hotelId });
   return {
     success: true,
     hotelId,
-    hotelSlug: hotel ? hotel.hotelSlug : hotelId,
+    hotelSlug: hotel.hotelSlug || hotelId,
     hasPassword: Boolean(user && user.passwordHash),
   };
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, CheckCircle, AlertTriangle, ExternalLink, Filter } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 
 export function FeedbackTable({ feedbacks = [] }) {

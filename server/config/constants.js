@@ -21,10 +21,7 @@ export const MAX_PAGE_SIZE = 100;
 // Audit Log TTL (90 days)
 export const AUDIT_LOG_TTL_DAYS = 90;
 
-// Default Hotel Identifiers
-export const DEFAULT_HOTEL_ID = 'sree-jee-stay';
-export const DEFAULT_HOTEL_SLUG = 'sree-jee-stay';
-export const DEFAULT_HOTELS = ['sree-jee-stay', 'jj-elevates', 'demo'];
+// Default Settings
 export const DEFAULT_ALERT_THRESHOLD = 3;
 
 // User Roles

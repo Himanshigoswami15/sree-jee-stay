@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, Download, Printer, Copy, Check, ExternalLink, Sparkles, RefreshCw, BarChart3, Smartphone, Globe, Building2, Plus, Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import { QrCode, Download, Printer, Copy, Check, ExternalLink, RefreshCw, BarChart3, Smartphone, Globe, Building2, Plus, Save, CheckCircle2, AlertCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useFeedback } from '../../context/FeedbackContext';
 import { apiClient } from '../../services/apiClient';
-import { validateGoogleReviewLink, extractPlaceId, generateGoogleReviewUrl } from '../../utils/googleReview';
+import { validateGoogleReviewLink, extractPlaceId } from '../../utils/googleReview';
 import { HotelRegistryModal } from './HotelRegistryModal';
+import { useNavigate } from 'react-router-dom';
 
 export function QrStudio() {
-  const { settings, updateSettings, registeredHotels, refreshHotels, feedbacks } = useFeedback();
+  const navigate = useNavigate();
+  const { settings, updateSettings, refreshHotels, feedbacks } = useFeedback();
 
   const [inputReviewUrl, setInputReviewUrl] = useState('');
   const [targetMode, setTargetMode] = useState('interactive'); // 'interactive' | 'direct'
@@ -28,9 +30,9 @@ export function QrStudio() {
     conversionRate: 0,
   });
 
-  const hotelSlug = settings?.hotelSlug || 'sree-jee-stay';
-  const hotelName = settings?.hotelName || 'Sree Jee Stay';
-  const activeReviewUrl = settings?.googleReviewUrl || 'https://g.page/r/CTERYeDefsTREAE/review';
+  const hotelSlug = settings?.hotelSlug || '';
+  const hotelName = settings?.hotelName || settings?.name || 'Registered Hotel';
+  const activeReviewUrl = settings?.googleReviewUrl || '';
 
   useEffect(() => {
     setInputReviewUrl(settings?.googleReviewUrl || '');
@@ -511,10 +513,7 @@ export function QrStudio() {
       <HotelRegistryModal
         isOpen={isRegistryOpen}
         onClose={() => setIsRegistryOpen(false)}
-        onHotelOnboarded={(newSlug) => {
-          if (refreshHotels) refreshHotels();
-          window.location.href = `/${newSlug}`;
-        }}
+        onHotelOnboarded={(slug) => navigate(`/${slug}`)}
       />
     </div>
   );

@@ -1,11 +1,13 @@
-import React, { Component } from 'react';
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import React, { Component, useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { FeedbackProvider, useFeedback } from './context/FeedbackContext';
 import { Navigation } from './components/Navigation';
 import { AlertBanner } from './components/Common/AlertBanner';
 import { ManagerPinModal } from './components/Common/ManagerPinModal';
 import { GuestReviewCard } from './components/GuestFlow/GuestReviewCard';
 import { TabbedDashboard } from './components/Dashboard/TabbedDashboard';
+import { HotelRegistryModal } from './components/Dashboard/HotelRegistryModal';
+import { apiClient } from './services/apiClient';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -52,7 +54,44 @@ class ErrorBoundary extends Component {
 }
 
 function MainContent() {
-  const { activeTab } = useFeedback();
+  const { activeTab, loading, hotelNotFound } = useFeedback();
+  const [isRegistryOpen, setIsRegistryOpen] = useState(false);
+  const navigate = useNavigate();
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '4rem 1rem', color: '#64748b', fontWeight: 700 }}>
+        Loading Hotel Review System...
+      </div>
+    );
+  }
+
+  if (hotelNotFound) {
+    return (
+      <div style={{ maxWidth: '500px', margin: '4rem auto', padding: '2rem', textAlign: 'center', background: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>
+          🏨 Hotel Not Found
+        </h2>
+        <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+          The requested hotel profile does not exist in MongoDB Atlas.
+        </p>
+        <button
+          type="button"
+          className="btn-primary-action"
+          onClick={() => setIsRegistryOpen(true)}
+          style={{ width: '100%', padding: '0.75rem' }}
+        >
+          + Onboard This Hotel Now
+        </button>
+
+        <HotelRegistryModal
+          isOpen={isRegistryOpen}
+          onClose={() => setIsRegistryOpen(false)}
+          onHotelOnboarded={(slug) => navigate(`/${slug}`)}
+        />
+      </div>
+    );
+  }
 
   return (
     <main>
@@ -69,11 +108,11 @@ function MainContent() {
 
 function HotelWrapper() {
   const { hotelSlug } = useParams();
-  const activeSlug = hotelSlug || 'sree-jee-stay';
+  if (!hotelSlug) return <Navigate to="/" replace />;
 
   return (
     <ErrorBoundary>
-      <FeedbackProvider key={activeSlug} hotelSlug={activeSlug}>
+      <FeedbackProvider key={hotelSlug} hotelSlug={hotelSlug}>
         <div className="app-root">
           <Navigation />
           <AlertBanner />
@@ -87,14 +126,64 @@ function HotelWrapper() {
 
 function QrRedirectWrapper() {
   const { hotelSlug } = useParams();
-  return <Navigate to={`/${hotelSlug || 'sree-jee-stay'}`} replace />;
+  return <Navigate to={`/${hotelSlug}`} replace />;
+}
+
+function RootRedirector() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [isRegistryOpen, setIsRegistryOpen] = useState(false);
+
+  useEffect(() => {
+    apiClient(`/api/hotels?_t=${Date.now()}`).then((res) => {
+      if (res && res.success && Array.isArray(res.hotels) && res.hotels.length > 0) {
+        navigate(`/${res.hotels[0].hotelSlug}`, { replace: true });
+      } else {
+        setLoading(false);
+      }
+    }).catch(() => setLoading(false));
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '4rem 1rem', color: '#64748b', fontWeight: 700 }}>
+        Connecting to JJ Review System...
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ maxWidth: '520px', margin: '4rem auto', padding: '2rem', textAlign: 'center', background: '#ffffff', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 12px 30px rgba(0,0,0,0.06)' }}>
+      <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>
+        JJ Review System
+      </h1>
+      <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+        Welcome to the Enterprise Hotel Review & QR Management Platform. No hotels are currently onboarded in MongoDB Atlas.
+      </p>
+
+      <button
+        type="button"
+        className="btn-primary-action"
+        onClick={() => setIsRegistryOpen(true)}
+        style={{ width: '100%', padding: '0.85rem' }}
+      >
+        + Add New Hotel (2 Minute Setup)
+      </button>
+
+      <HotelRegistryModal
+        isOpen={isRegistryOpen}
+        onClose={() => setIsRegistryOpen(false)}
+        onHotelOnboarded={(slug) => navigate(`/${slug}`)}
+      />
+    </div>
+  );
 }
 
 export default function App() {
   return (
     <ErrorBoundary>
       <Routes>
-        <Route path="/" element={<Navigate to="/sree-jee-stay" replace />} />
+        <Route path="/" element={<RootRedirector />} />
         <Route path="/r/:hotelSlug" element={<QrRedirectWrapper />} />
         <Route path="/:hotelSlug" element={<HotelWrapper />} />
       </Routes>

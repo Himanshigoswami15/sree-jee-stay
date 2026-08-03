@@ -1,100 +1,34 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { Hotel, Settings, User, Keyword, ReviewTemplate } from '../models/index.js';
+import { Hotel, Settings, User, Keyword } from '../models/index.js';
 import { logger } from '../utils/logger.js';
-import { DEFAULT_HOTELS, DEFAULT_HOTEL_ID, BCRYPT_SALT_ROUNDS, DEFAULT_ADMIN_PIN } from '../config/constants.js';
+import { BCRYPT_SALT_ROUNDS, DEFAULT_ADMIN_PIN } from '../config/constants.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 
-const inMemoryHotelsMap = new Map([
-  ['sree-jee-stay', { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi', themeColor: '#2563eb' }],
-  ['jj-elevates', { hotelId: 'jj-elevates', hotelSlug: 'jj-elevates', name: 'JJ elevates', themeColor: '#2563eb' }]
-]);
+export async function getHotel(identifier) {
+  if (!identifier) return null;
+  const cleanId = String(identifier).toLowerCase().trim();
 
-export function updateInMemoryHotel(identifier, updatedData) {
-  const cleanId = String(identifier || '').toLowerCase().trim();
-  if (!cleanId) return;
-  const current = inMemoryHotelsMap.get(cleanId) || { hotelId: cleanId, hotelSlug: cleanId };
-  inMemoryHotelsMap.set(cleanId, {
-    ...current,
-    ...updatedData,
-    name: updatedData.name || updatedData.hotelName || current.name,
-  });
-}
-
-export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
-  const cleanId = (identifier || DEFAULT_HOTEL_ID).toLowerCase().trim();
-
-  const formattedTitle = cleanId === 'sree-jee-stay'
-    ? 'Sree Jee Stay - Homestay in Varanasi'
-    : (cleanId === 'jj-elevates' ? 'JJ elevates' : cleanId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
-
-  // Check MongoDB Atlas first
   if (mongoose.connection.readyState === 1) {
     try {
-      let hotel = await Hotel.findOne({
+      const hotel = await Hotel.findOne({
         $or: [{ hotelId: cleanId }, { hotelSlug: cleanId }]
-      });
-
-      if (!hotel && DEFAULT_HOTELS.includes(cleanId)) {
-        hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: formattedTitle });
-      }
+      }).lean();
 
       if (hotel) return hotel;
     } catch (err) {
-      logger.warn(`[HotelService] DB query failed, returning fallback hotel for "${cleanId}": ${err.message}`);
+      logger.warn(`[HotelService] DB query failed for "${cleanId}": ${err.message}`);
     }
   }
 
-  // Fallback to in-memory map if DB is disconnected or hotel not found
-  if (inMemoryHotelsMap.has(cleanId)) {
-    const mem = inMemoryHotelsMap.get(cleanId);
-    return {
-      hotelId: cleanId,
-      hotelSlug: cleanId,
-      name: mem.name || formattedTitle,
-      logoUrl: mem.logoUrl || '',
-      themeColor: mem.themeColor || '#2563eb',
-      googlePlaceId: mem.googlePlaceId || '',
-      googleReviewUrl: mem.googleReviewUrl || (mem.googlePlaceId ? generateGoogleReviewUrl(mem.googlePlaceId) : 'https://g.page/r/CTERYeDefsTREAE/review'),
-      tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
-      managerEmail: mem.managerEmail || 'himanshigoswami9057@gmail.com',
-      managerPhone: '+91 98765 43210',
-      alertThreshold: 3,
-      antiGatingNoticeEnabled: true,
-      preventDuplicateReviews: true,
-      tone: mem.tone || 'friendly',
-      providers: [
-        { type: 'google', isEnabled: true },
-        { type: 'tripadvisor', isEnabled: true },
-      ],
-    };
-  }
-
-  return {
-    hotelId: cleanId,
-    hotelSlug: cleanId,
-    name: formattedTitle,
-    themeColor: '#2563eb',
-    googlePlaceId: process.env.VITE_GOOGLE_PLACE_ID || '',
-    googleReviewUrl: 'https://g.page/r/CTERYeDefsTREAE/review',
-    tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
-    managerEmail: 'himanshigoswami9057@gmail.com',
-    managerPhone: '+91 98765 43210',
-    alertThreshold: 3,
-    antiGatingNoticeEnabled: true,
-    preventDuplicateReviews: true,
-    tone: 'friendly',
-    providers: [
-      { type: 'google', isEnabled: true },
-      { type: 'tripadvisor', isEnabled: true },
-    ],
-  };
+  return null;
 }
 
 export async function createHotel(data) {
-  const hotelId = (data.hotelId || DEFAULT_HOTEL_ID).toLowerCase().trim();
-  const hotelSlug = (data.hotelSlug || hotelId).toLowerCase().trim();
+  const hotelId = String(data.hotelId || data.hotelSlug || '').toLowerCase().trim();
+  const hotelSlug = String(data.hotelSlug || hotelId).toLowerCase().trim();
+  if (!hotelId) throw new Error('hotelId / hotelSlug is required.');
 
   let hotel = await Hotel.findOne({ hotelId });
   if (hotel) return hotel;
@@ -102,14 +36,14 @@ export async function createHotel(data) {
   hotel = await Hotel.create({
     hotelId,
     hotelSlug,
-    name: data.name || 'Sree Jee Stay - Homestay in Varanasi',
+    name: data.name || hotelSlug,
     logoUrl: data.logoUrl || '',
     themeColor: data.themeColor || '#2563eb',
     googlePlaceId: data.googlePlaceId || process.env.VITE_GOOGLE_PLACE_ID || '',
     googleReviewUrl: data.googleReviewUrl || generateGoogleReviewUrl(process.env.VITE_GOOGLE_PLACE_ID || ''),
     tripadvisorReviewUrl: data.tripadvisorReviewUrl || 'https://www.tripadvisor.com/UserReview',
-    managerEmail: data.managerEmail || 'himanshigoswami9057@gmail.com',
-    managerPhone: data.managerPhone || '+91 98765 43210',
+    managerEmail: data.managerEmail || '',
+    managerPhone: data.managerPhone || '',
     alertThreshold: data.alertThreshold || 3,
     antiGatingNoticeEnabled: true,
     preventDuplicateReviews: true,
@@ -144,7 +78,6 @@ export async function createHotel(data) {
 
 /**
  * Onboard a New Hotel with Universal Atomic Rollback Protection
- * Compatible with standalone local MongoDB and MongoDB Atlas clusters!
  */
 export async function onboardHotel(data) {
   const name = (data.name || '').trim();
@@ -159,25 +92,8 @@ export async function onboardHotel(data) {
   const managerEmail = (data.managerEmail || `${hotelId}@jjreviewsystem.com`).toLowerCase().trim();
   const password = data.password || DEFAULT_ADMIN_PIN;
 
-  inMemoryHotelsMap.set(slug, {
-    hotelId,
-    hotelSlug: slug,
-    name,
-    logoUrl: data.logoUrl || '',
-    themeColor: data.themeColor || '#2563eb',
-    googlePlaceId: data.googlePlaceId || '',
-    googleReviewUrl: googleReviewUrl || 'https://g.page/r/CTERYeDefsTREAE/review',
-    managerEmail,
-    tone: data.tone || 'friendly',
-  });
-
   if (mongoose.connection.readyState !== 1) {
-    logger.warn(`[HotelService] DB offline mode: onboarded "${name}" (slug: ${slug}) dynamically.`);
-    return {
-      success: true,
-      message: `Hotel "${name}" onboarded successfully.`,
-      hotel: inMemoryHotelsMap.get(slug),
-    };
+    throw new Error('Database connection unavailable. Cannot onboard new hotel without active MongoDB Atlas connection.');
   }
 
   let existing = await Hotel.findOne({ $or: [{ hotelId }, { hotelSlug: slug }] });
@@ -271,18 +187,6 @@ export async function onboardHotel(data) {
     });
     await Keyword.insertMany(docs);
 
-    // 5. Seed Review Templates
-    await ReviewTemplate.create([
-      {
-        hotel: createdHotel._id,
-        hotelId,
-        ratingLevel: 5,
-        tone: createdHotel.tone,
-        openings: [`Had a fantastic experience during our stay at ${name}!`],
-        closings: ['Will definitely come back and recommend to friends!'],
-      },
-    ]);
-
     logger.info(`🎉 [Master Hotel Registry] Hotel "${name}" (slug: ${slug}) onboarded successfully!`);
 
     return {
@@ -308,7 +212,6 @@ export async function onboardHotel(data) {
         Settings.deleteOne({ hotelId }),
         User.deleteMany({ hotelId }),
         Keyword.deleteMany({ hotelId }),
-        ReviewTemplate.deleteMany({ hotelId }),
       ]).catch(() => {});
     }
 
@@ -317,54 +220,20 @@ export async function onboardHotel(data) {
 }
 
 export async function getAllHotels() {
-  const resultList = [];
-
-  if (mongoose.connection.readyState === 1) {
-    try {
-      const hotels = await Hotel.find({}).sort({ createdAt: -1, name: 1 }).lean();
-      if (hotels && hotels.length > 0) {
-        hotels.forEach((h) => {
-          resultList.push({
-            id: h._id ? h._id.toString() : h.hotelSlug,
-            hotelId: h.hotelId || h.hotelSlug,
-            hotelSlug: h.hotelSlug || h.hotelId,
-            name: h.name || h.hotelSlug,
-            logoUrl: h.logoUrl || '',
-            themeColor: h.themeColor || '#2563eb',
-            managerEmail: h.managerEmail || '',
-          });
-        });
-      }
-    } catch (err) {
-      logger.warn(`[HotelService] getAllHotels failed: ${err.message}`);
-    }
+  if (mongoose.connection.readyState !== 1) {
+    return [];
   }
 
-  // Merge in-memory map items so newly onboarded hotels are never lost
-  inMemoryHotelsMap.forEach((h, slug) => {
-    if (!resultList.some(item => item.hotelSlug === slug)) {
-      resultList.push({
-        id: slug,
-        hotelId: h.hotelId || slug,
-        hotelSlug: slug,
-        name: h.name || slug,
-        logoUrl: h.logoUrl || '',
-        themeColor: h.themeColor || '#2563eb',
-        managerEmail: h.managerEmail || '',
-      });
-    }
-  });
-
-  if (!resultList.some(item => item.hotelSlug === 'sree-jee-stay')) {
-    resultList.unshift({
-      id: 'sree-jee-stay',
-      hotelId: 'sree-jee-stay',
-      hotelSlug: 'sree-jee-stay',
-      name: 'Sree Jee Stay - Homestay in Varanasi',
-    });
-  }
-
-  return resultList;
+  const hotels = await Hotel.find({}).sort({ createdAt: -1, name: 1 }).lean();
+  return hotels.map((h) => ({
+    id: h._id ? h._id.toString() : h.hotelSlug,
+    hotelId: h.hotelId || h.hotelSlug,
+    hotelSlug: h.hotelSlug || h.hotelId,
+    name: h.name || h.hotelSlug,
+    logoUrl: h.logoUrl || '',
+    themeColor: h.themeColor || '#2563eb',
+    managerEmail: h.managerEmail || '',
+  }));
 }
 
 export async function updateHotel(hotelId, updateData) {

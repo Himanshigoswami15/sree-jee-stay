@@ -1,6 +1,9 @@
 import { apiClient } from './apiClient';
 
-export async function verifyPasswordApi(identifier = 'sree-jee-stay', password) {
+export async function verifyPasswordApi(identifier, password) {
+  if (!identifier) {
+    return { success: false, error: 'Hotel identifier is required' };
+  }
   if (!password) {
     return { success: false, error: 'Password is required' };
   }
@@ -11,7 +14,10 @@ export async function verifyPasswordApi(identifier = 'sree-jee-stay', password) 
   });
 }
 
-export async function changePasswordApi(identifier = 'sree-jee-stay', oldPassword, newPassword, isOtpReset = false) {
+export async function changePasswordApi(identifier, oldPassword, newPassword, isOtpReset = false) {
+  if (!identifier) {
+    return { success: false, error: 'Hotel identifier is required' };
+  }
   if (!newPassword || newPassword.length < 4) {
     return { success: false, error: 'New Password / PIN must be at least 4 characters long.' };
   }
@@ -22,7 +28,8 @@ export async function changePasswordApi(identifier = 'sree-jee-stay', oldPasswor
   });
 }
 
-export async function getAuthStatusApi(identifier = 'sree-jee-stay') {
+export async function getAuthStatusApi(identifier) {
+  if (!identifier) return { success: false, error: 'Hotel identifier required' };
   return await apiClient(`/api/auth/status?hotelId=${encodeURIComponent(identifier)}`);
 }
 

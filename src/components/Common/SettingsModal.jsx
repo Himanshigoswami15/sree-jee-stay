@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, X, Save, RotateCcw, ExternalLink, KeyRound, CheckCircle2, Globe, Sparkles, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail, Phone, Building2, Search } from 'lucide-react';
+import { Settings, X, Save, RotateCcw, ExternalLink, CheckCircle2, Globe, Sparkles, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail, Phone, Building2, Search } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
-import { extractPlaceId, generateGoogleReviewUrl, getUrlType, validateGoogleReviewLink } from '../../utils/googleReview';
+import { extractPlaceId, generateGoogleReviewUrl, getUrlType } from '../../utils/googleReview';
 
 export function SettingsModal({ isOpen, onClose }) {
   const { settings, updateSettings, changeManagerPassword, resetToDemoData } = useFeedback();
@@ -9,12 +9,12 @@ export function SettingsModal({ isOpen, onClose }) {
   const [formState, setFormState] = useState(settings);
   const [showPin, setShowPin] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   // Password update states
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {

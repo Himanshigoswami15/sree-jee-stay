@@ -1,108 +1,74 @@
 import mongoose from 'mongoose';
 import { Settings, Keyword, Hotel } from '../models/index.js';
-import { getHotel, updateInMemoryHotel } from './hotelService.js';
+import { getHotel } from './hotelService.js';
 import { logEvent } from './auditService.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
-import { DEFAULT_HOTEL_ID } from '../config/constants.js';
 import { connectDB } from '../config/db.js';
 import { logger } from '../utils/logger.js';
 import { broadcastSystemEvent } from '../utils/eventBroadcaster.js';
 import { AppError } from '../middleware/errorHandler.js';
 
-const memorySettingsStore = new Map();
-
-const memoryKeywordsStore = new Map();
-
-export async function getSettings(identifier = DEFAULT_HOTEL_ID) {
+export async function getSettings(identifier) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
   const hotelSlug = hotel ? (hotel.hotelSlug || hotelId) : identifier;
-
-  const fallbackSettings = {
-    hotelId,
-    hotelSlug,
-    hotelName: hotel ? hotel.name : 'Sree Jee Stay - Homestay in Varanasi',
-    logoUrl: hotel ? hotel.logoUrl : '',
-    themeColor: hotel ? hotel.themeColor : '#2563eb',
-    googlePlaceId: hotel ? hotel.googlePlaceId : (process.env.VITE_GOOGLE_PLACE_ID || ''),
-    googleReviewUrl: hotel ? hotel.googleReviewUrl : 'https://g.page/r/CTERYeDefsTREAE/review',
-    tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
-    managerEmail: hotel ? (hotel.managerEmail || 'himanshigoswami9057@gmail.com') : 'himanshigoswami9057@gmail.com',
-    managerPhone: hotel ? (hotel.managerPhone || '+91 98765 43210') : '+91 98765 43210',
-    alertThreshold: 3,
-    preventDuplicateReviews: true,
-    tone: hotel ? (hotel.tone || 'friendly') : 'friendly',
-    providers: [
-      { type: 'google', isEnabled: true },
-      { type: 'tripadvisor', isEnabled: true },
-    ],
-  };
 
   if (mongoose.connection.readyState !== 1) {
     await connectDB(1, 500).catch(() => {});
   }
 
   if (mongoose.connection.readyState !== 1) {
-    if (memorySettingsStore.has(hotelId)) return memorySettingsStore.get(hotelId);
-    if (memorySettingsStore.has(hotelSlug)) return memorySettingsStore.get(hotelSlug);
-    if (memorySettingsStore.has(identifier)) return memorySettingsStore.get(identifier);
-    return fallbackSettings;
+    throw new AppError('Database connection unavailable.', 503);
   }
 
-  try {
-    let settings = await Settings.findOne({
-      $or: [{ hotelId }, { hotelSlug }, { hotelId: identifier }, { hotelSlug: identifier }]
+  let settings = await Settings.findOne({
+    $or: [{ hotelId }, { hotelSlug }, { hotelId: identifier }, { hotelSlug: identifier }]
+  });
+
+  if (!settings) {
+    settings = await Settings.create({
+      hotelId,
+      hotelSlug,
+      hotelName: hotel ? hotel.name : 'Registered Hotel',
+      logoUrl: hotel ? hotel.logoUrl : '',
+      themeColor: hotel ? hotel.themeColor : '#2563eb',
+      googlePlaceId: hotel ? hotel.googlePlaceId : (process.env.VITE_GOOGLE_PLACE_ID || ''),
+      googleReviewUrl: hotel ? hotel.googleReviewUrl : generateGoogleReviewUrl(process.env.VITE_GOOGLE_PLACE_ID || ''),
+      tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
+      managerEmail: hotel ? (hotel.managerEmail || '') : '',
+      managerPhone: hotel ? (hotel.managerPhone || '') : '',
+      alertThreshold: 3,
+      preventDuplicateReviews: true,
+      tone: hotel ? (hotel.tone || 'friendly') : 'friendly',
+      providers: [
+        { type: 'google', isEnabled: true },
+        { type: 'tripadvisor', isEnabled: true },
+      ],
     });
-
-    if (!settings) {
-      settings = await Settings.create({
-        hotelId,
-        hotelSlug,
-        hotelName: hotel ? hotel.name : 'Registered Hotel',
-        logoUrl: hotel ? hotel.logoUrl : '',
-        themeColor: hotel ? hotel.themeColor : '#2563eb',
-        googlePlaceId: hotel ? hotel.googlePlaceId : (process.env.VITE_GOOGLE_PLACE_ID || ''),
-        googleReviewUrl: hotel ? hotel.googleReviewUrl : generateGoogleReviewUrl(process.env.VITE_GOOGLE_PLACE_ID || ''),
-        tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
-        managerEmail: hotel ? (hotel.managerEmail || 'himanshigoswami9057@gmail.com') : 'himanshigoswami9057@gmail.com',
-        managerPhone: hotel ? (hotel.managerPhone || '+91 98765 43210') : '+91 98765 43210',
-        alertThreshold: 3,
-        preventDuplicateReviews: true,
-        tone: hotel ? (hotel.tone || 'friendly') : 'friendly',
-        providers: [
-          { type: 'google', isEnabled: true },
-          { type: 'tripadvisor', isEnabled: true },
-        ],
-      });
-    }
-
-    if (settings) {
-      return {
-        hotelId: settings.hotelId,
-        hotelSlug: settings.hotelSlug || hotelSlug,
-        hotelName: settings.hotelName,
-        logoUrl: settings.logoUrl || '',
-        themeColor: settings.themeColor || '#2563eb',
-        googlePlaceId: settings.googlePlaceId,
-        googleReviewUrl: settings.googleReviewUrl,
-        tripadvisorReviewUrl: settings.tripadvisorReviewUrl,
-        managerEmail: settings.managerEmail,
-        managerPhone: settings.managerPhone,
-        alertThreshold: settings.alertThreshold,
-        preventDuplicateReviews: settings.preventDuplicateReviews,
-        tone: settings.tone || 'friendly',
-        providers: settings.providers,
-      };
-    }
-  } catch (err) {
-    logger.warn(`[SettingsService] DB query failed, returning fallback settings for "${hotelId}": ${err.message}`);
   }
 
-  return fallbackSettings;
+  return {
+    hotelId: settings.hotelId,
+    hotelSlug: settings.hotelSlug || hotelSlug,
+    hotelName: settings.hotelName,
+    logoUrl: settings.logoUrl || '',
+    themeColor: settings.themeColor || '#2563eb',
+    googlePlaceId: settings.googlePlaceId,
+    googleReviewUrl: settings.googleReviewUrl,
+    tripadvisorReviewUrl: settings.tripadvisorReviewUrl,
+    managerEmail: settings.managerEmail,
+    managerPhone: settings.managerPhone,
+    alertThreshold: settings.alertThreshold,
+    preventDuplicateReviews: settings.preventDuplicateReviews,
+    tone: settings.tone || 'friendly',
+    providers: settings.providers,
+  };
 }
 
-export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings, req = null) {
+export async function updateSettings(identifier, newSettings, req = null) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const current = await getSettings(identifier);
   const hotelId = current.hotelId || identifier;
   const hotelSlug = current.hotelSlug || identifier;
@@ -133,7 +99,7 @@ export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings,
     settings = await Settings.create({ ...updatedData, hotelId, hotelSlug });
   }
 
-  // Sync with Hotel model in MongoDB
+  // Sync with Hotel model in MongoDB Atlas
   await Hotel.findOneAndUpdate(
     { $or: [{ hotelId }, { hotelSlug }, { hotelId: identifier }, { hotelSlug: identifier }] },
     {
@@ -172,12 +138,6 @@ export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings,
     providers: settings.providers,
   };
 
-  memorySettingsStore.set(hotelId, resultSettings);
-  memorySettingsStore.set(hotelSlug, resultSettings);
-  memorySettingsStore.set(identifier, resultSettings);
-  updateInMemoryHotel(hotelSlug, resultSettings);
-  updateInMemoryHotel(hotelId, resultSettings);
-
   // Broadcast real-time SSE event to all connected devices across the network
   broadcastSystemEvent(hotelSlug, 'SETTINGS_UPDATED', { settings: resultSettings });
 
@@ -188,46 +148,26 @@ export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings,
   };
 }
 
-export async function getKeywords(identifier = DEFAULT_HOTEL_ID) {
+export async function getKeywords(identifier) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
-  try {
-    const keywords = await Keyword.find({
+  const keywords = await Keyword.find({
+    $or: [{ hotelId }, { hotelId: identifier }],
+    isActive: true,
+  }).sort({ sortOrder: 1 });
+
+  if (keywords.length === 0) {
+    await seedDefaultKeywords(hotelId).catch(() => {});
+    const seeded = await Keyword.find({
       $or: [{ hotelId }, { hotelId: identifier }],
       isActive: true,
     }).sort({ sortOrder: 1 });
-
-    if (keywords.length === 0) {
-      await seedDefaultKeywords(hotelId).catch(() => {});
-      const seeded = await Keyword.find({
-        $or: [{ hotelId }, { hotelId: identifier }],
-        isActive: true,
-      }).sort({ sortOrder: 1 });
-      if (seeded.length > 0) {
-        const grouped = groupKeywords(seeded);
-        memoryKeywordsStore.set(hotelId, grouped);
-        memoryKeywordsStore.set(identifier, grouped);
-        return grouped;
-      }
-    } else {
-      const grouped = groupKeywords(keywords);
-      memoryKeywordsStore.set(hotelId, grouped);
-      memoryKeywordsStore.set(identifier, grouped);
-      return grouped;
-    }
-  } catch (err) {
-    logger.warn(`[SettingsService] DB query failed, returning fallback keywords for "${hotelId}": ${err.message}`);
+    return groupKeywords(seeded);
   }
 
-  if (memoryKeywordsStore.has(hotelId)) return memoryKeywordsStore.get(hotelId);
-  if (memoryKeywordsStore.has(identifier)) return memoryKeywordsStore.get(identifier);
-
-  return groupKeywords(
-    RATING_KEYWORDS.positive.map((k, idx) => ({ ...k, tagId: k.id, type: 'positive', sortOrder: idx })).concat(
-      RATING_KEYWORDS.negative.map((k, idx) => ({ ...k, tagId: k.id, type: 'negative', sortOrder: idx }))
-    )
-  );
+  return groupKeywords(keywords);
 }
 
 function groupKeywords(keywords) {
@@ -235,6 +175,7 @@ function groupKeywords(keywords) {
     .filter((k) => k.type === 'positive')
     .map((k) => ({
       id: k.tagId,
+      tagId: k.tagId,
       label: k.label,
       category: k.category,
       snippet: k.snippet || k.label,
@@ -245,6 +186,7 @@ function groupKeywords(keywords) {
     .filter((k) => k.type === 'negative')
     .map((k) => ({
       id: k.tagId,
+      tagId: k.tagId,
       label: k.label,
       category: k.category,
       snippet: k.snippet || k.label,
@@ -286,46 +228,24 @@ async function seedDefaultKeywords(hotelId) {
   await Keyword.insertMany(docs).catch(() => {});
 }
 
-export async function addKeyword(identifier = DEFAULT_HOTEL_ID, type, tagData, req = null) {
+export async function addKeyword(identifier, type, tagData, req = null) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
   const tagId = tagData.tagId || tagData.id || 'custom_' + Date.now().toString(36);
 
-  let newKw = {
-    id: tagId,
+  const keyword = await Keyword.create({
+    hotelId,
+    type,
     tagId,
     label: tagData.label,
     category: tagData.category || 'General',
     snippet: tagData.snippet || tagData.label,
     snippets: tagData.snippets || [tagData.snippet || tagData.label],
-  };
+    sortOrder: Date.now(),
+    isActive: true,
+  });
 
-  try {
-    const keyword = await Keyword.create({
-      hotelId,
-      type,
-      tagId,
-      label: tagData.label,
-      category: tagData.category || 'General',
-      snippet: tagData.snippet || tagData.label,
-      snippets: tagData.snippets || [tagData.snippet || tagData.label],
-      sortOrder: Date.now(),
-      isActive: true,
-    });
-    newKw = {
-      id: keyword.tagId,
-      tagId: keyword.tagId,
-      label: keyword.label,
-      category: keyword.category,
-      snippet: keyword.snippet,
-      snippets: keyword.snippets,
-    };
-  } catch (err) {
-    logger.error(`[SettingsService] Error adding keyword for "${identifier}": ${err.message}`);
-  }
-
-  memoryKeywordsStore.delete(hotelId);
-  memoryKeywordsStore.delete(identifier);
   const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_ADDED', { type, label: tagData.label }, req).catch(() => {});
@@ -333,26 +253,28 @@ export async function addKeyword(identifier = DEFAULT_HOTEL_ID, type, tagData, r
 
   return {
     success: true,
-    keyword: newKw,
+    keyword: {
+      id: keyword.tagId,
+      tagId: keyword.tagId,
+      label: keyword.label,
+      category: keyword.category,
+      snippet: keyword.snippet,
+      snippets: keyword.snippets,
+    },
     keywords: updatedGroup,
   };
 }
 
-export async function deleteKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, req = null) {
+export async function deleteKeyword(identifier, type, tagId, req = null) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
-  try {
-    await Keyword.deleteMany({
-      $or: [{ hotelId }, { hotelId: identifier }],
-      tagId,
-    });
-  } catch (err) {
-    logger.error(`[SettingsService] Error deleting keyword "${tagId}" for "${identifier}": ${err.message}`);
-  }
+  await Keyword.deleteMany({
+    $or: [{ hotelId }, { hotelId: identifier }],
+    tagId,
+  });
 
-  memoryKeywordsStore.delete(hotelId);
-  memoryKeywordsStore.delete(identifier);
   const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_DELETED', { type, tagId }, req).catch(() => {});
@@ -360,31 +282,26 @@ export async function deleteKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, 
   return { success: true, message: 'Keyword tag deleted successfully.', keywords: updatedGroup };
 }
 
-export async function updateKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, tagData, req = null) {
+export async function updateKeyword(identifier, type, tagId, tagData, req = null) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
-  try {
-    await Keyword.updateMany(
-      {
-        $or: [{ hotelId }, { hotelId: identifier }],
-        tagId,
+  await Keyword.updateMany(
+    {
+      $or: [{ hotelId }, { hotelId: identifier }],
+      tagId,
+    },
+    {
+      $set: {
+        label: tagData.label,
+        category: tagData.category || 'General',
+        snippet: tagData.snippet || tagData.label,
+        snippets: tagData.snippets || [tagData.snippet || tagData.label],
       },
-      {
-        $set: {
-          label: tagData.label,
-          category: tagData.category || 'General',
-          snippet: tagData.snippet || tagData.label,
-          snippets: tagData.snippets || [tagData.snippet || tagData.label],
-        },
-      }
-    );
-  } catch (err) {
-    logger.error(`[SettingsService] Error updating keyword "${tagId}" for "${identifier}": ${err.message}`);
-  }
+    }
+  );
 
-  memoryKeywordsStore.delete(hotelId);
-  memoryKeywordsStore.delete(identifier);
   const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_UPDATED', { type, tagId, label: tagData.label }, req).catch(() => {});
@@ -397,7 +314,8 @@ export async function updateKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, 
   };
 }
 
-export async function reorderKeywords(identifier = DEFAULT_HOTEL_ID, type, tagIds = [], req = null) {
+export async function reorderKeywords(identifier, type, tagIds = [], req = null) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
@@ -415,44 +333,36 @@ export async function reorderKeywords(identifier = DEFAULT_HOTEL_ID, type, tagId
     await Keyword.bulkWrite(ops).catch(() => {});
   }
 
-  memoryKeywordsStore.delete(hotelId);
-  memoryKeywordsStore.delete(identifier);
-
   await logEvent(hotelId, 'KEYWORD_REORDERED', { type, count: tagIds.length }, req).catch(() => {});
   broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED');
   return { success: true };
 }
 
-export async function applyKeywordTemplate(identifier = DEFAULT_HOTEL_ID, templateKey, customKeywords = [], req = null) {
+export async function applyKeywordTemplate(identifier, templateKey, customKeywords = [], req = null) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
 
-  try {
-    await Keyword.deleteMany({
-      $or: [{ hotelId }, { hotelId: identifier }]
-    });
+  await Keyword.deleteMany({
+    $or: [{ hotelId }, { hotelId: identifier }]
+  });
 
-    const docs = customKeywords.map((item, idx) => ({
-      hotelId,
-      type: 'positive',
-      tagId: item.id || item.tagId || 'tmpl_' + idx + '_' + Date.now().toString(36),
-      label: item.label,
-      category: item.category || 'General',
-      snippet: item.snippet || item.label,
-      snippets: item.snippets || [item.snippet || item.label],
-      sortOrder: idx,
-      isActive: true,
-    }));
+  const docs = customKeywords.map((item, idx) => ({
+    hotelId,
+    type: item.type || 'positive',
+    tagId: item.id || item.tagId || 'tmpl_' + idx + '_' + Date.now().toString(36),
+    label: item.label,
+    category: item.category || 'General',
+    snippet: item.snippet || item.label,
+    snippets: item.snippets || [item.snippet || item.label],
+    sortOrder: idx,
+    isActive: true,
+  }));
 
-    if (docs.length > 0) {
-      await Keyword.insertMany(docs);
-    }
-  } catch (err) {
-    logger.error(`[SettingsService] Error applying keyword template for "${identifier}": ${err.message}`);
+  if (docs.length > 0) {
+    await Keyword.insertMany(docs);
   }
 
-  memoryKeywordsStore.delete(hotelId);
-  memoryKeywordsStore.delete(identifier);
   const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_TEMPLATE_APPLIED', { templateKey, count: customKeywords.length }, req).catch(() => {});

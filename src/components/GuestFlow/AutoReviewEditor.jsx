@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, RefreshCw, Copy, Check, SlidersHorizontal } from 'lucide-react';
+import { Sparkles, RefreshCw, Copy, Check } from 'lucide-react';
 import { copyToMobileClipboard } from '../../utils/clipboardHelper';
 
 export function AutoReviewEditor({
@@ -7,8 +7,6 @@ export function AutoReviewEditor({
   onTextChange,
   rating,
   onRefreshPhrasing,
-  currentTone = 'friendly',
-  onChangeTone,
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -22,12 +20,6 @@ export function AutoReviewEditor({
       setTimeout(() => setCopied(false), 2500);
     }
   };
-
-  const tones = [
-    { id: 'friendly', label: '🌟 Warm & Detailed' },
-    { id: 'short', label: '⚡ Short & Sweet' },
-    { id: 'formal', label: '💼 Professional' },
-  ];
 
   return (
     <div

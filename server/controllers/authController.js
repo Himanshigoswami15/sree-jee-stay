@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import * as authService from '../services/authService.js';
-import { DEFAULT_HOTEL_ID } from '../config/constants.js';
+import { AppError } from '../middleware/errorHandler.js';
 
 function setAuthCookies(res, accessToken, refreshToken) {
   const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
@@ -32,7 +32,10 @@ function setCsrfCookie(res) {
 
 export async function login(req, res, next) {
   try {
-    const identifier = req.body.hotelId || req.body.hotelSlug || DEFAULT_HOTEL_ID;
+    const identifier = req.body.hotelId || req.body.hotelSlug;
+    if (!identifier) {
+      throw new AppError('hotelSlug or hotelId is required for login.', 400);
+    }
     const { password, email } = req.body;
     const result = await authService.login(identifier, password, email);
 
@@ -47,7 +50,10 @@ export async function login(req, res, next) {
 
 export async function changePassword(req, res, next) {
   try {
-    const identifier = req.body.hotelSlug || req.body.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.hotelId || req.body.hotelSlug || req.body.hotelId;
+    if (!identifier) {
+      throw new AppError('hotelSlug or hotelId is required to update password.', 400);
+    }
     const { oldPassword = '', newPassword = '', isOtpReset = false } = req.body;
     const result = await authService.changePassword(identifier, oldPassword, newPassword, isOtpReset);
 
@@ -76,7 +82,10 @@ export async function refresh(req, res, next) {
 
 export async function status(req, res, next) {
   try {
-    const identifier = req.query.hotelId || req.query.hotelSlug || DEFAULT_HOTEL_ID;
+    const identifier = req.query.hotelId || req.query.hotelSlug || req.hotelId;
+    if (!identifier) {
+      throw new AppError('hotelSlug or hotelId is required.', 400);
+    }
     const result = await authService.getAuthStatus(identifier);
     return res.status(200).json(result);
   } catch (err) {

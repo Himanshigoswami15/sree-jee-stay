@@ -7,17 +7,13 @@ import { apiClient } from '../services/apiClient';
 
 const FeedbackContext = createContext();
 
-const DEFAULT_REGISTERED_HOTELS = [
-  { hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' },
-  { hotelSlug: 'jj-elevates', name: 'JJ elevates' }
-];
-
-export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
+export function FeedbackProvider({ children, hotelSlug }) {
   const [feedbacks, setFeedbacks] = useState([]);
-  const [settings, setSettings] = useState(() => getHotelConfig(hotelSlug));
+  const [settings, setSettings] = useState(() => getHotelConfig(hotelSlug) || {});
   const [keywords, setKeywords] = useState(RATING_KEYWORDS);
-  const [registeredHotels, setRegisteredHotels] = useState(DEFAULT_REGISTERED_HOTELS);
+  const [registeredHotels, setRegisteredHotels] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hotelNotFound, setHotelNotFound] = useState(false);
 
   const [activeTab, setActiveTab] = useState('guest'); // 'guest' | 'dashboard'
   const [managerAlertToast, setManagerAlertToast] = useState(null);
@@ -30,23 +26,21 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   const fetchHotelsList = useCallback(async () => {
     try {
       const res = await apiClient(`/api/hotels?_t=${Date.now()}`);
-      if (res && res.success && Array.isArray(res.hotels) && res.hotels.length > 0) {
+      if (res && res.success && Array.isArray(res.hotels)) {
         const serverHotels = res.hotels.map(h => ({
           hotelSlug: h.hotelSlug || h.hotelId,
-          name: h.name || h.hotelName || h.hotelSlug || 'Registered Hotel'
+          name: h.name || h.hotelName || h.hotelSlug
         }));
-        const mergedMap = new Map();
-        mergedMap.set('sree-jee-stay', { hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' });
-        serverHotels.forEach(h => {
-          if (h && h.hotelSlug) mergedMap.set(h.hotelSlug, h);
-        });
-        setRegisteredHotels(Array.from(mergedMap.values()));
+        setRegisteredHotels(serverHotels);
       }
     } catch (e) {}
   }, []);
 
   const fetchData = useCallback(async () => {
+    if (!hotelSlug) return;
     setLoading(true);
+    setHotelNotFound(false);
+
     try {
       fetchHotelsList();
 
@@ -59,13 +53,15 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
       if (settingsRes && settingsRes.success && settingsRes.settings) {
         setSettings(settingsRes.settings);
+      } else {
+        setHotelNotFound(true);
       }
 
       if (keywordsRes && keywordsRes.success && keywordsRes.keywords) {
         setKeywords(keywordsRes.keywords);
       }
 
-      if (feedbackRes && feedbackRes.success && feedbackRes.feedbacks) {
+      if (feedbackRes && feedbackRes.success && Array.isArray(feedbackRes.feedbacks)) {
         setFeedbacks(feedbackRes.feedbacks);
       }
     } catch (err) {
@@ -74,7 +70,6 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       setLoading(false);
     }
   }, [hotelSlug, fetchHotelsList]);
-
 
   const prevHotelSlugRef = useRef(hotelSlug);
 
@@ -90,6 +85,8 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   }, [hotelSlug, activeTab]);
 
   useEffect(() => {
+    if (!hotelSlug) return;
+
     apiClient('/api/auth/me').then((res) => {
       if (
         res &&
@@ -150,8 +147,6 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   };
 
   const verifyPin = async (inputPin) => {
-    const isMasterPin = (inputPin === '9008' || inputPin === '1234' || inputPin === '0000');
-
     try {
       const result = await verifyPasswordApi(hotelSlug, inputPin);
       if (result.success) {
@@ -162,25 +157,11 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
         fetchData();
         return { success: true };
       }
-      
-      // Fallback: If master PIN '9008' or network/server issue, grant access
-      if (isMasterPin || (result.error && (result.error.includes('HTTP 500') || result.error.includes('Network error') || result.error.includes('unreachable')))) {
-        setIsManagerAuthenticated(true);
-        setIsPinModalOpen(false);
-        setActiveTab('dashboard');
-        return { success: true };
-      }
 
       auditLogger.logEvent('MANAGER_LOGIN_FAILED');
-      return { success: false, error: result.error || 'Incorrect Security PIN. Default PIN is 9008.' };
+      return { success: false, error: result.error || 'Incorrect Security PIN / Password.' };
     } catch (err) {
-      if (isMasterPin) {
-        setIsManagerAuthenticated(true);
-        setIsPinModalOpen(false);
-        setActiveTab('dashboard');
-        return { success: true };
-      }
-      return { success: false, error: 'Network error verifying PIN. Default PIN is 9008.' };
+      return { success: false, error: 'Network error verifying password.' };
     }
   };
 
@@ -222,7 +203,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   };
 
   const checkIsDuplicate = (contactStr) => {
-    if (!contactStr || !settings.preventDuplicateReviews) return false;
+    if (!contactStr || !settings?.preventDuplicateReviews) return false;
     return feedbacks.some((fb) => fb.guestContact && fb.guestContact === contactStr);
   };
 
@@ -251,24 +232,14 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       };
     }
 
-    const submission = (res.success && res.submission) ? res.submission : {
-      id: `fb_${Date.now()}`,
-      hotelSlug,
-      rating: newFb.rating,
-      tags: newFb.tags || [],
-      reviewText: newFb.reviewText || '',
-      guestContact: newFb.guestContact || '',
-      postedPublic: newFb.postedPublic || false,
-      timestamp: new Date().toISOString(),
-    };
+    if (!res.success) {
+      return { success: false, error: res.error || 'Failed to submit review.' };
+    }
 
-    setFeedbacks((prev) => {
-      const updated = [submission, ...prev];
-      saveStorage(`jj_feedbacks_${hotelSlug}`, updated);
-      return updated;
-    });
+    const submission = res.submission;
+    setFeedbacks((prev) => [submission, ...prev]);
 
-    const isLowRating = submission.rating <= settings.alertThreshold;
+    const isLowRating = submission.rating <= (settings?.alertThreshold || 3);
     if (isLowRating) {
       setManagerAlertToast({
         id: submission.id,
@@ -293,21 +264,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       return { success: true, keyword: res.keyword };
     }
 
-    const newKeyword = {
-      id: tagData.id || tagData.tagId || `custom_${Date.now()}`,
-      tagId: tagData.id || tagData.tagId || `custom_${Date.now()}`,
-      label: tagData.label,
-      category: tagData.category || 'General',
-      snippet: tagData.snippet || tagData.label,
-      snippets: tagData.snippets || [tagData.snippet || tagData.label],
-    };
-
-    setKeywords((prev) => ({
-      ...prev,
-      [type]: [...(prev[type] || []), newKeyword],
-    }));
-
-    return { success: true, keyword: newKeyword };
+    return { success: false, error: res?.error || 'Failed to add keyword tag.' };
   };
 
   const updateKeyword = async (type, tagId, updatedFields) => {
@@ -321,13 +278,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       return { success: true };
     }
 
-    const updatedTag = updatedFields;
-    setKeywords((prev) => ({
-      ...prev,
-      [type]: (prev[type] || []).map((k) => ((k.id === tagId || k.tagId === tagId) ? { ...k, ...updatedTag } : k)),
-    }));
-
-    return { success: true };
+    return { success: false, error: res?.error || 'Failed to update keyword tag.' };
   };
 
   const deleteKeyword = async (type, tagId) => {
@@ -340,24 +291,18 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       return { success: true };
     }
 
-    setKeywords((prev) => ({
-      ...prev,
-      [type]: (prev[type] || []).filter((t) => t.id !== tagId && t.tagId !== tagId),
-    }));
-
-    return { success: true };
+    return { success: false, error: res?.error || 'Failed to delete keyword tag.' };
   };
 
   const reorderKeywords = async (type, newOrderedList) => {
-    setKeywords((prev) => ({
-      ...prev,
-      [type]: newOrderedList,
-    }));
-
-    await apiClient('/api/keywords/reorder', {
+    const res = await apiClient('/api/keywords/reorder', {
       method: 'POST',
       body: JSON.stringify({ hotelSlug, type, tagIds: newOrderedList.map((k) => k.id || k.tagId) }),
     });
+
+    if (res && res.success && res.keywords) {
+      setKeywords(res.keywords);
+    }
   };
 
   const applyIndustryTemplate = async (templateKey) => {
@@ -386,12 +331,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       return { success: true, count: res.count || newKeywordsList.length };
     }
 
-    setKeywords((prev) => ({
-      ...prev,
-      positive: newKeywordsList,
-    }));
-
-    return { success: true, count: newKeywordsList.length };
+    return { success: false, error: res?.error || 'Failed to apply keyword template.' };
   };
 
   const resolveAlert = async (id) => {
@@ -431,10 +371,6 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
     return { success: false, error: res?.error || 'Failed to update settings in database.' };
   };
 
-  const resetToDemoData = () => {
-    fetchData();
-  };
-
   const registerHotel = (newHotel) => {
     if (!newHotel || (!newHotel.hotelSlug && !newHotel.slug)) return;
     const slug = newHotel.hotelSlug || newHotel.slug;
@@ -457,6 +393,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
         refreshHotels: fetchHotelsList,
         registerHotel,
         loading,
+        hotelNotFound,
         activeTab,
         setActiveTab: switchTab,
         managerAlertToast,
@@ -478,7 +415,6 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
         applyIndustryTemplate,
         resolveAlert,
         updateSettings,
-        resetToDemoData,
         refreshData: fetchData,
       }}
     >
