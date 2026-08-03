@@ -63,7 +63,11 @@ app.get('/api/r/:token', resolveScan);
 
 // Health check endpoints
 app.get('/health', (_req, res) => {
-  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+  res.json({ status: 'healthy', timestamp: new Date().toISOString(), database: getDbStatus() });
+});
+
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString(), database: getDbStatus() });
 });
 
 // Prevent API response caching across devices & browsers

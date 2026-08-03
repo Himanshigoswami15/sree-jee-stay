@@ -26,6 +26,12 @@ export async function connectDB(retries = 3, delay = 1000) {
 
   const isVercel = process.env.VERCEL === '1';
   const isLocalUri = MONGODB_URI.includes('127.0.0.1') || MONGODB_URI.includes('localhost');
+  const hasPlaceholders = MONGODB_URI.includes('<USERNAME>') || MONGODB_URI.includes('<PASSWORD>') || MONGODB_URI.includes('<CLUSTER>');
+
+  if (hasPlaceholders) {
+    logger.error('[MongoDB] ❌ MONGODB_URI in environment contains unreplaced placeholders (<USERNAME>/<PASSWORD>/<CLUSTER>). Real MongoDB database connection CANNOT be established until valid credentials are provided.');
+    return false;
+  }
 
   // On Vercel, if MONGODB_URI points to localhost, skip connection attempt immediately
   if (isVercel && isLocalUri) {
@@ -58,7 +64,7 @@ export async function connectDB(retries = 3, delay = 1000) {
         const maskedUri = MONGODB_URI.replace(/\/\/[^@]*@/, '//***:***@');
         logger.info(`[MongoDB] Connection attempt ${attempt}/${retries} → ${maskedUri}`);
         await mongoose.connect(MONGODB_URI, MONGOOSE_OPTIONS);
-        logger.info(`[MongoDB] ✅ Connected successfully to: ${maskedUri}`);
+        logger.info(`[MongoDB] ✅ Connected successfully to: ${maskedUri} | Host: ${mongoose.connection.host || 'Atlas'} | Database: ${mongoose.connection.name}`);
         lastFailedAt = 0;
         return true;
       } catch (err) {
@@ -67,7 +73,7 @@ export async function connectDB(retries = 3, delay = 1000) {
           logger.info(`[MongoDB] Retrying in ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
         } else {
-          logger.warn('[MongoDB] All connection attempts exhausted. Operating in high-performance in-memory fallback mode.');
+          logger.error(`[MongoDB] ❌ All ${retries} connection attempts failed. Database is currently DISCONNECTED.`);
           lastFailedAt = Date.now();
           return false;
         }
@@ -79,6 +85,24 @@ export async function connectDB(retries = 3, delay = 1000) {
   });
 
   return connectionPromise;
+}
+
+export function getDbStatus() {
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  const stateCode = mongoose.connection.readyState;
+  const isAtlas = MONGODB_URI.includes('mongodb+srv://') || MONGODB_URI.includes('mongodb.net');
+  const hasPlaceholders = MONGODB_URI.includes('<USERNAME>') || MONGODB_URI.includes('<PASSWORD>') || MONGODB_URI.includes('<CLUSTER>');
+
+  return {
+    isConnected: stateCode === 1,
+    state: states[stateCode] || 'unknown',
+    stateCode,
+    host: mongoose.connection.host || null,
+    databaseName: mongoose.connection.name || null,
+    isAtlas,
+    hasPlaceholderUri: hasPlaceholders,
+    maskedUri: MONGODB_URI.replace(/\/\/[^@]*@/, '//***:***@'),
+  };
 }
 
 /**
@@ -108,15 +132,15 @@ process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 
 // Connection event listeners
 mongoose.connection.on('connected', () => {
-  logger.info('[MongoDB] Connection established.');
+  logger.info('[MongoDB] ✅ Connection established.');
 });
 
 mongoose.connection.on('error', (err) => {
-  logger.error(`[MongoDB] Connection error: ${err.message}`);
+  logger.error(`[MongoDB] ❌ Connection error: ${err.message}`);
 });
 
 mongoose.connection.on('disconnected', () => {
-  logger.warn('[MongoDB] Connection lost.');
+  logger.warn('[MongoDB] ⚠️ Connection lost.');
 });
 
 mongoose.connection.on('reconnected', () => {
@@ -124,3 +148,4 @@ mongoose.connection.on('reconnected', () => {
 });
 
 export { mongoose };
+

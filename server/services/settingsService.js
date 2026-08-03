@@ -8,8 +8,10 @@ import { DEFAULT_HOTEL_ID } from '../config/constants.js';
 import { connectDB } from '../config/db.js';
 import { logger } from '../utils/logger.js';
 import { broadcastSystemEvent } from '../utils/eventBroadcaster.js';
+import { AppError } from '../middleware/errorHandler.js';
 
 const memorySettingsStore = new Map();
+
 const memoryKeywordsStore = new Map();
 
 export async function getSettings(identifier = DEFAULT_HOTEL_ID) {
@@ -112,63 +114,62 @@ export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings,
     updatedData.googleReviewUrl = generateGoogleReviewUrl(newSettings.googleReviewUrl);
   }
 
-  let settings = null;
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      await connectDB(1, 500).catch(() => {});
-    }
-    if (mongoose.connection.readyState === 1) {
-      settings = await Settings.findOne({
-        $or: [{ hotelId }, { hotelSlug }, { hotelId: identifier }, { hotelSlug: identifier }]
-      });
-      if (settings) {
-        Object.assign(settings, updatedData);
-        settings = await settings.save();
-      } else {
-        settings = await Settings.create({ ...updatedData, hotelId, hotelSlug });
-      }
-
-      // Sync with Hotel model in MongoDB
-      await Hotel.findOneAndUpdate(
-        { $or: [{ hotelId }, { hotelSlug }, { hotelId: identifier }, { hotelSlug: identifier }] },
-        {
-          $set: {
-            name: updatedData.hotelName,
-            logoUrl: updatedData.logoUrl,
-            themeColor: updatedData.themeColor,
-            googlePlaceId: updatedData.googlePlaceId,
-            googleReviewUrl: updatedData.googleReviewUrl,
-            tripadvisorReviewUrl: updatedData.tripadvisorReviewUrl,
-            managerEmail: updatedData.managerEmail,
-            managerPhone: updatedData.managerPhone,
-            alertThreshold: updatedData.alertThreshold,
-            preventDuplicateReviews: updatedData.preventDuplicateReviews,
-            tone: updatedData.tone,
-          }
-        }
-      ).catch(() => {});
-    }
-  } catch (err) {
-    logger.warn(`[SettingsService] MongoDB updateSettings error: ${err.message}`);
+  if (mongoose.connection.readyState !== 1) {
+    await connectDB(1, 500).catch(() => {});
   }
+
+  if (mongoose.connection.readyState !== 1) {
+    throw new AppError('Database connection unavailable. Settings cannot be updated without a live MongoDB connection.', 503);
+  }
+
+  let settings = await Settings.findOne({
+    $or: [{ hotelId }, { hotelSlug }, { hotelId: identifier }, { hotelSlug: identifier }]
+  });
+
+  if (settings) {
+    Object.assign(settings, updatedData);
+    settings = await settings.save();
+  } else {
+    settings = await Settings.create({ ...updatedData, hotelId, hotelSlug });
+  }
+
+  // Sync with Hotel model in MongoDB
+  await Hotel.findOneAndUpdate(
+    { $or: [{ hotelId }, { hotelSlug }, { hotelId: identifier }, { hotelSlug: identifier }] },
+    {
+      $set: {
+        name: updatedData.hotelName,
+        logoUrl: updatedData.logoUrl,
+        themeColor: updatedData.themeColor,
+        googlePlaceId: updatedData.googlePlaceId,
+        googleReviewUrl: updatedData.googleReviewUrl,
+        tripadvisorReviewUrl: updatedData.tripadvisorReviewUrl,
+        managerEmail: updatedData.managerEmail,
+        managerPhone: updatedData.managerPhone,
+        alertThreshold: updatedData.alertThreshold,
+        preventDuplicateReviews: updatedData.preventDuplicateReviews,
+        tone: updatedData.tone,
+      }
+    }
+  ).catch(() => {});
 
   await logEvent(hotelId, 'SETTINGS_UPDATED', newSettings, req).catch(() => {});
 
   const resultSettings = {
-    hotelId: settings ? settings.hotelId : hotelId,
-    hotelSlug: settings ? settings.hotelSlug : identifier,
-    hotelName: settings ? settings.hotelName : updatedData.hotelName,
-    logoUrl: settings ? settings.logoUrl : updatedData.logoUrl,
-    themeColor: settings ? settings.themeColor : updatedData.themeColor,
-    googlePlaceId: settings ? settings.googlePlaceId : updatedData.googlePlaceId,
-    googleReviewUrl: settings ? settings.googleReviewUrl : updatedData.googleReviewUrl,
-    tripadvisorReviewUrl: settings ? settings.tripadvisorReviewUrl : updatedData.tripadvisorReviewUrl,
-    managerEmail: settings ? settings.managerEmail : updatedData.managerEmail,
-    managerPhone: settings ? settings.managerPhone : updatedData.managerPhone,
-    alertThreshold: settings ? settings.alertThreshold : updatedData.alertThreshold,
-    preventDuplicateReviews: settings ? settings.preventDuplicateReviews : updatedData.preventDuplicateReviews,
-    tone: settings ? settings.tone : updatedData.tone,
-    providers: settings ? settings.providers : updatedData.providers,
+    hotelId: settings.hotelId,
+    hotelSlug: settings.hotelSlug || identifier,
+    hotelName: settings.hotelName,
+    logoUrl: settings.logoUrl || '',
+    themeColor: settings.themeColor || '#2563eb',
+    googlePlaceId: settings.googlePlaceId,
+    googleReviewUrl: settings.googleReviewUrl,
+    tripadvisorReviewUrl: settings.tripadvisorReviewUrl,
+    managerEmail: settings.managerEmail,
+    managerPhone: settings.managerPhone,
+    alertThreshold: settings.alertThreshold,
+    preventDuplicateReviews: settings.preventDuplicateReviews,
+    tone: settings.tone || 'friendly',
+    providers: settings.providers,
   };
 
   memorySettingsStore.set(hotelId, resultSettings);
@@ -182,7 +183,7 @@ export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings,
 
   return {
     success: true,
-    message: 'Settings updated successfully.',
+    message: 'Settings updated successfully in MongoDB.',
     settings: resultSettings,
   };
 }

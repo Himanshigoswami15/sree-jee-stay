@@ -12,40 +12,11 @@ const DEFAULT_REGISTERED_HOTELS = [
   { hotelSlug: 'jj-elevates', name: 'JJ elevates' }
 ];
 
-function getInitialHotels() {
-  try {
-    const saved = localStorage.getItem('jj_registered_hotels');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch (e) {}
-  return DEFAULT_REGISTERED_HOTELS;
-}
-
-function getSavedStorage(key, fallback) {
-  try {
-    const saved = localStorage.getItem(key);
-    if (saved) return JSON.parse(saved);
-  } catch (e) {}
-  return fallback;
-}
-
-function saveStorage(key, data) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (e) {}
-}
-
 export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
-  const settingsKey = `jj_settings_${hotelSlug}`;
-  const keywordsKey = `jj_keywords_${hotelSlug}`;
-  const feedbacksKey = `jj_feedbacks_${hotelSlug}`;
-
-  const [feedbacks, setFeedbacks] = useState(() => getSavedStorage(feedbacksKey, []));
-  const [settings, setSettings] = useState(() => getSavedStorage(settingsKey, getHotelConfig(hotelSlug)));
-  const [keywords, setKeywords] = useState(() => getSavedStorage(keywordsKey, RATING_KEYWORDS));
-  const [registeredHotels, setRegisteredHotels] = useState(getInitialHotels);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [settings, setSettings] = useState(() => getHotelConfig(hotelSlug));
+  const [keywords, setKeywords] = useState(RATING_KEYWORDS);
+  const [registeredHotels, setRegisteredHotels] = useState(DEFAULT_REGISTERED_HOTELS);
   const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState('guest'); // 'guest' | 'dashboard'
@@ -59,77 +30,43 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   const fetchHotelsList = useCallback(async () => {
     try {
       const res = await apiClient(`/api/hotels?_t=${Date.now()}`);
-      let serverHotels = [];
       if (res && res.success && Array.isArray(res.hotels) && res.hotels.length > 0) {
-        serverHotels = res.hotels.map(h => ({
+        const serverHotels = res.hotels.map(h => ({
           hotelSlug: h.hotelSlug || h.hotelId,
           name: h.name || h.hotelName || h.hotelSlug || 'Registered Hotel'
         }));
-      }
-
-      setRegisteredHotels((prev) => {
         const mergedMap = new Map();
         mergedMap.set('sree-jee-stay', { hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' });
-
-        (prev || []).forEach(h => {
-          if (h && h.hotelSlug) mergedMap.set(h.hotelSlug, h);
-        });
-
         serverHotels.forEach(h => {
           if (h && h.hotelSlug) mergedMap.set(h.hotelSlug, h);
         });
-
-        const mergedList = Array.from(mergedMap.values());
-        try {
-          localStorage.setItem('jj_registered_hotels', JSON.stringify(mergedList));
-        } catch (e) {}
-        return mergedList;
-      });
+        setRegisteredHotels(Array.from(mergedMap.values()));
+      }
     } catch (e) {}
   }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const sKey = `jj_settings_${hotelSlug}`;
-    const kKey = `jj_keywords_${hotelSlug}`;
-    const fKey = `jj_feedbacks_${hotelSlug}`;
-
-    // Seed state from cache only if state is uninitialized
-    if (!settings || !settings.hotelName) {
-      const cachedSettings = getSavedStorage(sKey, null);
-      if (cachedSettings) setSettings(cachedSettings);
-    }
-    if (!keywords || (!keywords.positive?.length && !keywords.negative?.length)) {
-      const cachedKeywords = getSavedStorage(kKey, null);
-      if (cachedKeywords) setKeywords(cachedKeywords);
-    }
-    if (!feedbacks || !feedbacks.length) {
-      const cachedFeedbacks = getSavedStorage(fKey, null);
-      if (cachedFeedbacks) setFeedbacks(cachedFeedbacks);
-    }
-
     try {
       fetchHotelsList();
 
+      const t = Date.now();
       const [settingsRes, keywordsRes, feedbackRes] = await Promise.all([
-        apiClient(`/api/settings?hotelSlug=${encodeURIComponent(hotelSlug)}`),
-        apiClient(`/api/keywords?hotelSlug=${encodeURIComponent(hotelSlug)}`),
-        apiClient(`/api/feedback?hotelSlug=${encodeURIComponent(hotelSlug)}`),
+        apiClient(`/api/settings?hotelSlug=${encodeURIComponent(hotelSlug)}&_t=${t}`),
+        apiClient(`/api/keywords?hotelSlug=${encodeURIComponent(hotelSlug)}&_t=${t}`),
+        apiClient(`/api/feedback?hotelSlug=${encodeURIComponent(hotelSlug)}&_t=${t}`),
       ]);
 
       if (settingsRes && settingsRes.success && settingsRes.settings) {
         setSettings(settingsRes.settings);
-        saveStorage(sKey, settingsRes.settings);
       }
 
       if (keywordsRes && keywordsRes.success && keywordsRes.keywords) {
         setKeywords(keywordsRes.keywords);
-        saveStorage(kKey, keywordsRes.keywords);
       }
 
       if (feedbackRes && feedbackRes.success && feedbackRes.feedbacks) {
         setFeedbacks(feedbackRes.feedbacks);
-        saveStorage(fKey, feedbackRes.feedbacks);
       }
     } catch (err) {
       console.warn('[FeedbackContext] Error loading initial data from server:', err);
@@ -137,6 +74,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       setLoading(false);
     }
   }, [hotelSlug, fetchHotelsList]);
+
 
   const prevHotelSlugRef = useRef(hotelSlug);
 
@@ -352,7 +290,6 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     if (res && res.success && res.keywords) {
       setKeywords(res.keywords);
-      saveStorage(`jj_keywords_${hotelSlug}`, res.keywords);
       return { success: true, keyword: res.keyword };
     }
 
@@ -365,14 +302,10 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       snippets: tagData.snippets || [tagData.snippet || tagData.label],
     };
 
-    setKeywords((prev) => {
-      const updated = {
-        ...prev,
-        [type]: [...(prev[type] || []), newKeyword],
-      };
-      saveStorage(`jj_keywords_${hotelSlug}`, updated);
-      return updated;
-    });
+    setKeywords((prev) => ({
+      ...prev,
+      [type]: [...(prev[type] || []), newKeyword],
+    }));
 
     return { success: true, keyword: newKeyword };
   };
@@ -385,20 +318,14 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     if (res && res.success && res.keywords) {
       setKeywords(res.keywords);
-      saveStorage(`jj_keywords_${hotelSlug}`, res.keywords);
       return { success: true };
     }
 
     const updatedTag = updatedFields;
-
-    setKeywords((prev) => {
-      const updated = {
-        ...prev,
-        [type]: (prev[type] || []).map((k) => ((k.id === tagId || k.tagId === tagId) ? { ...k, ...updatedTag } : k)),
-      };
-      saveStorage(`jj_keywords_${hotelSlug}`, updated);
-      return updated;
-    });
+    setKeywords((prev) => ({
+      ...prev,
+      [type]: (prev[type] || []).map((k) => ((k.id === tagId || k.tagId === tagId) ? { ...k, ...updatedTag } : k)),
+    }));
 
     return { success: true };
   };
@@ -410,31 +337,22 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     if (res && res.success && res.keywords) {
       setKeywords(res.keywords);
-      saveStorage(`jj_keywords_${hotelSlug}`, res.keywords);
       return { success: true };
     }
 
-    setKeywords((prev) => {
-      const updated = {
-        ...prev,
-        [type]: (prev[type] || []).filter((t) => t.id !== tagId && t.tagId !== tagId),
-      };
-      saveStorage(`jj_keywords_${hotelSlug}`, updated);
-      return updated;
-    });
+    setKeywords((prev) => ({
+      ...prev,
+      [type]: (prev[type] || []).filter((t) => t.id !== tagId && t.tagId !== tagId),
+    }));
 
     return { success: true };
   };
 
   const reorderKeywords = async (type, newOrderedList) => {
-    setKeywords((prev) => {
-      const updated = {
-        ...prev,
-        [type]: newOrderedList,
-      };
-      saveStorage(`jj_keywords_${hotelSlug}`, updated);
-      return updated;
-    });
+    setKeywords((prev) => ({
+      ...prev,
+      [type]: newOrderedList,
+    }));
 
     await apiClient('/api/keywords/reorder', {
       method: 'POST',
@@ -465,18 +383,13 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     if (res && res.success && res.keywords) {
       setKeywords(res.keywords);
-      saveStorage(`jj_keywords_${hotelSlug}`, res.keywords);
       return { success: true, count: res.count || newKeywordsList.length };
     }
 
-    setKeywords((prev) => {
-      const updated = {
-        ...prev,
-        positive: newKeywordsList,
-      };
-      saveStorage(`jj_keywords_${hotelSlug}`, updated);
-      return updated;
-    });
+    setKeywords((prev) => ({
+      ...prev,
+      positive: newKeywordsList,
+    }));
 
     return { success: true, count: newKeywordsList.length };
   };
@@ -484,14 +397,12 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
   const resolveAlert = async (id) => {
     const res = await apiClient(`/api/feedback/${id}/resolve`, { method: 'POST' });
 
-    if (res.success) {
-      setFeedbacks((prev) => {
-        const updated = prev.map((item) =>
+    if (res && res.success) {
+      setFeedbacks((prev) =>
+        prev.map((item) =>
           item.id === id ? { ...item, managerResolved: true, status: 'Manager Resolved' } : item
-        );
-        saveStorage(`jj_feedbacks_${hotelSlug}`, updated);
-        return updated;
-      });
+        )
+      );
     }
   };
 
@@ -505,20 +416,19 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       body: JSON.stringify({ hotelSlug, ...newSettings }),
     });
 
-    const finalSettings = (res && res.success && res.settings) ? res.settings : { ...settings, ...newSettings };
-
-    setSettings(finalSettings);
-    saveStorage(`jj_settings_${hotelSlug}`, finalSettings);
-
-    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-      try {
-        const bc = new BroadcastChannel('jj_system_sync');
-        bc.postMessage({ type: 'SETTINGS_UPDATED', hotelSlug, settings: finalSettings });
-        bc.close();
-      } catch (e) {}
+    if (res && res.success && res.settings) {
+      setSettings(res.settings);
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        try {
+          const bc = new BroadcastChannel('jj_system_sync');
+          bc.postMessage({ type: 'SETTINGS_UPDATED', hotelSlug, settings: res.settings });
+          bc.close();
+        } catch (e) {}
+      }
+      return { success: true, settings: res.settings };
     }
 
-    return { success: true, settings: finalSettings };
+    return { success: false, error: res?.error || 'Failed to update settings in database.' };
   };
 
   const resetToDemoData = () => {
@@ -533,11 +443,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
     setRegisteredHotels((prev) => {
       const exists = prev.some(h => h.hotelSlug === slug);
       if (exists) return prev;
-      const updated = [...prev, { hotelSlug: slug, name }];
-      try {
-        localStorage.setItem('jj_registered_hotels', JSON.stringify(updated));
-      } catch (e) {}
-      return updated;
+      return [...prev, { hotelSlug: slug, name }];
     });
   };
 
