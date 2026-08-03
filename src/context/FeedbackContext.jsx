@@ -160,7 +160,27 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
         setIsManagerAuthenticated(false);
       }
     });
+
     fetchData();
+
+    // Auto-sync interval across devices (15 seconds)
+    const syncInterval = setInterval(() => {
+      fetchData();
+    }, 15000);
+
+    // Auto-sync when user returns to or focuses the tab/device
+    const handleFocus = () => {
+      fetchData();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+      clearInterval(syncInterval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+    };
   }, [hotelSlug, fetchData]);
 
   const switchTab = (tab) => {

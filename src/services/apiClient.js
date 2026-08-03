@@ -16,10 +16,18 @@ function getCsrfToken() {
 }
 
 export async function apiClient(endpoint, options = {}) {
-  const url = getFullUrl(endpoint);
+  let fullUrl = getFullUrl(endpoint);
+
+  const method = (options.method || 'GET').toUpperCase();
+  if (method === 'GET') {
+    const separator = fullUrl.includes('?') ? '&' : '?';
+    fullUrl = `${fullUrl}${separator}_t=${Date.now()}`;
+  }
 
   const headers = {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
     ...(options.headers || {}),
   };
 
@@ -46,7 +54,7 @@ export async function apiClient(endpoint, options = {}) {
   };
 
   try {
-    let response = await fetch(url, config);
+    let response = await fetch(fullUrl, config);
     clearTimeout(timeoutId);
 
     if (response.status === 401 && !options._isRetry) {
@@ -67,7 +75,7 @@ export async function apiClient(endpoint, options = {}) {
         if (csrfToken) {
           config.headers['X-CSRF-Token'] = csrfToken;
         }
-        response = await fetch(url, config);
+        response = await fetch(fullUrl, config);
       }
     }
 
