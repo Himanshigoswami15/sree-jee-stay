@@ -14,13 +14,34 @@ const inMemoryHotelsMap = new Map([
 export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
   const cleanId = (identifier || DEFAULT_HOTEL_ID).toLowerCase().trim();
 
-  // Check in-memory map first for newly onboarded hotels
+  const formattedTitle = cleanId === 'sree-jee-stay'
+    ? 'Sree Jee Stay - Homestay in Varanasi'
+    : (cleanId === 'jj-elevates' ? 'JJ elevates' : cleanId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+
+  // Check MongoDB Atlas first
+  if (mongoose.connection.readyState === 1) {
+    try {
+      let hotel = await Hotel.findOne({
+        $or: [{ hotelId: cleanId }, { hotelSlug: cleanId }]
+      });
+
+      if (!hotel && DEFAULT_HOTELS.includes(cleanId)) {
+        hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: formattedTitle });
+      }
+
+      if (hotel) return hotel;
+    } catch (err) {
+      logger.warn(`[HotelService] DB query failed, returning fallback hotel for "${cleanId}": ${err.message}`);
+    }
+  }
+
+  // Fallback to in-memory map if DB is disconnected or hotel not found
   if (inMemoryHotelsMap.has(cleanId)) {
     const mem = inMemoryHotelsMap.get(cleanId);
     return {
       hotelId: cleanId,
       hotelSlug: cleanId,
-      name: mem.name || cleanId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+      name: mem.name || formattedTitle,
       logoUrl: mem.logoUrl || '',
       themeColor: mem.themeColor || '#2563eb',
       googlePlaceId: mem.googlePlaceId || '',
@@ -39,16 +60,12 @@ export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
     };
   }
 
-  const formattedTitle = cleanId === 'sree-jee-stay'
-    ? 'Sree Jee Stay - Homestay in Varanasi'
-    : cleanId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-
-  const fallback = {
+  return {
     hotelId: cleanId,
     hotelSlug: cleanId,
     name: formattedTitle,
     themeColor: '#2563eb',
-    googlePlaceId: process.env.VITE_GOOGLE_PLACE_ID || 'https://g.page/r/CTERYeDefsTREAE/review',
+    googlePlaceId: process.env.VITE_GOOGLE_PLACE_ID || '',
     googleReviewUrl: 'https://g.page/r/CTERYeDefsTREAE/review',
     tripadvisorReviewUrl: 'https://www.tripadvisor.com/UserReview',
     managerEmail: 'himanshigoswami9057@gmail.com',
@@ -62,26 +79,6 @@ export async function getHotel(identifier = DEFAULT_HOTEL_ID) {
       { type: 'tripadvisor', isEnabled: true },
     ],
   };
-
-  if (mongoose.connection.readyState !== 1) {
-    return fallback;
-  }
-
-  try {
-    let hotel = await Hotel.findOne({
-      $or: [{ hotelId: cleanId }, { hotelSlug: cleanId }]
-    });
-
-    if (!hotel && DEFAULT_HOTELS.includes(cleanId)) {
-      hotel = await createHotel({ hotelId: cleanId, hotelSlug: cleanId, name: formattedTitle });
-    }
-
-    if (hotel) return hotel;
-  } catch (err) {
-    logger.warn(`[HotelService] DB query failed, returning fallback hotel for "${cleanId}": ${err.message}`);
-  }
-
-  return fallback;
 }
 
 export async function createHotel(data) {

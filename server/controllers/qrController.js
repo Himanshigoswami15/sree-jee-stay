@@ -3,7 +3,7 @@ import { DEFAULT_HOTEL_ID } from '../config/constants.js';
 
 export async function generateQr(req, res, next) {
   try {
-    const identifier = req.hotelId || req.body.hotelId || req.body.hotelSlug || DEFAULT_HOTEL_ID;
+    const identifier = req.query.hotelSlug || req.body.hotelSlug || req.body.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
     const qr = await qrService.getOrCreateQrToken(identifier);
     const host = req.headers.host || 'localhost:7890';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
@@ -27,18 +27,18 @@ export async function generateQr(req, res, next) {
 
 export async function resolveScan(req, res, next) {
   try {
-    const { token } = req.params;
+    const token = req.params.token || req.params[0] || '';
     const result = await qrService.logScanEvent(token, req);
-    const targetUrl = `/${result.hotelSlug}`;
-    return res.redirect(targetUrl);
+    const targetSlug = (result && (result.hotelSlug || result.hotelId)) ? (result.hotelSlug || result.hotelId) : 'sree-jee-stay';
+    return res.redirect(`/${targetSlug}`);
   } catch (err) {
-    next(err);
+    return res.redirect('/sree-jee-stay');
   }
 }
 
 export async function getAnalytics(req, res, next) {
   try {
-    const identifier = req.hotelId || req.query.hotelSlug || req.query.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.query.hotelSlug || req.query.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
     const analytics = await qrService.getScanAnalytics(identifier);
     return res.status(200).json({ success: true, analytics });
   } catch (err) {
@@ -48,7 +48,7 @@ export async function getAnalytics(req, res, next) {
 
 export async function downloadPng(req, res, next) {
   try {
-    const identifier = req.hotelId || req.query.hotelSlug || DEFAULT_HOTEL_ID;
+    const identifier = req.query.hotelSlug || req.query.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
     const qr = await qrService.getOrCreateQrToken(identifier);
     const host = req.headers.host || 'localhost:7890';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
@@ -68,7 +68,7 @@ export async function downloadPng(req, res, next) {
 
 export async function downloadPdf(req, res, next) {
   try {
-    const identifier = req.hotelId || req.query.hotelSlug || DEFAULT_HOTEL_ID;
+    const identifier = req.query.hotelSlug || req.query.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
     const qr = await qrService.getOrCreateQrToken(identifier);
     const host = req.headers.host || 'localhost:7890';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';

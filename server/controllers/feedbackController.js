@@ -18,8 +18,7 @@ export async function submit(req, res, next) {
 
 export async function list(req, res, next) {
   try {
-    // Force req.hotelId derived from JWT if authenticated manager
-    const identifier = req.hotelId || req.query.hotelSlug || req.query.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.query.hotelSlug || req.query.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
     const result = await feedbackService.getFeedbacks(identifier, req.query);
     return res.status(200).json(result);
   } catch (err) {
@@ -29,8 +28,7 @@ export async function list(req, res, next) {
 
 export async function resolve(req, res, next) {
   try {
-    // Force req.hotelId derived from JWT
-    const identifier = req.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.body.hotelSlug || req.query.hotelSlug || req.hotelId || DEFAULT_HOTEL_ID;
     const { id } = req.params;
     const userId = req.user?.userId || null;
     const result = await feedbackService.resolveAlert(identifier, id, userId, req);

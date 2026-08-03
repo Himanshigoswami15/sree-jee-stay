@@ -73,7 +73,7 @@ function HotelWrapper() {
 
   return (
     <ErrorBoundary>
-      <FeedbackProvider hotelSlug={activeSlug}>
+      <FeedbackProvider key={activeSlug} hotelSlug={activeSlug}>
         <div className="app-root">
           <Navigation />
           <AlertBanner />

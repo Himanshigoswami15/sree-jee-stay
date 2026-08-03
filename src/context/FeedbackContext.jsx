@@ -106,20 +106,23 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
     try {
       fetchHotelsList();
 
-      const settingsRes = await apiClient(`/api/settings?hotelSlug=${encodeURIComponent(hotelSlug)}`);
-      if (settingsRes.success && settingsRes.settings) {
+      const [settingsRes, keywordsRes, feedbackRes] = await Promise.all([
+        apiClient(`/api/settings?hotelSlug=${encodeURIComponent(hotelSlug)}`),
+        apiClient(`/api/keywords?hotelSlug=${encodeURIComponent(hotelSlug)}`),
+        apiClient(`/api/feedback?hotelSlug=${encodeURIComponent(hotelSlug)}`),
+      ]);
+
+      if (settingsRes && settingsRes.success && settingsRes.settings) {
         setSettings(settingsRes.settings);
         saveStorage(sKey, settingsRes.settings);
       }
 
-      const keywordsRes = await apiClient(`/api/keywords?hotelSlug=${encodeURIComponent(hotelSlug)}`);
-      if (keywordsRes.success && keywordsRes.keywords) {
+      if (keywordsRes && keywordsRes.success && keywordsRes.keywords) {
         setKeywords(keywordsRes.keywords);
         saveStorage(kKey, keywordsRes.keywords);
       }
 
-      const feedbackRes = await apiClient(`/api/feedback?hotelSlug=${encodeURIComponent(hotelSlug)}`);
-      if (feedbackRes.success && feedbackRes.feedbacks) {
+      if (feedbackRes && feedbackRes.success && feedbackRes.feedbacks) {
         setFeedbacks(feedbackRes.feedbacks);
         saveStorage(fKey, feedbackRes.feedbacks);
       }
@@ -145,12 +148,20 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
   useEffect(() => {
     apiClient('/api/auth/me').then((res) => {
-      if (res.success && res.authenticated) {
+      if (
+        res &&
+        res.success &&
+        res.authenticated &&
+        res.user &&
+        (res.user.hotelSlug === hotelSlug || res.user.hotelId === hotelSlug)
+      ) {
         setIsManagerAuthenticated(true);
+      } else {
+        setIsManagerAuthenticated(false);
       }
     });
     fetchData();
-  }, [fetchData]);
+  }, [hotelSlug, fetchData]);
 
   const switchTab = (tab) => {
     if (tab === 'dashboard' && !isManagerAuthenticated) {

@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
+import path from 'path';
+import fs from 'fs';
 import { connectDB, disconnectDB } from './config/db.js';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -33,7 +35,8 @@ app.use(mongoSanitizer);
 // Vercel Serverless URL Path Normalizer
 app.use((req, _res, next) => {
   if (req.url.startsWith('/api/index.js')) {
-    req.url = req.url.replace('/api/index.js', '/api');
+    req.url = req.url.replace('/api/index.js', '');
+    if (!req.url) req.url = '/';
   }
   next();
 });
@@ -54,25 +57,35 @@ app.use(async (_req, _res, next) => {
 // General Rate Limiting
 app.use('/api', apiLimiter);
 
-// Public QR Scan Redirect & Analytics Logging Endpoint
+// Public QR Scan Redirect & Analytics Logging Endpoints
 app.get('/r/:token', resolveScan);
+app.get('/api/r/:token', resolveScan);
 
 // Health check endpoints
-app.get('/', (_req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'JJ Review System Backend API',
-    database: 'MongoDB',
-    timestamp: new Date().toISOString(),
-  });
-});
-
 app.get('/health', (_req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
 // Mount main API router
 app.use('/api', routes);
+
+// Serve static assets from dist directory if available
+const distPath = path.join(process.cwd(), 'dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
+
+// SPA fallback for non-API routes (e.g. /sree-jee-stay, /jj-elevates)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/r/')) {
+    return next();
+  }
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  return res.status(404).json({ success: false, error: `Route not found: ${req.method} ${req.originalUrl}` });
+});
 
 // Centralized Error Handler Middleware
 app.use(errorHandler);

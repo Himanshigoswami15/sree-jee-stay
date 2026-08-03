@@ -3,7 +3,7 @@ import { DEFAULT_HOTEL_ID } from '../config/constants.js';
 
 export async function list(req, res, next) {
   try {
-    const identifier = req.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.query.hotelSlug || req.query.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
     const notifications = await notificationService.getUnreadNotifications(identifier);
     return res.status(200).json({ success: true, notifications });
   } catch (err) {
@@ -13,7 +13,7 @@ export async function list(req, res, next) {
 
 export async function markRead(req, res, next) {
   try {
-    const identifier = req.hotelId || DEFAULT_HOTEL_ID;
+    const identifier = req.body.hotelSlug || req.query.hotelSlug || req.hotelId || DEFAULT_HOTEL_ID;
     const { id } = req.params;
     const result = await notificationService.markAsRead(id, identifier);
     return res.status(200).json(result);

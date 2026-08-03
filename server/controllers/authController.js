@@ -47,7 +47,7 @@ export async function login(req, res, next) {
 
 export async function changePassword(req, res, next) {
   try {
-    const identifier = req.hotelId || req.body.hotelId || req.body.hotelSlug || DEFAULT_HOTEL_ID;
+    const identifier = req.body.hotelSlug || req.body.hotelId || req.hotelId || DEFAULT_HOTEL_ID;
     const { oldPassword = '', newPassword = '', isOtpReset = false } = req.body;
     const result = await authService.changePassword(identifier, oldPassword, newPassword, isOtpReset);
 

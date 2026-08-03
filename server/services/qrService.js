@@ -111,10 +111,12 @@ export async function logScanEvent(tokenOrSlug, req) {
 
   logger.info(`📱 [QR Scan Logged] Hotel "${hotelId}" scanned via token "${cleanStr}" (${device}/${browser}).`);
 
+  const resolvedSlug = (hotel && (hotel.hotelSlug || hotel.hotelId)) ? (hotel.hotelSlug || hotel.hotelId) : DEFAULT_HOTEL_ID;
+
   return {
-    hotelId: hotel.hotelId,
-    hotelSlug: hotel.hotelSlug,
-    hotelName: hotel.name,
+    hotelId: (hotel && hotel.hotelId) ? hotel.hotelId : resolvedSlug,
+    hotelSlug: resolvedSlug,
+    hotelName: (hotel && hotel.name) ? hotel.name : resolvedSlug,
     qrToken: qr ? qr.uniqueToken : cleanStr,
   };
 }
