@@ -7,6 +7,7 @@ import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 import { DEFAULT_HOTEL_ID } from '../config/constants.js';
 import { connectDB } from '../config/db.js';
 import { logger } from '../utils/logger.js';
+import { broadcastSystemEvent } from '../utils/eventBroadcaster.js';
 
 const memorySettingsStore = new Map();
 const memoryKeywordsStore = new Map();
@@ -173,6 +174,9 @@ export async function updateSettings(identifier = DEFAULT_HOTEL_ID, newSettings,
   memorySettingsStore.set(hotelId, resultSettings);
   memorySettingsStore.set(identifier, resultSettings);
 
+  // Broadcast real-time SSE event to all connected devices across the network
+  broadcastSystemEvent(hotelSlug, 'SETTINGS_UPDATED', { settings: resultSettings });
+
   return {
     success: true,
     message: 'Settings updated successfully.',
@@ -321,6 +325,7 @@ export async function addKeyword(identifier = DEFAULT_HOTEL_ID, type, tagData, r
   const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_ADDED', { type, label: tagData.label }, req).catch(() => {});
+  broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED', { keywords: updatedGroup });
 
   return {
     success: true,
@@ -347,6 +352,7 @@ export async function deleteKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, 
   const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_DELETED', { type, tagId }, req).catch(() => {});
+  broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED', { keywords: updatedGroup });
   return { success: true, message: 'Keyword tag deleted successfully.', keywords: updatedGroup };
 }
 
@@ -378,6 +384,7 @@ export async function updateKeyword(identifier = DEFAULT_HOTEL_ID, type, tagId, 
   const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_UPDATED', { type, tagId, label: tagData.label }, req).catch(() => {});
+  broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED', { keywords: updatedGroup });
 
   return {
     success: true,
@@ -408,6 +415,7 @@ export async function reorderKeywords(identifier = DEFAULT_HOTEL_ID, type, tagId
   memoryKeywordsStore.delete(identifier);
 
   await logEvent(hotelId, 'KEYWORD_REORDERED', { type, count: tagIds.length }, req).catch(() => {});
+  broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED');
   return { success: true };
 }
 
@@ -444,5 +452,6 @@ export async function applyKeywordTemplate(identifier = DEFAULT_HOTEL_ID, templa
   const updatedGroup = await getKeywords(identifier);
 
   await logEvent(hotelId, 'KEYWORD_TEMPLATE_APPLIED', { templateKey, count: customKeywords.length }, req).catch(() => {});
+  broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED', { keywords: updatedGroup });
   return { success: true, count: customKeywords.length, keywords: updatedGroup };
 }

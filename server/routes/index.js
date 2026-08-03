@@ -8,9 +8,11 @@ import notificationRoutes from './notificationRoutes.js';
 import auditRoutes from './auditRoutes.js';
 import hotelRoutes from './hotelRoutes.js';
 import qrRoutes from './qrRoutes.js';
+import { sseStream } from '../controllers/eventController.js';
 
 const router = express.Router();
 
+router.get('/events/stream', sseStream);
 router.use('/auth', authRoutes);
 router.use('/feedback', feedbackRoutes);
 router.use('/settings', settingsRoutes);

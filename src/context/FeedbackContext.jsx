@@ -163,7 +163,23 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     fetchData();
 
-    // BroadcastChannel listener for explicit cross-tab sync when save happens
+    // Native Server-Sent Events (SSE) Real-Time Connection
+    let eventSource = null;
+    try {
+      const sseUrl = `/api/events/stream?hotelSlug=${encodeURIComponent(hotelSlug)}`;
+      eventSource = new EventSource(sseUrl, { withCredentials: true });
+
+      eventSource.onmessage = (e) => {
+        try {
+          const eventData = JSON.parse(e.data);
+          if (eventData.type !== 'CONNECTED') {
+            fetchData();
+          }
+        } catch (err) {}
+      };
+    } catch (e) {}
+
+    // BroadcastChannel listener for instant cross-tab sync
     let bc = null;
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
@@ -177,6 +193,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
     }
 
     return () => {
+      if (eventSource) eventSource.close();
       if (bc) bc.close();
     };
   }, [hotelSlug, fetchData]);
