@@ -163,12 +163,7 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
 
     fetchData();
 
-    // 5-second auto-polling for fast cross-device sync with MongoDB
-    const syncInterval = setInterval(() => {
-      fetchData();
-    }, 5000);
-
-    // BroadcastChannel listener for instant cross-tab sync
+    // BroadcastChannel listener for explicit cross-tab sync when save happens
     let bc = null;
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
@@ -181,28 +176,8 @@ export function FeedbackProvider({ children, hotelSlug = 'sree-jee-stay' }) {
       } catch (e) {}
     }
 
-    // Storage event listener for cross-window sync
-    const handleStorageChange = (e) => {
-      if (e.key && e.key.includes(hotelSlug)) {
-        fetchData();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    // Auto-sync when user returns to or focuses the tab/device
-    const handleFocus = () => {
-      fetchData();
-    };
-
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleFocus);
-
     return () => {
-      clearInterval(syncInterval);
       if (bc) bc.close();
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleFocus);
     };
   }, [hotelSlug, fetchData]);
 
