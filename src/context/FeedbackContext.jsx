@@ -426,7 +426,39 @@ export function FeedbackProvider({ children, hotelSlug }) {
 export function useFeedback() {
   const context = useContext(FeedbackContext);
   if (!context) {
-    throw new Error('useFeedback must be used within a FeedbackProvider');
+    return {
+      feedbacks: [],
+      settings: {},
+      keywords: { positive: [], negative: [] },
+      registeredHotels: [],
+      refreshHotels: () => {},
+      registerHotel: () => {},
+      loading: false,
+      hotelNotFound: false,
+      activeTab: 'guest',
+      setActiveTab: () => {},
+      managerAlertToast: null,
+      dismissAlertToast: () => {},
+      isManagerAuthenticated: false,
+      isPinModalOpen: false,
+      setIsPinModalOpen: () => {},
+      verifyPin: async () => ({ success: false }),
+      changeManagerPassword: async () => ({ success: false }),
+      resetPinAndAuthenticate: async () => ({ success: false }),
+      authenticateAndOpenDashboard: () => {},
+      lockDashboard: () => {},
+      checkIsDuplicate: () => false,
+      addFeedback: async () => ({ success: false }),
+      addKeyword: async () => ({ success: false }),
+      updateKeyword: async () => ({ success: false }),
+      deleteKeyword: async () => ({ success: false }),
+      reorderKeywords: async () => {},
+      applyIndustryTemplate: async () => ({ success: false }),
+      resolveAlert: async () => {},
+      updateSettings: async () => ({ success: false }),
+      refreshData: () => {},
+    };
   }
   return context;
 }
+
