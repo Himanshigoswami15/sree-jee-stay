@@ -1,82 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, Download, Printer, Copy, Check, ExternalLink, Sparkles, RefreshCw, BarChart3, Smartphone, Clock, Globe } from 'lucide-react';
+import { QrCode, Download, Printer, Copy, Check, ExternalLink, Sparkles, RefreshCw, BarChart3, Smartphone, Globe, Building2, Plus, Save, CheckCircle2, AlertCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useFeedback } from '../../context/FeedbackContext';
 import { apiClient } from '../../services/apiClient';
+import { validateGoogleReviewLink, extractPlaceId, generateGoogleReviewUrl } from '../../utils/googleReview';
+import { HotelRegistryModal } from './HotelRegistryModal';
 
 export function QrStudio() {
-  const { settings } = useFeedback();
+  const { settings, updateSettings, registeredHotels, refreshHotels, feedbacks } = useFeedback();
 
-  const [qrToken, setQrToken] = useState('');
+  const [inputReviewUrl, setInputReviewUrl] = useState('');
+  const [targetMode, setTargetMode] = useState('interactive'); // 'interactive' | 'direct'
   const [targetUrl, setTargetUrl] = useState('');
   const [pngUrl, setPngUrl] = useState('');
   const [svgString, setSvgString] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [linkSaved, setLinkSaved] = useState(false);
+  const [isSavingLink, setIsSavingLink] = useState(false);
+  const [isRegistryOpen, setIsRegistryOpen] = useState(false);
   const [scansCount, setScansCount] = useState(0);
 
   const [analytics, setAnalytics] = useState({
     totalScans: 0,
     todayScans: 0,
     googleRedirects: 0,
-    tripadvisorRedirects: 0,
-    facebookRedirects: 0,
-    internalFeedback: 0,
     conversionRate: 0,
-    topScanTime: '7 PM',
   });
-
-  const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [regenerating, setRegenerating] = useState(false);
-  const [targetMode, setTargetMode] = useState('live'); // 'live' | 'local'
 
   const hotelSlug = settings?.hotelSlug || 'sree-jee-stay';
   const hotelName = settings?.hotelName || 'Sree Jee Stay';
+  const activeReviewUrl = settings?.googleReviewUrl || 'https://g.page/r/CTERYeDefsTREAE/review';
 
-  const [customIpUrl, setCustomIpUrl] = useState('');
+  useEffect(() => {
+    setInputReviewUrl(settings?.googleReviewUrl || '');
+  }, [settings?.googleReviewUrl]);
 
-  const fetchQrAndAnalytics = async (overrideMode = targetMode, customUrlOverride = '') => {
-    const currentOrigin = (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost:7890'))
+  const validation = validateGoogleReviewLink(inputReviewUrl || activeReviewUrl);
+
+  const generateQrCode = async () => {
+    const currentOrigin = (typeof window !== 'undefined' && window.location.origin)
       ? window.location.origin
-      : (typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://sree-jee-stay.vercel.app');
+      : 'https://sree-jee-stay.vercel.app';
 
-    let redirectUrl = `${currentOrigin}/${hotelSlug}`;
-
-    if (customUrlOverride) {
-      redirectUrl = customUrlOverride.endsWith(`/${hotelSlug}`) ? customUrlOverride : `${customUrlOverride.replace(/\/$/, '')}/${hotelSlug}`;
-    } else if (overrideMode === 'local' && typeof window !== 'undefined') {
-      redirectUrl = `${window.location.origin}/${hotelSlug}`;
+    let finalQrUrl = '';
+    if (targetMode === 'direct') {
+      finalQrUrl = inputReviewUrl.trim() || activeReviewUrl;
+    } else {
+      finalQrUrl = `${currentOrigin}/${hotelSlug}`;
     }
 
-    setTargetUrl(redirectUrl);
+    setTargetUrl(finalQrUrl);
 
     try {
-      // Instant, guaranteed client-side QR code generation
-      const dataUrl = await QRCode.toDataURL(redirectUrl, {
-        width: 320,
+      const dataUrl = await QRCode.toDataURL(finalQrUrl, {
+        width: 360,
         margin: 2,
         color: { dark: '#0f172a', light: '#ffffff' },
       });
       setPngUrl(dataUrl);
 
-      const svg = await QRCode.toString(redirectUrl, {
+      const svg = await QRCode.toString(finalQrUrl, {
         type: 'svg',
         margin: 2,
         color: { dark: '#0f172a', light: '#ffffff' },
       });
       setSvgString(svg);
     } catch (e) {
-      console.warn('[QrStudio] Client-side QR generation error:', e);
+      console.warn('[QrStudio] QR generation error:', e);
     }
+  };
 
+  const fetchAnalytics = async () => {
     try {
-      // Fetch optional server-side token & analytics data
       const qrRes = await apiClient('/api/review/generate-qr', {
         method: 'POST',
         body: JSON.stringify({ hotelSlug }),
       });
 
       if (qrRes?.success) {
-        if (qrRes.qrToken) setQrToken(qrRes.qrToken);
         if (qrRes.scansCount !== undefined) setScansCount(qrRes.scansCount);
       }
 
@@ -85,16 +86,38 @@ export function QrStudio() {
         setAnalytics(analyticsRes.analytics);
       }
     } catch (err) {
-      console.warn('[QrStudio] Error fetching analytics:', err);
-    } finally {
-      setLoading(false);
-      setRegenerating(false);
+      console.warn('[QrStudio] Analytics fetch error:', err);
     }
   };
 
   useEffect(() => {
-    fetchQrAndAnalytics();
-  }, [hotelSlug]);
+    generateQrCode();
+    fetchAnalytics();
+  }, [hotelSlug, targetMode, activeReviewUrl]);
+
+  const handleSaveReviewLink = async (e) => {
+    if (e) e.preventDefault();
+    if (!inputReviewUrl.trim()) return;
+
+    setIsSavingLink(true);
+    const cleanUrl = inputReviewUrl.trim();
+    const extractedId = extractPlaceId(cleanUrl);
+    const generatedUrl = extractedId ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(extractedId)}` : cleanUrl;
+
+    const payload = {
+      googleReviewUrl: generatedUrl,
+      googlePlaceId: extractedId || settings.googlePlaceId || '',
+    };
+
+    const res = await updateSettings(payload);
+    setIsSavingLink(false);
+
+    if (res?.success) {
+      setLinkSaved(true);
+      setTimeout(() => setLinkSaved(false), 2500);
+      generateQrCode();
+    }
+  };
 
   const handleCopyLink = () => {
     if (!targetUrl) return;
@@ -111,23 +134,7 @@ export function QrStudio() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } else {
-      const link = document.createElement('a');
-      link.href = `/api/review/download/png?hotelSlug=${encodeURIComponent(hotelSlug)}`;
-      link.download = `${hotelSlug}-qr-code.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     }
-  };
-
-  const handleDownloadPdf = () => {
-    const link = document.createElement('a');
-    link.href = `/api/review/download/pdf?hotelSlug=${encodeURIComponent(hotelSlug)}`;
-    link.download = `${hotelSlug}-tent-card.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const handleDownloadSvg = () => {
@@ -143,217 +150,300 @@ export function QrStudio() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadPdf = () => {
+    const link = document.createElement('a');
+    link.href = `/api/review/download/pdf?hotelSlug=${encodeURIComponent(hotelSlug)}`;
+    link.download = `${hotelSlug}-tent-card.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="dashboard-section" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* SECTION TITLE */}
-      <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            JJ Review System — Enterprise QR Studio
+      {/* TOP HEADER & HOTEL/COMPANY SWITCHER */}
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#4f46e5', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.2rem' }}>
+              🎯 Multi-Business QR Studio & Review Link Hub
+            </div>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Building2 size={24} color="#2563eb" />
+              <span>{hotelName} Unique QR Code</span>
+            </h2>
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-            {hotelName} Review QR Code & Analytics
-          </h2>
+
+          <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <button
+              type="button"
+              className="btn-primary-action"
+              onClick={() => setIsRegistryOpen(true)}
+              style={{ fontSize: '0.825rem', padding: '0.5rem 0.95rem' }}
+            >
+              <Plus size={16} /> Add New Hotel / Company
+            </button>
+
+            <button
+              type="button"
+              className="btn-secondary-action"
+              onClick={fetchAnalytics}
+              style={{ fontSize: '0.825rem', padding: '0.5rem 0.85rem' }}
+            >
+              <RefreshCw size={14} /> Refresh Stats
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          className="btn-secondary-action"
-          onClick={() => {
-            setRegenerating(true);
-            fetchQrAndAnalytics();
-          }}
-          disabled={regenerating}
-          style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}
-        >
-          <RefreshCw size={14} className={regenerating ? 'spin' : ''} /> Refresh Data
-        </button>
       </div>
 
-      {/* SCAN ANALYTICS CARDS */}
+      {/* CLEAN ESSENTIAL STATS BAR */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1.1rem', borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 700 }}>
-            <Smartphone size={16} color="#2563eb" /> Total Scans
+            <Smartphone size={16} color="#2563eb" /> Total QR Scans
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', marginTop: '0.35rem' }}>
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', marginTop: '0.35rem' }}>
             {analytics.totalScans || scansCount || 0}
           </div>
-          <div style={{ fontSize: '0.725rem', color: '#059669', marginTop: '2px', fontWeight: 600 }}>
-            Today's Scans: <strong>{analytics.todayScans || 0}</strong>
+          <div style={{ fontSize: '0.75rem', color: '#059669', marginTop: '2px', fontWeight: 600 }}>
+            Scans Today: <strong>{analytics.todayScans || 0}</strong>
           </div>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1.1rem', borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 700 }}>
-            <Globe size={16} color="#059669" /> Google Redirects
+            <Globe size={16} color="#059669" /> Direct Review Clicks
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#059669', marginTop: '0.35rem' }}>
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#059669', marginTop: '0.35rem' }}>
             {analytics.googleRedirects || 0}
           </div>
-          <div style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '2px' }}>
-            TripAdvisor: {analytics.tripadvisorRedirects || 0} | FB: {analytics.facebookRedirects || 0}
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+            Confirmed 5-Star Conversions
           </div>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1.1rem', borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 700 }}>
-            <BarChart3 size={16} color="#4f46e5" /> Conversion Rate
+            <BarChart3 size={16} color="#4f46e5" /> Total Feedbacks
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#4f46e5', marginTop: '0.35rem' }}>
-            {analytics.conversionRate || 0}%
+          <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#4f46e5', marginTop: '0.35rem' }}>
+            {(feedbacks || []).length}
           </div>
-          <div style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '2px' }}>
-            Internal Feedback: {analytics.internalFeedback || 0}
-          </div>
-        </div>
-
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '1rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', fontWeight: 700 }}>
-            <Clock size={16} color="#d97706" /> Top Scan Time
-          </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#d97706', marginTop: '0.35rem' }}>
-            {analytics.topScanTime || '7 PM'}
-          </div>
-          <div style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '2px' }}>
-            Peak customer activity window
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+            Submitted by Guests
           </div>
         </div>
       </div>
 
-      {/* QR STUDIO CONTENT GRID */}
-      <div style={{ maxWidth: '640px', margin: '0 auto', width: '100%' }}>
-        {/* RECEPTION STANDEE & TENT CARD PREVIEW */}
-        <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'center' }}>
-          <div className="chart-title" style={{ justifyContent: 'center' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#16a34a' }}>
-              <Printer size={20} color="#16a34a" /> Reception Standee & Tent Card
+      {/* MAIN CONTAINER: UPSIDE REVIEW LINK EDITOR + LIVE POSTER & QR */}
+      <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        
+        {/* UPSIDE REVIEW LINK INPUT CARD */}
+        <div className="chart-card" style={{ background: '#ffffff', border: '2px solid #3b82f6', borderRadius: '18px', padding: '1.35rem', boxShadow: '0 6px 20px rgba(59, 130, 246, 0.08)' }}>
+          <div className="chart-title" style={{ marginBottom: '0.85rem' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1d4ed8', fontWeight: 800, fontSize: '1.05rem' }}>
+              <Globe size={20} color="#2563eb" /> 1. Paste Proper Review Site Link (Upside of QR Code)
             </span>
           </div>
 
-          {/* Target Domain Selector Bar */}
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '0.85rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.825rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Globe size={15} color="#2563eb" /> Target QR Destination Mode:
-              </span>
-              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTargetMode('live');
-                    fetchQrAndAnalytics('live');
-                  }}
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: targetMode === 'live' ? 800 : 600,
-                    padding: '0.35rem 0.75rem',
-                    borderRadius: '16px',
-                    border: targetMode === 'live' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
-                    background: targetMode === 'live' ? '#eff6ff' : '#ffffff',
-                    color: targetMode === 'live' ? '#2563eb' : '#475569',
-                    cursor: 'pointer',
-                  }}
-                >
-                  🌐 Live Vercel URL
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTargetMode('local');
-                    fetchQrAndAnalytics('local');
-                  }}
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: targetMode === 'local' ? 800 : 600,
-                    padding: '0.35rem 0.75rem',
-                    borderRadius: '16px',
-                    border: targetMode === 'local' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
-                    background: targetMode === 'local' ? '#eff6ff' : '#ffffff',
-                    color: targetMode === 'local' ? '#2563eb' : '#475569',
-                    cursor: 'pointer',
-                  }}
-                >
-                  💻 Local Wi-Fi / Dev
-                </button>
-              </div>
+          <p style={{ fontSize: '0.825rem', color: '#475569', lineHeight: '1.45', marginBottom: '1rem' }}>
+            Paste your Google Business review link, Google Maps link, TripAdvisor link, or Place ID below. The system immediately binds it to <strong>{hotelName}</strong> and updates your unique QR code!
+          </p>
+
+          {linkSaved && (
+            <div style={{ background: '#ecfdf5', border: '1px solid #6ee7b7', color: '#047857', padding: '0.75rem 1rem', borderRadius: '10px', marginBottom: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem' }}>
+              <CheckCircle2 size={18} color="#059669" /> Review link saved & QR code updated for {hotelName}!
             </div>
+          )}
+
+          <form onSubmit={handleSaveReviewLink} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', gap: '0.65rem' }}>
+              <input
+                type="text"
+                className="form-input"
+                value={inputReviewUrl}
+                onChange={(e) => setInputReviewUrl(e.target.value)}
+                placeholder="https://g.page/r/... or https://search.google.com/local/writereview?placeid=..."
+                style={{ flex: 1, fontWeight: 600, fontSize: '0.875rem' }}
+                required
+              />
+              <button
+                type="submit"
+                className="btn-primary-action"
+                disabled={isSavingLink}
+                style={{ width: 'auto', padding: '0.65rem 1.15rem', whiteSpace: 'nowrap' }}
+              >
+                <Save size={16} /> {isSavingLink ? 'Saving...' : 'Save & Update QR'}
+              </button>
+            </div>
+
+            {/* Dynamic Link Status Indicator */}
+            {validation && (
+              <div style={{ fontSize: '0.775rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem', color: validation.isValid ? '#15803d' : '#b45309', background: validation.isValid ? '#f0fdf4' : '#fffbeb', padding: '0.5rem 0.75rem', borderRadius: '8px', border: validation.isValid ? '1px solid #bbf7d0' : '1px solid #fef3c7' }}>
+                {validation.isValid ? <CheckCircle2 size={14} color="#16a34a" /> : <AlertCircle size={14} color="#d97706" />}
+                <span>{validation.message}</span>
+              </div>
+            )}
+          </form>
+        </div>
+
+        {/* QR MODE SELECTOR */}
+        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '14px', padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <QrCode size={16} color="#2563eb" /> QR Destination Mode:
+          </span>
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => setTargetMode('interactive')}
+              style={{
+                fontSize: '0.775rem',
+                fontWeight: targetMode === 'interactive' ? 800 : 600,
+                padding: '0.4rem 0.85rem',
+                borderRadius: '16px',
+                border: targetMode === 'interactive' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                background: targetMode === 'interactive' ? '#eff6ff' : '#ffffff',
+                color: targetMode === 'interactive' ? '#2563eb' : '#475569',
+                cursor: 'pointer',
+              }}
+            >
+              📱 Smart Review Flow (Recommended)
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTargetMode('direct')}
+              style={{
+                fontSize: '0.775rem',
+                fontWeight: targetMode === 'direct' ? 800 : 600,
+                padding: '0.4rem 0.85rem',
+                borderRadius: '16px',
+                border: targetMode === 'direct' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                background: targetMode === 'direct' ? '#eff6ff' : '#ffffff',
+                color: targetMode === 'direct' ? '#2563eb' : '#475569',
+                cursor: 'pointer',
+              }}
+            >
+              🌐 Direct Review Link QR
+            </button>
+          </div>
+        </div>
+
+        {/* PRINTABLE TENT CARD POSTER (UPSIDE DETAILS + UNIQUE QR CODE) */}
+        <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'center' }}>
+          <div className="chart-title" style={{ justifyContent: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#16a34a', fontWeight: 800 }}>
+              <Printer size={20} color="#16a34a" /> Reception Standee & Tent Poster Preview
+            </span>
           </div>
 
-          {/* Printable Tent Card Mockup Frame */}
-          <div style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', border: '2px solid #2563eb', borderRadius: '16px', padding: '1.5rem', textAlign: 'center', boxShadow: '0 4px 15px rgba(37, 99, 235, 0.08)' }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+          {/* Poster Frame */}
+          <div style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', border: '2.5px solid #2563eb', borderRadius: '20px', padding: '1.75rem 1.5rem', textAlign: 'center', boxShadow: '0 8px 30px rgba(37, 99, 235, 0.12)' }}>
+            
+            {/* UPSIDE DETAILS: REVIEW LINK & HOTEL NAME */}
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
               ⭐ Love your experience?
             </div>
-            <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
+
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>
               {hotelName}
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#059669', marginTop: '4px', fontWeight: 800 }}>
-              Scan to leave a Google Review
+
+            {/* Upside Review Link Display Box */}
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', padding: '0.4rem 0.85rem', borderRadius: '10px', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.65rem', marginBottom: '0.85rem', maxWidth: '90%' }}>
+              <Globe size={14} color="#2563eb" style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: '0.775rem', fontWeight: 700, color: '#1d4ed8', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                Review Link: {inputReviewUrl || activeReviewUrl}
+              </span>
+              <a
+                href={inputReviewUrl || activeReviewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#2563eb', flexShrink: 0 }}
+                title="Test Link"
+              >
+                <ExternalLink size={13} />
+              </a>
             </div>
 
+            <div style={{ fontSize: '0.875rem', color: '#059669', fontWeight: 800 }}>
+              Scan QR to leave a Google Review
+            </div>
+
+            {/* Crisp QR Code */}
             {pngUrl && (
               <img
                 src={pngUrl}
-                alt="QR Code"
-                style={{ width: '170px', height: '170px', margin: '0.85rem auto', display: 'block', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                alt={`${hotelName} QR Code`}
+                style={{ width: '190px', height: '190px', margin: '0.85rem auto', display: 'block', borderRadius: '12px', border: '2px solid #e2e8f0', background: '#ffffff', padding: '6px' }}
               />
             )}
 
-            <div style={{ fontSize: '1.1rem', letterSpacing: '2px', marginBottom: '0.4rem' }}>
+            <div style={{ fontSize: '1.2rem', letterSpacing: '3px', marginBottom: '0.5rem' }}>
               ⭐⭐⭐⭐⭐
             </div>
 
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', background: '#f1f5f9', padding: '0.35rem 0.65rem', borderRadius: '8px', display: 'inline-block' }}>
-              1. Scan QR  →  2. Tap Highlights  →  3. Post to Google
+            <div style={{ fontSize: '0.775rem', fontWeight: 700, color: '#475569', background: '#f1f5f9', padding: '0.4rem 0.85rem', borderRadius: '10px', display: 'inline-block' }}>
+              1. Scan QR  →  2. Tap Highlights  →  3. Post Review
             </div>
           </div>
 
-          {/* Target Link & Copy Bar */}
-          <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '0.35rem 0.65rem', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', color: '#475569', fontWeight: 700, flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-              {targetUrl || `${window.location.origin}/${hotelSlug}`}
+          {/* TARGET QR LINK DISPLAY & COPY BAR */}
+          <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '0.45rem 0.75rem', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.775rem', color: '#475569', fontWeight: 700, flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              {targetUrl}
             </span>
             <button
               type="button"
               onClick={handleCopyLink}
-              style={{ background: '#2563eb', color: 'white', border: 'none', padding: '0.35rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              style={{ background: '#2563eb', color: 'white', border: 'none', padding: '0.4rem 0.85rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.775rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
             >
               {copied ? <Check size={13} /> : <Copy size={13} />}
-              {copied ? 'Copied' : 'Copy'}
+              {copied ? 'Copied!' : 'Copy Link'}
             </button>
           </div>
 
-          {/* Multi-Format Export Buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+          {/* DOWNLOAD BUTTONS */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.65rem' }}>
             <button
               type="button"
               className="btn-secondary-action"
               onClick={handleDownloadPng}
-              style={{ fontSize: '0.75rem', padding: '0.5rem', justifyContent: 'center' }}
+              style={{ fontSize: '0.775rem', padding: '0.6rem', justifyContent: 'center' }}
             >
-              <Download size={13} /> PNG
+              <Download size={14} /> Download PNG
             </button>
 
             <button
               type="button"
               className="btn-secondary-action"
               onClick={handleDownloadSvg}
-              style={{ fontSize: '0.75rem', padding: '0.5rem', justifyContent: 'center' }}
+              style={{ fontSize: '0.775rem', padding: '0.6rem', justifyContent: 'center' }}
             >
-              <Download size={13} /> SVG
+              <Download size={14} /> Download SVG
             </button>
 
             <button
               type="button"
               className="btn-primary-action"
               onClick={handleDownloadPdf}
-              style={{ fontSize: '0.75rem', padding: '0.5rem', justifyContent: 'center' }}
+              style={{ fontSize: '0.775rem', padding: '0.6rem', justifyContent: 'center' }}
             >
-              <Printer size={13} /> PDF Tent Card
+              <Printer size={14} /> PDF Tent Card
             </button>
           </div>
         </div>
       </div>
+
+      <HotelRegistryModal
+        isOpen={isRegistryOpen}
+        onClose={() => setIsRegistryOpen(false)}
+        onHotelOnboarded={(newSlug) => {
+          if (refreshHotels) refreshHotels();
+          window.location.href = `/${newSlug}`;
+        }}
+      />
     </div>
   );
 }
+
