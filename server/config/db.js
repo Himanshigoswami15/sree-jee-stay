@@ -121,14 +121,8 @@ export async function disconnectDB() {
   }
 }
 
-// Graceful shutdown hooks
-function handleShutdown(signal) {
-  logger.info(`[MongoDB] Received ${signal}. Closing connection...`);
-  disconnectDB().then(() => process.exit(0));
-}
-
-process.on('SIGINT', () => handleShutdown('SIGINT'));
-process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+// Note: Graceful shutdown is handled in server/index.js to coordinate
+// HTTP server close and DB disconnect in the correct order.
 
 // Connection event listeners
 mongoose.connection.on('connected', () => {

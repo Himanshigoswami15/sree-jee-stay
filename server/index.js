@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import path from 'path';
 import fs from 'fs';
-import { connectDB, disconnectDB } from './config/db.js';
+import { connectDB, disconnectDB, getDbStatus } from './config/db.js';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { helmetSecurity, mongoSanitizer, apiLimiter } from './middleware/security.js';
