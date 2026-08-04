@@ -2,8 +2,18 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKE
 const CSRF_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 function getFullUrl(endpoint) {
-  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return API_BASE_URL ? `${API_BASE_URL}${cleanEndpoint}` : cleanEndpoint;
+  let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  if (!API_BASE_URL) return cleanEndpoint;
+
+  // Remove trailing slashes and trailing /api suffix from base URL
+  const normalizedBase = API_BASE_URL.replace(/\/+$/, '').replace(/\/api$/, '');
+
+  // Ensure cleanEndpoint has /api prefix unless it already starts with /api/ or /r/
+  if (!cleanEndpoint.startsWith('/api/') && !cleanEndpoint.startsWith('/r/') && cleanEndpoint !== '/api') {
+    cleanEndpoint = `/api${cleanEndpoint}`;
+  }
+
+  return `${normalizedBase}${cleanEndpoint}`;
 }
 
 function getCsrfToken() {
