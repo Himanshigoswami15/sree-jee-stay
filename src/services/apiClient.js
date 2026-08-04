@@ -1,4 +1,8 @@
-const API_BASE_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || 'https://sree-jee-stay.onrender.com/api').replace(/\/+$/, '');
+let rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || 'https://sree-jee-stay.onrender.com/api';
+if (rawApiUrl.includes('jj-review-system.onrender.com')) {
+  rawApiUrl = rawApiUrl.replace('jj-review-system.onrender.com', 'sree-jee-stay.onrender.com');
+}
+const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');
 const CSRF_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 function getFullUrl(endpoint) {
