@@ -104,8 +104,8 @@ app.use(errorHandler);
 
 let server = null;
 
-// Start server locally (if not running on Vercel)
-if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'production') {
+// Start server (skip only on Vercel where serverless handler is used)
+if (process.env.VERCEL !== '1') {
   startServer().catch((err) => {
     logger.error(`[Server Startup Error]: ${err.message}`);
   });
