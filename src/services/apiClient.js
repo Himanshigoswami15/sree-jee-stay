@@ -109,10 +109,12 @@ export async function apiClient(endpoint, options = {}) {
 
     return data;
   } catch (err) {
-    console.error(`[API Client Error] ${endpoint}:`, err);
+    console.error(`[API Client Error] ${endpoint} (${fullUrl}):`, err);
     return {
       success: false,
-      error: 'Network error or backend server unreachable.',
+      error: err.name === 'AbortError'
+        ? `Request timeout connecting to ${fullUrl}`
+        : `Network error (${fullUrl}): ${err.message || 'Server unreachable'}`,
     };
   }
 }
