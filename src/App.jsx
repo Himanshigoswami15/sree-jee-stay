@@ -126,6 +126,12 @@ function HotelWrapper() {
 
 function QrRedirectWrapper() {
   const { hotelSlug } = useParams();
+  useEffect(() => {
+    if (hotelSlug) {
+      apiClient(`/api/r/${encodeURIComponent(hotelSlug)}`).catch(() => {});
+    }
+  }, [hotelSlug]);
+
   return <Navigate to={`/${hotelSlug}`} replace />;
 }
 

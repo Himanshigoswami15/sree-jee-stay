@@ -154,7 +154,7 @@ export function TabbedDashboard() {
                 className="form-input"
                 value={businessForm.hotelName}
                 onChange={(e) => setBusinessForm({ ...businessForm, hotelName: e.target.value })}
-                placeholder="e.g. Sree Jee Stay / Artisan Cafe"
+                placeholder="e.g. Grand Hotel / Artisan Cafe"
                 required
               />
             </div>

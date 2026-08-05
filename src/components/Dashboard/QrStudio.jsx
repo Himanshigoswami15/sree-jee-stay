@@ -43,13 +43,13 @@ export function QrStudio() {
   const generateQrCode = async () => {
     const currentOrigin = (typeof window !== 'undefined' && window.location.origin)
       ? window.location.origin
-      : 'https://sree-jee-stay.vercel.app';
+      : 'https://jj-elevates.vercel.app';
 
     let finalQrUrl = '';
     if (targetMode === 'direct') {
       finalQrUrl = inputReviewUrl.trim() || activeReviewUrl;
     } else {
-      finalQrUrl = `${currentOrigin}/${hotelSlug}`;
+      finalQrUrl = `${currentOrigin}/r/${hotelSlug}`;
     }
 
     setTargetUrl(finalQrUrl);

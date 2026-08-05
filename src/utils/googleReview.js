@@ -4,7 +4,6 @@
  */
 
 export const GOOGLE_SYDNEY_DEMO_ID = 'ChIJN1t_tDeuEmsRUsoyG83frY4';
-export const SREE_JEE_STAY_MAPS_URL = 'https://g.page/r/CTERYeDefsTREAE/review';
 
 export const GOOGLE_PLACE_ID = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_GOOGLE_PLACE_ID)
   ? import.meta.env.VITE_GOOGLE_PLACE_ID
@@ -36,29 +35,34 @@ export function extractPlaceId(inputStr = '') {
 /**
  * Generate official Direct Google Review link (Write Review popup) or fallback custom URL
  */
-export function generateGoogleReviewUrl(placeIdOrUrl = '') {
-  const input = (placeIdOrUrl || GOOGLE_PLACE_ID || '').trim();
+export function generateGoogleReviewUrl(placeIdOrUrl = '', hotelName = '') {
+  const input = (placeIdOrUrl || '').trim();
 
-  if (!input) return SREE_JEE_STAY_MAPS_URL;
+  if (input) {
+    const extractedId = extractPlaceId(input);
+    if (extractedId && extractedId !== GOOGLE_SYDNEY_DEMO_ID) {
+      return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(extractedId)}`;
+    }
 
-  const extractedId = extractPlaceId(input);
-  if (extractedId && extractedId !== GOOGLE_SYDNEY_DEMO_ID) {
-    return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(extractedId)}`;
+    if (input.startsWith('http://') || input.startsWith('https://')) {
+      return input;
+    }
+
+    if (
+      input && 
+      input !== GOOGLE_SYDNEY_DEMO_ID && 
+      input !== 'YOUR_GOOGLE_PLACE_ID_HERE'
+    ) {
+      return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(input)}`;
+    }
   }
 
-  if (input.startsWith('http://') || input.startsWith('https://')) {
-    return input;
+  const cleanName = (hotelName || '').trim();
+  if (cleanName) {
+    return `https://www.google.com/search?q=${encodeURIComponent(cleanName + ' review')}`;
   }
 
-  if (
-    input && 
-    input !== GOOGLE_SYDNEY_DEMO_ID && 
-    input !== 'YOUR_GOOGLE_PLACE_ID_HERE'
-  ) {
-    return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(input)}`;
-  }
-
-  return SREE_JEE_STAY_MAPS_URL;
+  return 'https://search.google.com/local/writereview';
 }
 
 /**

@@ -466,7 +466,7 @@ export function generateReviewText({
   rating,
   selectedTags = [],
   customNote = '',
-  hotelName = 'Sree Jee Stay',
+  hotelName = 'Hotel',
   tone = 'friendly',
   reviewLength = 'short',
   includeEmojis = true,

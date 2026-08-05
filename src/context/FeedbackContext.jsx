@@ -41,6 +41,11 @@ export function FeedbackProvider({ children, hotelSlug }) {
     setLoading(true);
     setHotelNotFound(false);
 
+    // Immediate state purge to prevent cross-tenant leakage during hotel switching
+    setFeedbacks([]);
+    setSettings(getHotelConfig(hotelSlug) || {});
+    setKeywords(RATING_KEYWORDS);
+
     try {
       fetchHotelsList();
 

@@ -74,7 +74,7 @@ export function Navigation() {
               }}
             >
               <Building2 size={13} color="#1d4ed8" />
-              <span className="hotel-switcher-label">{settings?.hotelName || settings?.name || 'Sree Jee Stay'}</span>
+              <span className="hotel-switcher-label">{settings?.hotelName || settings?.name || 'Select Hotel'}</span>
               <ChevronDown size={12} color="#1d4ed8" />
             </button>
 

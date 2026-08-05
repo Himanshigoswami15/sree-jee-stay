@@ -9,7 +9,7 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
 
   const isHighRating = rating >= 4;
   const activeProviders = getActiveProviders(settings);
-  const voucherCode = `VIP-${(settings?.hotelName || 'SREE').substring(0, 4).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const voucherCode = `VIP-${(settings?.hotelName || settings?.name || 'VIP').substring(0, 4).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
   const handleCopyVoucher = () => {
     navigator.clipboard.writeText(voucherCode);
@@ -41,7 +41,7 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
         </div>
 
         <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-main)', lineHeight: '1.25' }}>
-          Thank You for Reviewing {settings.hotelName || 'Sree Jee Stay'}!
+          Thank You for Reviewing {settings.hotelName || settings.name || 'Us'}!
         </h2>
 
         <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', maxWidth: '420px' }}>

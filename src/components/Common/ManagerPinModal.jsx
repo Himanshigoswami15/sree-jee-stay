@@ -154,7 +154,7 @@ export function ManagerPinModal() {
                 JJ Review System — Hotel Access
               </h2>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                Enter your Security PIN to access analytics & settings for <strong>{settings.name || settings.hotelName || 'Sree Jee Stay'}</strong>.
+                Enter your Security PIN to access analytics & settings for <strong>{settings.name || settings.hotelName || 'Selected Business'}</strong>.
               </p>
             </div>
 

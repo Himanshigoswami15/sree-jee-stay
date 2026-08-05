@@ -46,7 +46,7 @@ export function GuestReviewCard() {
     rating,
     selectedTags,
     customNote: '',
-    hotelName: settings?.hotelName || 'Sree Jee Stay',
+    hotelName: settings?.hotelName || settings?.name || 'Hotel',
     tone,
     reviewLength: settings?.reviewLength || 'short',
     includeEmojis: settings?.includeEmojis !== false,
@@ -207,13 +207,13 @@ export function GuestReviewCard() {
                 border: '3px solid #ffffff',
               }}
             >
-              {(settings?.hotelName || 'Sree Jee Stay')[0]}
+              {(settings?.hotelName || settings?.name || 'Hotel')[0]}
             </div>
           )}
 
           {/* Hotel Name & Badges */}
           <h1 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0f172a', margin: '0 0 0.35rem', letterSpacing: '-0.02em' }}>
-            {settings?.hotelName || 'Sree Jee Stay'}
+            {settings?.hotelName || settings?.name || 'Hotel'}
           </h1>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>

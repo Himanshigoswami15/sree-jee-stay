@@ -20,7 +20,7 @@ const settingsSchema = new mongoose.Schema({
   },
   hotelName: {
     type: String,
-    default: 'Sree Jee Stay - Homestay in Varanasi',
+    default: '',
     trim: true,
   },
   logoUrl: {
