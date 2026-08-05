@@ -12,7 +12,7 @@ export function QrStudio() {
   const { settings, updateSettings, refreshHotels, feedbacks } = useFeedback();
 
   const [inputReviewUrl, setInputReviewUrl] = useState('');
-  const [targetMode, setTargetMode] = useState('interactive'); // 'interactive' | 'direct'
+
   const [targetUrl, setTargetUrl] = useState('');
   const [pngUrl, setPngUrl] = useState('');
   const [svgString, setSvgString] = useState('');
@@ -45,13 +45,7 @@ export function QrStudio() {
       ? window.location.origin
       : 'https://jj-elevates.vercel.app';
 
-    let finalQrUrl = '';
-    if (targetMode === 'direct') {
-      finalQrUrl = inputReviewUrl.trim() || activeReviewUrl;
-    } else {
-      finalQrUrl = `${currentOrigin}/r/${hotelSlug}`;
-    }
-
+    const finalQrUrl = `${currentOrigin}/r/${hotelSlug}`;
     setTargetUrl(finalQrUrl);
 
     try {
@@ -96,7 +90,7 @@ export function QrStudio() {
   useEffect(() => {
     generateQrCode();
     fetchAnalytics();
-  }, [hotelSlug, targetMode, activeReviewUrl]);
+  }, [hotelSlug, activeReviewUrl]);
 
   // Auto-open review portal when a valid URL is pasted
   const handlePasteReviewUrl = (e) => {
@@ -363,46 +357,7 @@ export function QrStudio() {
         </div>
 
         {/* QR MODE SELECTOR */}
-        <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '14px', padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <QrCode size={16} color="#2563eb" /> QR Destination Mode:
-          </span>
-          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => setTargetMode('interactive')}
-              style={{
-                fontSize: '0.775rem',
-                fontWeight: targetMode === 'interactive' ? 800 : 600,
-                padding: '0.4rem 0.85rem',
-                borderRadius: '16px',
-                border: targetMode === 'interactive' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
-                background: targetMode === 'interactive' ? '#eff6ff' : '#ffffff',
-                color: targetMode === 'interactive' ? '#2563eb' : '#475569',
-                cursor: 'pointer',
-              }}
-            >
-              📱 Smart Review Flow (Recommended)
-            </button>
 
-            <button
-              type="button"
-              onClick={() => setTargetMode('direct')}
-              style={{
-                fontSize: '0.775rem',
-                fontWeight: targetMode === 'direct' ? 800 : 600,
-                padding: '0.4rem 0.85rem',
-                borderRadius: '16px',
-                border: targetMode === 'direct' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
-                background: targetMode === 'direct' ? '#eff6ff' : '#ffffff',
-                color: targetMode === 'direct' ? '#2563eb' : '#475569',
-                cursor: 'pointer',
-              }}
-            >
-              🌐 Direct Review Link QR
-            </button>
-          </div>
-        </div>
 
         {/* PRINTABLE TENT CARD POSTER (UPSIDE DETAILS + UNIQUE QR CODE) */}
         <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'center' }}>
