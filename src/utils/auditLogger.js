@@ -1,7 +1,7 @@
 import { apiClient } from '../services/apiClient';
 
 export class AuditLogger {
-  constructor(hotelId = 'demo', locationId = 'main') {
+  constructor(hotelId = '', locationId = 'main') {
     this.hotelId = hotelId;
     this.locationId = locationId;
   }

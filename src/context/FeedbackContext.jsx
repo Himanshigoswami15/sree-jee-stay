@@ -340,7 +340,8 @@ export function FeedbackProvider({ children, hotelSlug }) {
   };
 
   const resolveAlert = async (id) => {
-    const res = await apiClient(`/api/feedback/${id}/resolve`, { method: 'POST' });
+    if (!id || id === 'undefined') return { success: false, error: 'Invalid feedback ID' };
+    const res = await apiClient(`/api/feedback/${encodeURIComponent(id)}/resolve?hotelSlug=${encodeURIComponent(hotelSlug)}`, { method: 'POST' });
 
     if (res && res.success) {
       setFeedbacks((prev) =>
