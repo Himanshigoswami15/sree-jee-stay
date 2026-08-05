@@ -6,7 +6,7 @@ export function getActiveProviders(tenantSettings) {
       {
         type: 'google',
         name: 'Google',
-        url: generateGoogleReviewUrl(tenantSettings?.googlePlaceId),
+        url: tenantSettings?.googleReviewUrl || generateGoogleReviewUrl(tenantSettings?.googlePlaceId, tenantSettings?.hotelName || tenantSettings?.name),
         isEnabled: true
       }
     ];
@@ -20,7 +20,7 @@ export function getActiveProviders(tenantSettings) {
 
       switch (provider.type) {
         case 'google':
-          url = tenantSettings.googleReviewUrl || generateGoogleReviewUrl(tenantSettings.googlePlaceId);
+          url = tenantSettings.googleReviewUrl || generateGoogleReviewUrl(tenantSettings.googlePlaceId, tenantSettings.hotelName || tenantSettings.name);
           name = 'Google';
           break;
         case 'tripadvisor':

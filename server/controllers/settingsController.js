@@ -8,6 +8,7 @@ export async function get(req, res, next) {
       throw new AppError('hotelSlug or hotelId parameter is required.', 400);
     }
     const settings = await settingsService.getSettings(identifier);
+    console.log(`[Settings API Debug] hotelSlug: "${identifier}", returning googleReviewUrl: "${settings?.googleReviewUrl}"`);
     return res.status(200).json({ success: true, settings });
   } catch (err) {
     next(err);

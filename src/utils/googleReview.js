@@ -5,9 +5,7 @@
 
 export const GOOGLE_SYDNEY_DEMO_ID = 'ChIJN1t_tDeuEmsRUsoyG83frY4';
 
-export const GOOGLE_PLACE_ID = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_GOOGLE_PLACE_ID)
-  ? import.meta.env.VITE_GOOGLE_PLACE_ID
-  : (typeof process !== 'undefined' && process.env?.VITE_GOOGLE_PLACE_ID) || '';
+export const GOOGLE_PLACE_ID = '';
 
 /**
  * Extract Place ID from a string, Google URL, or query parameters if present

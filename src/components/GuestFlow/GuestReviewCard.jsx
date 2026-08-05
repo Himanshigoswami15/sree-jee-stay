@@ -102,6 +102,7 @@ export function GuestReviewCard() {
 
     // 4. Open destination review provider
     if (provider?.url) {
+      console.log(`[GuestReviewCard Debug] hotelSlug: "${settings?.hotelSlug}", hotelId: "${settings?.hotelId}", googleReviewUrl before window.open: "${provider.url}"`);
       window.open(provider.url, '_blank', 'noopener,noreferrer');
     }
   };
