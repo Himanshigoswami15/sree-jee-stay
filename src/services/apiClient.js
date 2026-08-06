@@ -101,20 +101,48 @@ export async function apiClient(endpoint, options = {}) {
     }
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), options.timeoutMs || 10000);
+  const maxRetries = options.method && options.method !== 'GET' ? 2 : 3;
+  let response = null;
+  let lastError = null;
 
-  const config = {
-    ...options,
-    headers,
-    credentials: 'include',
-    signal: options.signal || controller.signal,
-  };
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const controller = new AbortController();
+    const timeoutMs = options.timeoutMs || 15000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const config = {
+      ...options,
+      headers,
+      credentials: 'include',
+      signal: options.signal || controller.signal,
+    };
+
+    try {
+      response = await fetch(fullUrl, config);
+      clearTimeout(timeoutId);
+      lastError = null;
+      break;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      lastError = err;
+      if (attempt < maxRetries) {
+        // Render free-tier cold start backoff wait
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+    }
+  }
+
+  if (lastError || !response) {
+    console.error(`[API Client Error] ${endpoint} (${fullUrl}):`, lastError);
+    return {
+      success: false,
+      error: lastError?.name === 'AbortError'
+        ? `Request timeout connecting to backend server`
+        : `Connecting to server... Please try again in 5 seconds.`,
+    };
+  }
 
   try {
-    let response = await fetch(fullUrl, config);
-    clearTimeout(timeoutId);
-
     if (response.status === 401 && !options._isRetry) {
       const refreshRes = await fetch(getFullUrl('/api/auth/refresh'), {
         method: 'POST',
@@ -127,15 +155,15 @@ export async function apiClient(endpoint, options = {}) {
         if (refreshData?.accessToken && typeof window !== 'undefined') {
           setScopedAccessToken(refreshData.accessToken);
           if (isTokenMatchingCurrentRoute(refreshData.accessToken)) {
-            config.headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
+            headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
           }
         }
-        config._isRetry = true;
+        options._isRetry = true;
         const csrfToken = getCsrfToken();
         if (csrfToken) {
-          config.headers['X-CSRF-Token'] = csrfToken;
+          headers['X-CSRF-Token'] = csrfToken;
         }
-        response = await fetch(fullUrl, config);
+        response = await fetch(fullUrl, { ...options, headers, credentials: 'include' });
       }
     }
 
@@ -159,12 +187,10 @@ export async function apiClient(endpoint, options = {}) {
 
     return data;
   } catch (err) {
-    console.error(`[API Client Error] ${endpoint} (${fullUrl}):`, err);
+    console.error(`[API Response Parsing Error] ${endpoint} (${fullUrl}):`, err);
     return {
       success: false,
-      error: err.name === 'AbortError'
-        ? `Request timeout connecting to ${fullUrl}`
-        : `Network error (${fullUrl}): ${err.message || 'Server unreachable'}`,
+      error: `Failed to process response from server`,
     };
   }
 }
