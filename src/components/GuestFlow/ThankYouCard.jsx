@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Heart, CheckCircle2, RotateCcw, ExternalLink, Gift, Copy, Check, Sparkles } from 'lucide-react';
+import { Heart, CheckCircle2, RotateCcw, ExternalLink, Gift, Copy, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useFeedback } from '../../context/FeedbackContext';
 import { getActiveProviders } from '../../utils/providerRouter';
 
@@ -18,33 +19,47 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
   };
 
   return (
-    <div className="guest-card" style={{ textAlign: 'center', padding: '2rem 1.5rem', maxWidth: '460px', margin: '1rem auto' }}>
+    <motion.div
+      className="guest-card"
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        textAlign: 'center',
+        padding: '2rem 1.5rem',
+        maxWidth: '480px',
+        margin: '1.5rem auto',
+        background: '#ffffff',
+        borderRadius: '18px',
+        border: '1px solid #E5E7EB',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.05)',
+        boxSizing: 'border-box',
+      }}
+    >
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem' }}>
         {/* Animated Badge */}
         <div
           style={{
-            width: '72px',
-            height: '72px',
+            width: '64px',
+            height: '64px',
             borderRadius: '50%',
-            background: isHighRating
-              ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-              : 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)',
+            background: isHighRating ? '#ECFDF5' : '#EFF6FF',
+            border: isHighRating ? '1px solid #A7F3D0' : '1px solid #BFDBFE',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white',
-            boxShadow: isHighRating ? '0 10px 25px rgba(16, 185, 129, 0.4)' : '0 10px 25px rgba(99, 102, 241, 0.4)',
+            color: isHighRating ? '#22C55E' : '#2563EB',
             marginBottom: '0.25rem',
           }}
         >
-          {isHighRating ? <CheckCircle2 size={40} /> : <Heart size={38} />}
+          {isHighRating ? <CheckCircle2 size={36} /> : <Heart size={34} />}
         </div>
 
-        <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--text-main)', lineHeight: '1.25' }}>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#111827', lineHeight: '1.3', letterSpacing: '-0.02em' }}>
           Thank You for Reviewing {settings.hotelName || settings.name || 'Us'}!
         </h2>
 
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', maxWidth: '420px' }}>
+        <p style={{ fontSize: '0.9rem', color: '#6B7280', lineHeight: '1.55', maxWidth: '420px' }}>
           {isHighRating
             ? `Your review was submitted! We truly appreciate your support and look forward to welcoming you back.`
             : `Your private feedback has been delivered directly to our Duty Manager. We are attending to your notes immediately.`}
@@ -55,14 +70,12 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
           <div
             style={{
               width: '100%',
-              background: 'linear-gradient(135deg, #fffbe6 0%, #fef3c7 100%)',
-              border: '2px dashed #f59e0b',
-              borderRadius: '20px',
+              background: '#FFFBEB',
+              border: '1px solid #FCD34D',
+              borderRadius: '14px',
               padding: '1.25rem 1rem',
               margin: '0.75rem 0',
               textAlign: 'center',
-              boxShadow: '0 8px 20px rgba(245, 158, 11, 0.12)',
-              position: 'relative',
               boxSizing: 'border-box',
             }}
           >
@@ -71,25 +84,25 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.35rem',
-                background: '#f59e0b',
+                background: '#F59E0B',
                 color: '#ffffff',
                 padding: '0.25rem 0.75rem',
-                borderRadius: '20px',
+                borderRadius: '9999px',
                 fontSize: '0.75rem',
-                fontWeight: 800,
+                fontWeight: 600,
                 marginBottom: '0.65rem',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.04em',
               }}
             >
               <Gift size={13} /> VIP Guest Privilege Reward
             </div>
 
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#78350f', margin: '0 0 0.25rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#78350F', margin: '0 0 0.25rem' }}>
               Complimentary Welcome Drink ☕ / 10% Dining Discount
             </h3>
 
-            <p style={{ fontSize: '0.78rem', color: '#92400e', margin: '0 0 0.85rem' }}>
+            <p style={{ fontSize: '0.78rem', color: '#92400E', margin: '0 0 0.85rem' }}>
               Show this voucher screen to our reception desk or dining staff to claim your special perk!
             </p>
 
@@ -100,66 +113,106 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
                 justifyContent: 'center',
                 gap: '0.5rem',
                 background: '#ffffff',
-                border: '1.5px solid #fcd34d',
-                borderRadius: '14px',
-                padding: '0.6rem 1rem',
+                border: '1px solid #FDE68A',
+                borderRadius: '10px',
+                padding: '0.5rem 0.85rem',
                 margin: '0 auto',
                 maxWidth: '280px',
               }}
             >
-              <span style={{ fontFamily: 'monospace', fontSize: '1.1rem', fontWeight: 800, color: '#b45309', letterSpacing: '0.1em' }}>
+              <span style={{ fontFamily: 'monospace', fontSize: '1.05rem', fontWeight: 700, color: '#B45309', letterSpacing: '0.08em' }}>
                 {voucherCode}
               </span>
 
-              <button
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.96 }}
                 type="button"
                 onClick={handleCopyVoucher}
                 style={{
-                  background: copiedCode ? '#ecfdf5' : '#fef3c7',
-                  border: copiedCode ? '1px solid #6ee7b7' : '1px solid #fde68a',
-                  color: copiedCode ? '#047857' : '#92400e',
-                  borderRadius: '10px',
+                  background: copiedCode ? '#ECFDF5' : '#FEF3C7',
+                  border: copiedCode ? '1px solid #A7F3D0' : '1px solid #FDE68A',
+                  color: copiedCode ? '#15803D' : '#92400E',
+                  borderRadius: '8px',
                   padding: '0.3rem 0.55rem',
                   fontSize: '0.725rem',
-                  fontWeight: 800,
+                  fontWeight: 600,
                   cursor: 'pointer',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.25rem',
                 }}
               >
                 {copiedCode ? <Check size={12} /> : <Copy size={12} />}
                 {copiedCode ? 'Copied' : 'Copy'}
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
       </div>
 
       {/* Action Buttons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '1rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '1.25rem' }}>
         {activeProviders.map((provider) => (
-          <button
+          <motion.button
             key={provider.type}
             type="button"
             className="btn-primary-action"
+            whileHover={{ translateY: -1 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => window.open(provider.url, '_blank', 'noopener,noreferrer')}
-            style={{ width: '100%', justifyContent: 'center' }}
+            style={{
+              height: '48px',
+              padding: '0 1.5rem',
+              borderRadius: '14px',
+              fontSize: '0.9375rem',
+              fontWeight: 600,
+              background: '#2563EB',
+              color: '#ffffff',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              border: 'none',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(37, 99, 235, 0.15)',
+              cursor: 'pointer',
+              width: '100%',
+              letterSpacing: '-0.01em',
+            }}
           >
             <ExternalLink size={18} /> Open {provider.name} Profile
-          </button>
+          </motion.button>
         ))}
 
-        <button
+        <motion.button
           type="button"
           className="btn-secondary-action"
+          whileHover={{ translateY: -1 }}
+          whileTap={{ scale: 0.98 }}
           onClick={onReset}
-          style={{ width: '100%', justifyContent: 'center', marginTop: '0.25rem' }}
+          style={{
+            height: '44px',
+            padding: '0 1.25rem',
+            borderRadius: '14px',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            background: '#ffffff',
+            border: '1px solid #E5E7EB',
+            color: '#374151',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            cursor: 'pointer',
+            width: '100%',
+            marginTop: '0.25rem',
+          }}
         >
           <RotateCcw size={15} /> Submit Another Feedback
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
+
 

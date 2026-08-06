@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Star, ShieldCheck, HeartHandshake, ExternalLink, Smartphone, Award } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { motion } from 'framer-motion';
 import { useFeedback } from '../../context/FeedbackContext';
 import { generateReviewText } from '../../utils/reviewGenerator';
 import { getActiveProviders } from '../../utils/providerRouter';
@@ -11,11 +12,11 @@ import { ThankYouCard } from './ThankYouCard';
 import { copyToMobileClipboard } from '../../utils/clipboardHelper';
 
 const SENTIMENT_CONFIG = {
-  5: { label: 'Absolute Perfection! 🌟', color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', shadow: 'rgba(16, 185, 129, 0.25)' },
-  4: { label: 'Great Experience! 😊', color: '#0284c7', bg: '#f0f9ff', border: '#bae6fd', shadow: 'rgba(2, 132, 199, 0.25)' },
-  3: { label: 'Okay / Average 😐', color: '#d97706', bg: '#fffbeb', border: '#fde68a', shadow: 'rgba(245, 158, 11, 0.25)' },
-  2: { label: 'Needs Improvement 😕', color: '#e11d48', bg: '#fff1f2', border: '#fecdd3', shadow: 'rgba(225, 29, 72, 0.25)' },
-  1: { label: 'Unsatisfactory 😞', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', shadow: 'rgba(220, 38, 38, 0.25)' },
+  5: { label: 'Absolute Perfection! 🌟', color: '#15803D', bg: '#ECFDF5', border: '#A7F3D0' },
+  4: { label: 'Great Experience! 😊', color: '#0369A1', bg: '#F0F9FF', border: '#BAE6FD' },
+  3: { label: 'Okay / Average 😐', color: '#B45309', bg: '#FFFBEB', border: '#FDE68A' },
+  2: { label: 'Needs Improvement 😕', color: '#BE123C', bg: '#FFF1F2', border: '#FECDD3' },
+  1: { label: 'Unsatisfactory 😞', color: '#B91C1C', bg: '#FEF2F2', border: '#FCA5A5' },
 };
 
 export function GuestReviewCard() {
@@ -34,7 +35,7 @@ export function GuestReviewCard() {
 
   const [submitted, setSubmitted] = useState(false);
 
-  const primaryColor = settings?.themeColor || '#4f46e5';
+  const primaryColor = settings?.themeColor || '#2563EB';
   const isHighRating = rating >= 4;
   const activeProviders = getActiveProviders(settings);
   const isDuplicate = checkIsDuplicate(guestContact);
@@ -139,73 +140,59 @@ export function GuestReviewCard() {
   }
 
   return (
-    <div
+    <motion.div
       className="guest-card"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       style={{
         maxWidth: '480px',
         width: '100%',
-        margin: '1.25rem auto',
+        margin: '1.5rem auto',
         background: '#ffffff',
-        borderRadius: '28px',
-        padding: '1.75rem 1.35rem',
-        boxShadow: `0 20px 45px -10px ${currentSentiment.shadow}, 0 0 0 1px ${currentSentiment.border}`,
-        border: `1.5px solid ${currentSentiment.border}`,
+        borderRadius: '18px',
+        padding: '2rem 1.5rem',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.05)',
+        border: '1px solid #E5E7EB',
         textAlign: 'center',
         boxSizing: 'border-box',
-        transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Dynamic Ambient Background Glow */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-60px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '260px',
-          height: '140px',
-          background: `radial-gradient(circle, ${currentSentiment.border} 0%, transparent 70%)`,
-          opacity: 0.6,
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      />
-
-      <div style={{ position: 'relative', zIndex: 1 }}>
+      <div>
         {/* HERO BRANDING HEADER */}
-        <div style={{ marginBottom: '1.25rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
           {settings?.logoUrl ? (
             <img
               src={settings.logoUrl}
               alt="Hotel Logo"
               style={{
-                width: '76px',
-                height: '76px',
+                width: '72px',
+                height: '72px',
                 borderRadius: '50%',
-                margin: '0 auto 0.75rem',
+                margin: '0 auto 1rem',
                 objectFit: 'cover',
-                border: '3px solid #ffffff',
-                boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                border: '1px solid #E5E7EB',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
               }}
             />
           ) : (
             <div
               style={{
-                width: '76px',
-                height: '76px',
+                width: '72px',
+                height: '72px',
                 borderRadius: '50%',
-                background: `linear-gradient(135deg, ${primaryColor} 0%, #312e81 100%)`,
-                color: 'white',
+                background: primaryColor,
+                color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '2rem',
-                fontWeight: 900,
-                margin: '0 auto 0.75rem',
-                boxShadow: '0 8px 24px rgba(79, 70, 229, 0.25)',
-                border: '3px solid #ffffff',
+                fontSize: '1.75rem',
+                fontWeight: 700,
+                margin: '0 auto 1rem',
+                border: '1px solid #E5E7EB',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
               }}
             >
               {(settings?.hotelName || settings?.name || 'Hotel')[0]}
@@ -213,41 +200,43 @@ export function GuestReviewCard() {
           )}
 
           {/* Hotel Name & Badges */}
-          <h1 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0f172a', margin: '0 0 0.35rem', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '1.375rem', fontWeight: 700, color: '#111827', margin: '0 0 0.5rem', letterSpacing: '-0.02em' }}>
             {settings?.hotelName || settings?.name || 'Hotel'}
           </h1>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#059669', background: '#ecfdf5', padding: '0.2rem 0.6rem', borderRadius: '12px', border: '1px solid #a7f3d0', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#166534', background: '#ECFDF5', padding: '0.25rem 0.65rem', borderRadius: '9999px', border: '1px solid #A7F3D0', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
               <ShieldCheck size={13} /> Official Guest Review
             </span>
 
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e40af', background: '#eff6ff', padding: '0.2rem 0.6rem', borderRadius: '12px', border: '1px solid #bfdbfe', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#1E40AF', background: '#EFF6FF', padding: '0.25rem 0.65rem', borderRadius: '9999px', border: '1px solid #BFDBFE', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
               <Award size={13} /> 4.9 ★ Exceptional
             </span>
           </div>
 
           {/* Optional Room Prefill Notice */}
           {roomNumber && (
-            <div style={{ fontSize: '0.775rem', color: '#475569', fontWeight: 700, background: '#f8fafc', padding: '0.35rem 0.75rem', borderRadius: '14px', border: '1px solid #e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+            <div style={{ fontSize: '0.775rem', color: '#4B5563', fontWeight: 500, background: '#FAFAFB', padding: '0.4rem 0.75rem', borderRadius: '12px', border: '1px solid #E5E7EB', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               <span>🏨</span> Welcome {guestParam ? `${guestParam} (` : ''}Room {roomNumber}{guestParam ? ')' : ''}!
             </div>
           )}
         </div>
 
         {/* 5-STAR RATING SELECTOR */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '0.875rem', fontWeight: 800, color: '#334155', marginBottom: '0.65rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ fontSize: '0.9375rem', fontWeight: 600, color: '#111827', marginBottom: '0.75rem' }}>
             How was your stay experience?
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.45rem', marginBottom: '0.65rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
             {[1, 2, 3, 4, 5].map((star) => {
               const isActive = star <= rating;
               return (
-                <button
+                <motion.button
                   key={star}
                   type="button"
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setRating(star);
                     setSelectedTags([]);
@@ -257,41 +246,45 @@ export function GuestReviewCard() {
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '0.2rem',
-                    transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                    transform: isActive ? 'scale(1.12)' : 'scale(1)',
+                    padding: '0.25rem',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
                   <Star
                     size={38}
-                    color={isActive ? (rating >= 4 ? '#f59e0b' : '#f97316') : '#cbd5e1'}
-                    fill={isActive ? (rating >= 4 ? '#f59e0b' : '#f97316') : 'none'}
+                    color={isActive ? '#F59E0B' : '#E5E7EB'}
+                    fill={isActive ? '#F59E0B' : '#E5E7EB'}
                     style={{
-                      filter: isActive ? 'drop-shadow(0 4px 8px rgba(245, 158, 11, 0.4))' : 'none',
+                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   />
-                </button>
+                </motion.button>
               );
             })}
           </div>
 
           {/* SENTIMENT MOOD BADGE */}
-          <div
+          <motion.div
+            key={rating}
+            initial={{ scale: 0.95, opacity: 0.8 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.2 }}
             style={{
               display: 'inline-block',
               background: currentSentiment.bg,
               color: currentSentiment.color,
               border: `1px solid ${currentSentiment.border}`,
-              padding: '0.35rem 0.85rem',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              fontWeight: 800,
-              boxShadow: `0 4px 12px ${currentSentiment.shadow}`,
-              transition: 'all 0.25s ease',
+              padding: '0.4rem 0.85rem',
+              borderRadius: '9999px',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
             }}
           >
             {currentSentiment.label}
-          </div>
+          </motion.div>
         </div>
 
         {/* KEYWORD TAG CHIPS */}
@@ -315,19 +308,19 @@ export function GuestReviewCard() {
         />
 
         {/* PHONE / CUSTOMER ID VERIFICATION INPUT */}
-        <div style={{ margin: '1.15rem 0 0.85rem 0', textAlign: 'left' }}>
+        <div style={{ margin: '1.25rem 0 1rem 0', textAlign: 'left' }}>
           <label
             style={{
-              fontSize: '0.78rem',
-              fontWeight: 800,
-              color: '#334155',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              color: '#374151',
               display: 'flex',
               alignItems: 'center',
               gap: '0.35rem',
-              marginBottom: '0.35rem',
+              marginBottom: '0.4rem',
             }}
           >
-            <Smartphone size={14} color="#4f46e5" />
+            <Smartphone size={15} color={primaryColor} />
             <span>Phone / Room / Customer ID (Anti-Duplicate Check):</span>
           </label>
           <input
@@ -339,76 +332,101 @@ export function GuestReviewCard() {
             style={{
               width: '100%',
               fontSize: '0.875rem',
-              padding: '0.65rem 0.85rem',
+              height: '44px',
+              padding: '0 0.85rem',
               borderRadius: '12px',
-              border: isDuplicate ? '1.5px solid #fca5a5' : '1px solid #cbd5e1',
-              background: isDuplicate ? '#fff1f2' : '#ffffff',
+              border: isDuplicate ? '1px solid #EF4444' : '1px solid #E5E7EB',
+              background: isDuplicate ? '#FEF2F2' : '#FAFAFB',
+              color: '#111827',
               boxSizing: 'border-box',
+              outline: 'none',
+              transition: 'all 0.2s ease',
             }}
           />
           {isDuplicate && (
-            <div style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 700, marginTop: '0.35rem' }}>
+            <div style={{ fontSize: '0.775rem', color: '#EF4444', fontWeight: 500, marginTop: '0.35rem' }}>
               ⚠️ A review has already been submitted for this Phone / ID.
             </div>
           )}
         </div>
 
         {/* ACTION BUTTONS / PLATFORM ROUTERS */}
-        <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+        <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {isHighRating ? (
             <>
               {activeProviders.map((provider) => (
-                <button
+                <motion.button
                   key={provider.type}
                   type="button"
                   className="btn-primary-action"
+                  whileHover={isDuplicate ? {} : { translateY: -1 }}
+                  whileTap={isDuplicate ? {} : { scale: 0.98 }}
                   onClick={() => handlePostToProvider(provider)}
                   disabled={isDuplicate}
                   style={{
-                    padding: '0.9rem 1.25rem',
-                    borderRadius: '16px',
-                    fontSize: '0.95rem',
-                    fontWeight: 800,
+                    height: '48px',
+                    padding: '0 1.5rem',
+                    borderRadius: '14px',
+                    fontSize: '0.9375rem',
+                    fontWeight: 600,
                     background: primaryColor,
+                    color: '#ffffff',
+                    display: 'inline-flex',
+                    alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 8px 22px rgba(79, 70, 229, 0.28)',
+                    gap: '0.5rem',
+                    border: 'none',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(37, 99, 235, 0.15)',
                     opacity: isDuplicate ? 0.6 : 1,
                     cursor: isDuplicate ? 'not-allowed' : 'pointer',
+                    width: '100%',
+                    letterSpacing: '-0.01em',
                   }}
                 >
                   <ExternalLink size={18} />
                   <span>Post Review on {provider.name}</span>
-                </button>
+                </motion.button>
               ))}
 
-              <div style={{ fontSize: '0.725rem', color: '#64748b', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.75rem', color: '#6B7280', fontWeight: 500 }}>
                 📋 Tapping above auto-copies your review text to your phone clipboard!
               </div>
             </>
           ) : (
-            <button
+            <motion.button
               type="button"
               className="btn-primary-action"
+              whileHover={isDuplicate ? {} : { translateY: -1 }}
+              whileTap={isDuplicate ? {} : { scale: 0.98 }}
               onClick={handleSubmitPrivateFeedback}
               disabled={isDuplicate}
               style={{
-                padding: '0.9rem 1.25rem',
-                borderRadius: '16px',
-                fontSize: '0.95rem',
-                fontWeight: 800,
-                background: '#dc2626',
+                height: '48px',
+                padding: '0 1.5rem',
+                borderRadius: '14px',
+                fontSize: '0.9375rem',
+                fontWeight: 600,
+                background: '#EF4444',
+                color: '#ffffff',
+                display: 'inline-flex',
+                alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 8px 22px rgba(220, 38, 38, 0.25)',
+                gap: '0.5rem',
+                border: 'none',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(239, 68, 68, 0.15)',
                 opacity: isDuplicate ? 0.6 : 1,
                 cursor: isDuplicate ? 'not-allowed' : 'pointer',
+                width: '100%',
+                letterSpacing: '-0.01em',
               }}
             >
               <HeartHandshake size={18} />
               <span>Submit Private Feedback to Duty Manager</span>
-            </button>
+            </motion.button>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
+

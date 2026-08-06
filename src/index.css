@@ -3,43 +3,40 @@
 :root {
   --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
-  /* Modern Luxury Mobile Color System */
-  --bg-main: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-card-border: #e2e8f0;
-  --bg-glass: rgba(255, 255, 255, 0.92);
+  /* Design System Color Tokens */
+  --bg-main: #FAFAFB;
+  --bg-card: #FFFFFF;
+  --border-color: #E5E7EB;
   
-  /* Primary & Accent Gradients */
-  --primary: #4f46e5;
-  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
-  --primary-hover-gradient: linear-gradient(135deg, #4338ca 0%, #1d4ed8 100%);
-  --primary-light: #e0e7ff;
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-light: #EFF6FF;
   
-  --secondary: #0284c7;
-  --accent-emerald: #10b981;
-  --accent-emerald-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --danger-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  --secondary: #6B7280;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
   
   /* High-Contrast Typography */
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --text-dark: #020617;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-main: #111827;
+  --text-muted: #6B7280;
 
-  --star-gold: #fbbf24;
-  --star-gold-glow: rgba(251, 191, 36, 0.5);
+  --star-gold: #F59E0B;
+  --star-gold-glow: rgba(245, 158, 11, 0.2);
   
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
   --radius-pill: 9999px;
 
-  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.05);
-  --shadow-card: 0 16px 35px -8px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.04);
-  --shadow-glow: 0 10px 30px rgba(79, 70, 229, 0.35);
-  --transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  --spring-transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.05);
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.05);
+  --shadow-button: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(37, 99, 235, 0.15);
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --spring-transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 * {
@@ -57,13 +54,8 @@ html, body {
 
 body {
   font-family: var(--font-family);
-  background-color: #f8fafc;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(13, 148, 136, 0.07) 0px, transparent 50%),
-    radial-gradient(at 50% 50%, rgba(224, 231, 255, 0.4) 0px, transparent 50%);
-  background-attachment: fixed;
-  color: var(--text-main);
+  background-color: #FAFAFB;
+  color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;

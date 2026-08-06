@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, RefreshCw, Copy, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { copyToMobileClipboard } from '../../utils/clipboardHelper';
 
 export function AutoReviewEditor({
@@ -22,16 +23,19 @@ export function AutoReviewEditor({
   };
 
   return (
-    <div
+    <motion.div
       className="review-editor-section"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       style={{
         background: '#ffffff',
-        border: '1.5px solid #e2e8f0',
-        borderRadius: '20px',
-        padding: '1.15rem',
+        border: '1px solid #E5E7EB',
+        borderRadius: '18px',
+        padding: '1.25rem',
         textAlign: 'left',
-        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.04)',
-        marginTop: '1rem',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)',
+        marginTop: '1.25rem',
       }}
     >
       {/* Header with Title & Action */}
@@ -40,76 +44,78 @@ export function AutoReviewEditor({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '0.75rem',
+          marginBottom: '0.85rem',
           flexWrap: 'wrap',
           gap: '0.5rem',
         }}
       >
         <span
           style={{
-            fontSize: '0.85rem',
-            fontWeight: 800,
-            color: '#0f172a',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            color: '#111827',
             display: 'flex',
             alignItems: 'center',
             gap: '0.4rem',
           }}
         >
-          <Sparkles size={16} color="#4f46e5" />
+          <Sparkles size={16} color="#2563EB" />
           <span>AI Auto-Written Review</span>
         </span>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           {onRefreshPhrasing && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
               type="button"
               onClick={onRefreshPhrasing}
               style={{
-                background: '#eff6ff',
-                border: '1px solid #c7d2fe',
-                color: '#4f46e5',
-                borderRadius: '16px',
-                padding: '0.35rem 0.65rem',
+                background: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                color: '#1D4ED8',
+                borderRadius: '9999px',
+                padding: '0.35rem 0.75rem',
                 fontSize: '0.75rem',
                 cursor: 'pointer',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.3rem',
-                fontWeight: 700,
+                fontWeight: 600,
                 transition: 'all 0.15s ease',
               }}
               title="Generate another natural phrasing variation"
             >
               <RefreshCw size={12} />
               <span>Magic Rewrite</span>
-            </button>
+            </motion.button>
           )}
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
             type="button"
             onClick={handleCopy}
             style={{
-              background: copied ? '#ecfdf5' : '#f8fafc',
-              border: copied ? '1px solid #6ee7b7' : '1px solid #cbd5e1',
-              color: copied ? '#047857' : '#334155',
-              borderRadius: '16px',
-              padding: '0.35rem 0.65rem',
+              background: copied ? '#ECFDF5' : '#F3F4F6',
+              border: copied ? '1px solid #A7F3D0' : '1px solid #E5E7EB',
+              color: copied ? '#15803D' : '#374151',
+              borderRadius: '9999px',
+              padding: '0.35rem 0.75rem',
               fontSize: '0.75rem',
               cursor: 'pointer',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               gap: '0.3rem',
-              fontWeight: 800,
+              fontWeight: 600,
               transition: 'all 0.15s ease',
             }}
           >
-            {copied ? <Check size={13} color="#059669" /> : <Copy size={13} />}
+            {copied ? <Check size={13} color="#22C55E" /> : <Copy size={13} />}
             <span>{copied ? 'Copied!' : 'Copy'}</span>
-          </button>
+          </motion.button>
         </div>
       </div>
-
-
 
       {/* Editable Text Box */}
       <textarea
@@ -121,16 +127,18 @@ export function AutoReviewEditor({
           width: '100%',
           minHeight: '110px',
           fontSize: '0.9rem',
-          lineHeight: '1.5',
-          fontWeight: '500',
-          padding: '0.75rem 0.9rem',
+          lineHeight: '1.55',
+          fontWeight: '400',
+          padding: '0.75rem 1rem',
           borderRadius: '12px',
-          border: '1.5px solid #cbd5e1',
+          border: '1px solid #E5E7EB',
           boxSizing: 'border-box',
-          color: '#0f172a',
-          background: '#fafafa',
+          color: '#111827',
+          background: '#FAFAFB',
           resize: 'vertical',
           fontFamily: 'inherit',
+          outline: 'none',
+          transition: 'all 0.2s ease',
         }}
       />
 
@@ -138,16 +146,17 @@ export function AutoReviewEditor({
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          fontSize: '0.7rem',
-          color: '#94a3b8',
-          marginTop: '0.35rem',
-          fontWeight: 600,
+          fontSize: '0.75rem',
+          color: '#6B7280',
+          marginTop: '0.4rem',
+          fontWeight: 500,
         }}
       >
         <span>💡 Tap text to edit freely before posting</span>
         <span>{reviewText.length} characters</span>
       </div>
-    </div>
+    </motion.div>
   );
 }
+
 
