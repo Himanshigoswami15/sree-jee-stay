@@ -70,6 +70,16 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString(), database: getDbStatus() });
 });
 
+app.get('/api/db-debug', async (_req, res) => {
+  return res.json({
+    readyState: mongoose.connection.readyState,
+    host: mongoose.connection.host || null,
+    db: mongoose.connection.name || null,
+    models: mongoose.modelNames(),
+    uriExists: !!process.env.MONGODB_URI,
+  });
+});
+
 // Prevent API response caching across devices & browsers
 app.use('/api', (_req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
