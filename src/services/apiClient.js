@@ -1,20 +1,29 @@
-let rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || '/api';
+let rawApiUrl = '/api';
+if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+  rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || '/api';
+}
 const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');
 const CSRF_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 function getFullUrl(endpoint) {
   let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  if (!API_BASE_URL) return cleanEndpoint;
 
-  // Remove trailing slashes and trailing /api suffix from base URL
-  const normalizedBase = API_BASE_URL.replace(/\/+$/, '').replace(/\/api$/, '');
+  // If cleanEndpoint is already a full http/https URL, return as-is
+  if (cleanEndpoint.startsWith('http://') || cleanEndpoint.startsWith('https://')) {
+    return cleanEndpoint;
+  }
 
-  // Ensure cleanEndpoint has /api prefix unless it already starts with /api/ or /r/
+  // Ensure endpoint starts with /api or /r
   if (!cleanEndpoint.startsWith('/api/') && !cleanEndpoint.startsWith('/r/') && cleanEndpoint !== '/api') {
     cleanEndpoint = `/api${cleanEndpoint}`;
   }
 
-  return `${normalizedBase}${cleanEndpoint}`;
+  if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
+    const normalizedBase = API_BASE_URL.replace(/\/+$/, '').replace(/\/api$/, '');
+    return `${normalizedBase}${cleanEndpoint}`;
+  }
+
+  return cleanEndpoint;
 }
 
 function getCsrfToken() {
