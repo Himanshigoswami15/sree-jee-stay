@@ -21,10 +21,29 @@ let lastFailedAt = 0;
 
 /**
  * Ensure active database connection before executing service queries
+ * Handles all Mongoose connection states:
+ * 0 = disconnected -> trigger connectDB()
+ * 1 = connected -> return true immediately
+ * 2 = connecting -> wait for in-flight connection promise
+ * 3 = disconnecting -> wait and reconnect
  */
 export async function ensureDbConnected() {
-  if (mongoose.connection.readyState === 1) return true;
-  return await connectDB(3, 1000);
+  switch (mongoose.connection.readyState) {
+    case 1:
+      return true;
+    case 2:
+      if (connectionPromise) {
+        return await connectionPromise;
+      }
+      let elapsed = 0;
+      while (mongoose.connection.readyState === 2 && elapsed < 5000) {
+        await new Promise((r) => setTimeout(r, 200));
+        elapsed += 200;
+      }
+      return mongoose.connection.readyState === 1;
+    default:
+      return await connectDB(3, 1000);
+  }
 }
 
 /**
