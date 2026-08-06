@@ -164,7 +164,7 @@ async function main() {
 
   const queryStart = Date.now();
   try {
-    await Hotel.findOne({ hotelId: 'sree-jee-stay' }).lean();
+    await Hotel.findOne({}).lean();
   } catch (e) {}
   const queryLatency = Date.now() - queryStart;
 

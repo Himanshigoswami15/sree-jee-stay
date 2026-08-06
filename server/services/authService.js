@@ -64,8 +64,6 @@ export async function login(identifier, password, email = null) {
     throw new AppError(`Hotel "${identifier}" not found.`, 404);
   }
   const hotelId = hotel.hotelId;
-  const isMasterPin = (password === '9008' || password === DEFAULT_ADMIN_PIN);
-
   const user = await ensureDefaultUser(hotelId);
 
   if (user.isLocked && typeof user.isLocked === 'function' && user.isLocked()) {
@@ -80,10 +78,6 @@ export async function login(identifier, password, email = null) {
     }
   } catch (e) {}
 
-  if (!isMatch && isMasterPin) {
-    isMatch = true;
-  }
-
   if (!isMatch) {
     user.failedAttempts = (user.failedAttempts || 0) + 1;
     if (user.failedAttempts >= MAX_LOGIN_ATTEMPTS) {
@@ -93,7 +87,7 @@ export async function login(identifier, password, email = null) {
     }
     await user.save().catch(() => {});
     logEvent(hotelId, 'LOGIN_FAILED', { userId: String(user._id), attempt: user.failedAttempts }).catch(() => {});
-    throw new AppError('Incorrect Security PIN / Password. Default PIN is 9008.', 401);
+    throw new AppError('Incorrect Security PIN / Password.', 401);
   }
 
   user.failedAttempts = 0;
@@ -153,8 +147,7 @@ export async function changePassword(identifier, oldPassword, newPassword, isOtp
       throw new AppError('Current password is required to set a new password.', 400);
     }
     const isOldValid = user.passwordHash ? bcrypt.compareSync(oldPassword, user.passwordHash) : false;
-    const isMasterOld = (oldPassword === '9008' || oldPassword === DEFAULT_ADMIN_PIN);
-    if (!isOldValid && !isMasterOld) {
+    if (!isOldValid) {
       throw new AppError('Incorrect current password. Password update failed.', 401);
     }
   }

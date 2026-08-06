@@ -15,9 +15,11 @@ export async function generateQr(req, res, next) {
     }
 
     const qr = await qrService.getOrCreateQrToken(identifier);
-    const host = req.headers.host || 'localhost:8080';
+    const configuredClientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/+$/, '') : null;
+    const forwardHost = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:8080';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
-    const targetUrl = `${protocol}://${host}/r/${hotel.hotelSlug}`;
+    const baseUrl = configuredClientUrl || `${protocol}://${forwardHost}`;
+    const targetUrl = `${baseUrl}/r/${hotel.hotelSlug}`;
 
     const pngUrl = await qrService.generateQrPngDataUrl(targetUrl);
     const svgString = await qrService.generateQrSvgString(targetUrl);
@@ -86,9 +88,11 @@ export async function downloadPng(req, res, next) {
       throw new AppError(`Hotel "${identifier}" not found.`, 404);
     }
 
-    const host = req.headers.host || 'localhost:8080';
+    const configuredClientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/+$/, '') : null;
+    const forwardHost = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:8080';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
-    const targetUrl = `${protocol}://${host}/r/${hotel.hotelSlug}`;
+    const baseUrl = configuredClientUrl || `${protocol}://${forwardHost}`;
+    const targetUrl = `${baseUrl}/r/${hotel.hotelSlug}`;
 
     const pngUrl = await qrService.generateQrPngDataUrl(targetUrl);
     const base64Data = pngUrl.replace(/^data:image\/png;base64,/, '');
@@ -114,9 +118,11 @@ export async function downloadPdf(req, res, next) {
       throw new AppError(`Hotel "${identifier}" not found.`, 404);
     }
 
-    const host = req.headers.host || 'localhost:8080';
+    const configuredClientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/+$/, '') : null;
+    const forwardHost = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:8080';
     const protocol = req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
-    const targetUrl = `${protocol}://${host}/r/${hotel.hotelSlug}`;
+    const baseUrl = configuredClientUrl || `${protocol}://${forwardHost}`;
+    const targetUrl = `${baseUrl}/r/${hotel.hotelSlug}`;
 
     const pdfBuffer = await qrService.exportPdfTentCard(hotel.hotelSlug, targetUrl);
 

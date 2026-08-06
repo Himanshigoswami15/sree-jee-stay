@@ -18,10 +18,10 @@ async function fix() {
     console.log(`  Current googlePlaceId: "${h.googlePlaceId}"`);
     console.log(`  Current googleReviewUrl: "${h.googleReviewUrl}"`);
 
-    const isSreeJeeStay = slug === 'sree-jee-stay';
+    const isPrimaryHotel = slug === 'primary-hotel';
     const isLegacySreeLink = (h.googleReviewUrl || '').includes('CTERYeDefsTREAE');
 
-    if (!isSreeJeeStay && isLegacySreeLink) {
+    if (!isPrimaryHotel && isLegacySreeLink) {
       console.log(`  ⚠️ Found legacy Sree Jee Stay link in "${slug}". Cleaning...`);
       const newUrl = generateGoogleReviewUrl(h.googlePlaceId && !h.googlePlaceId.includes('CTERYeDefsTREAE') ? h.googlePlaceId : '', name);
       

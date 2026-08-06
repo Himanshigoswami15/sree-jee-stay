@@ -33,8 +33,8 @@ export function Navigation() {
   };
 
   const handleBrandClick = () => {
-    if (registeredHotels && registeredHotels.length > 0) {
-      navigate(`/${registeredHotels[0].hotelSlug}`);
+    if (settings?.hotelSlug) {
+      navigate(`/${settings.hotelSlug}`);
     } else {
       navigate('/');
     }

@@ -8,14 +8,14 @@ async function runSeeder() {
   console.log('\n🌱 --- JJ REVIEW SYSTEM DEMO DATA SEEDER ---');
   await connectDB();
 
-  const hotelId = 'sree-jee-stay';
+  const hotelId = 'hotel-demo';
 
   const sampleFeedbacks = [
     {
       hotelId,
       rating: 5,
       tags: ['clean', 'wifi', 'staff', 'breakfast'],
-      reviewText: 'Had a fantastic experience during our stay at Sree Jee Stay! The room was impeccably clean, fresh, and spotless. The Wi-Fi was super fast and reliable for work and video streaming. Will definitely come back and recommend to friends!',
+      reviewText: 'Had a fantastic experience during our stay! The room was impeccably clean, fresh, and spotless. The Wi-Fi was super fast and reliable for work and video streaming. Will definitely come back and recommend to friends!',
       guestContact: '+91 98765 11111',
       postedPublic: true,
       alertSent: false,

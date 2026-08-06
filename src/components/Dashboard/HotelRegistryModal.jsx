@@ -47,10 +47,16 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
       .replace(/[^a-z0-9-]+/g, '')
       .replace(/(^-|-$)/g, '') || 'new-business';
 
+    if (!form.password || form.password.trim().length < 4) {
+      setError('Manager Security PIN / Password must be at least 4 characters long.');
+      setIsSubmitting(false);
+      return;
+    }
+
     const payload = {
       ...form,
       hotelSlug: cleanSlug,
-      password: form.password || '9008',
+      password: form.password.trim(),
     };
 
     try {

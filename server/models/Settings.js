@@ -127,4 +127,6 @@ const settingsSchema = new mongoose.Schema({
   optimisticConcurrency: true,
 });
 
+settingsSchema.index({ hotelSlug: 1 });
+
 export const Settings = mongoose.model('Settings', settingsSchema);

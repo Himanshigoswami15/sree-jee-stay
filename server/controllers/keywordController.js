@@ -17,9 +17,9 @@ export async function list(req, res, next) {
 
 export async function add(req, res, next) {
   try {
-    const identifier = req.hotelId || req.body.hotelSlug || req.body.hotelId;
+    const identifier = req.hotelId || req.user?.hotelId;
     if (!identifier) {
-      throw new AppError('Hotel identifier is required.', 400);
+      throw new AppError('Authentication required to add keyword tag.', 401);
     }
 
     const { type, ...tagData } = req.body;
@@ -32,9 +32,9 @@ export async function add(req, res, next) {
 
 export async function remove(req, res, next) {
   try {
-    const identifier = req.hotelId || req.query.hotelSlug || req.body.hotelSlug;
+    const identifier = req.hotelId || req.user?.hotelId;
     if (!identifier) {
-      throw new AppError('Hotel identifier is required.', 400);
+      throw new AppError('Authentication required to delete keyword tag.', 401);
     }
 
     const { tagId } = req.params;
@@ -48,9 +48,9 @@ export async function remove(req, res, next) {
 
 export async function update(req, res, next) {
   try {
-    const identifier = req.hotelId || req.body.hotelSlug || req.body.hotelId;
+    const identifier = req.hotelId || req.user?.hotelId;
     if (!identifier) {
-      throw new AppError('Hotel identifier is required.', 400);
+      throw new AppError('Authentication required to update keyword tag.', 401);
     }
 
     const { tagId } = req.params;
@@ -64,9 +64,9 @@ export async function update(req, res, next) {
 
 export async function reorder(req, res, next) {
   try {
-    const identifier = req.hotelId || req.body.hotelSlug || req.body.hotelId;
+    const identifier = req.hotelId || req.user?.hotelId;
     if (!identifier) {
-      throw new AppError('Hotel identifier is required.', 400);
+      throw new AppError('Authentication required to reorder keyword tags.', 401);
     }
 
     const { type = 'positive', tagIds = [] } = req.body;
@@ -79,9 +79,9 @@ export async function reorder(req, res, next) {
 
 export async function applyTemplate(req, res, next) {
   try {
-    const identifier = req.hotelId || req.body.hotelSlug || req.body.hotelId;
+    const identifier = req.hotelId || req.user?.hotelId;
     if (!identifier) {
-      throw new AppError('Hotel identifier is required.', 400);
+      throw new AppError('Authentication required to apply keyword template.', 401);
     }
 
     const { templateKey, keywords } = req.body;

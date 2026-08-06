@@ -1,18 +1,18 @@
 import { generateGoogleReviewUrl } from './googleReview.js';
 
-export function getActiveProviders(tenantSettings) {
-  if (!tenantSettings || !tenantSettings.providers) {
+export function getActiveProviders(hotelSettings) {
+  if (!hotelSettings || !hotelSettings.providers) {
     return [
       {
         type: 'google',
         name: 'Google',
-        url: tenantSettings?.googleReviewUrl || generateGoogleReviewUrl(tenantSettings?.googlePlaceId, tenantSettings?.hotelName || tenantSettings?.name),
+        url: hotelSettings?.googleReviewUrl || generateGoogleReviewUrl(hotelSettings?.googlePlaceId, hotelSettings?.hotelName || hotelSettings?.name),
         isEnabled: true
       }
     ];
   }
 
-  return tenantSettings.providers
+  return hotelSettings.providers
     .filter(provider => provider.isEnabled)
     .map(provider => {
       let url = '';
@@ -20,11 +20,11 @@ export function getActiveProviders(tenantSettings) {
 
       switch (provider.type) {
         case 'google':
-          url = tenantSettings.googleReviewUrl || generateGoogleReviewUrl(tenantSettings.googlePlaceId, tenantSettings.hotelName || tenantSettings.name);
+          url = hotelSettings.googleReviewUrl || generateGoogleReviewUrl(hotelSettings.googlePlaceId, hotelSettings.hotelName || hotelSettings.name);
           name = 'Google';
           break;
         case 'tripadvisor':
-          url = tenantSettings.tripadvisorReviewUrl || 'https://www.tripadvisor.com/UserReview';
+          url = hotelSettings.tripadvisorReviewUrl || 'https://www.tripadvisor.com/UserReview';
           name = 'TripAdvisor';
           break;
         case 'booking':

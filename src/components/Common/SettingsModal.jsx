@@ -4,7 +4,7 @@ import { useFeedback } from '../../context/FeedbackContext';
 import { extractPlaceId, generateGoogleReviewUrl, getUrlType } from '../../utils/googleReview';
 
 export function SettingsModal({ isOpen, onClose }) {
-  const { settings, updateSettings, changeManagerPassword, resetToDemoData } = useFeedback();
+  const { settings, updateSettings, changeManagerPassword, resetHotelData } = useFeedback();
 
   const [formState, setFormState] = useState(settings);
   const [showPin, setShowPin] = useState(false);
@@ -95,9 +95,9 @@ export function SettingsModal({ isOpen, onClose }) {
     }
   };
 
-  const handleReset = () => {
-    if (window.confirm('Reset all feedback submissions & settings back to initial demo data?')) {
-      resetToDemoData();
+  const handleReset = async () => {
+    if (window.confirm('Reset all feedback submissions & settings for this hotel back to clean defaults?')) {
+      await resetHotelData();
       onClose();
     }
   };
@@ -229,7 +229,7 @@ export function SettingsModal({ isOpen, onClose }) {
               <ShieldCheck size={16} color="#4f46e5" />
               <span>Change Manager Password / Security PIN (Database Hashed)</span>
             </div>
-            
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.8rem' }}>Current Password / PIN:</label>
@@ -443,7 +443,7 @@ export function SettingsModal({ isOpen, onClose }) {
               style={{ width: 'auto', padding: '0.65rem 1rem', color: '#fca5a5' }}
               onClick={handleReset}
             >
-              <RotateCcw size={14} /> Reset Demo Data
+              <RotateCcw size={14} /> Reset Business Data
             </button>
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>

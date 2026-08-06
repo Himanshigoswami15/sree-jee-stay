@@ -7,7 +7,43 @@ import { apiClient } from '../services/apiClient';
 
 const FeedbackContext = createContext();
 
+function parseJwtPayload(token) {
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    return JSON.parse(atob(base64));
+  } catch (e) {
+    return null;
+  }
+}
+
+function purgeTokenIfMismatch(hotelSlug) {
+  if (typeof window === 'undefined' || !hotelSlug) return;
+  const token = localStorage.getItem('jj_access_token');
+  if (!token) return;
+
+  const payload = parseJwtPayload(token);
+  if (!payload) {
+    console.log(`[purgeTokenIfMismatch] Removing non-JWT token for "${hotelSlug}"`);
+    localStorage.removeItem('jj_access_token');
+    return;
+  }
+
+  const tokenHotel = (payload.hotelSlug || payload.hotelId || '').toLowerCase();
+  if (tokenHotel && tokenHotel !== String(hotelSlug).toLowerCase()) {
+    console.log(`[purgeTokenIfMismatch] Removing mismatched token for "${hotelSlug}" (token hotel: "${tokenHotel}")`);
+    localStorage.removeItem('jj_access_token');
+  }
+}
+
 export function FeedbackProvider({ children, hotelSlug }) {
+  purgeTokenIfMismatch(hotelSlug);
+
   const [feedbacks, setFeedbacks] = useState([]);
   const [settings, setSettings] = useState(() => getHotelConfig(hotelSlug) || {});
   const [keywords, setKeywords] = useState(RATING_KEYWORDS);
@@ -82,6 +118,9 @@ export function FeedbackProvider({ children, hotelSlug }) {
     if (prevHotelSlugRef.current !== hotelSlug) {
       prevHotelSlugRef.current = hotelSlug;
       setIsManagerAuthenticated(false);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('jj_access_token');
+      }
       logoutApi();
       if (activeTab === 'dashboard') {
         setIsPinModalOpen(true);
@@ -103,6 +142,10 @@ export function FeedbackProvider({ children, hotelSlug }) {
         setIsManagerAuthenticated(true);
       } else {
         setIsManagerAuthenticated(false);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('jj_access_token');
+        }
+        logoutApi().catch(() => {});
       }
     });
 
@@ -201,6 +244,9 @@ export function FeedbackProvider({ children, hotelSlug }) {
   };
 
   const lockDashboard = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('jj_access_token');
+    }
     logoutApi();
     setIsManagerAuthenticated(false);
     setActiveTab('guest');
@@ -377,6 +423,24 @@ export function FeedbackProvider({ children, hotelSlug }) {
     return { success: false, error: res?.error || 'Failed to update settings in database.' };
   };
 
+  const resetHotelData = async () => {
+    const res = await apiClient('/api/settings/reset', {
+      method: 'POST',
+      body: JSON.stringify({ hotelSlug }),
+    });
+
+    if (res && res.success) {
+      if (res.settings) setSettings(res.settings);
+      if (res.keywords) setKeywords(res.keywords);
+      setFeedbacks([]);
+      setManagerAlertToast(null);
+      fetchData();
+      return { success: true, message: res.message };
+    }
+
+    return { success: false, error: res?.error || 'Failed to reset hotel data.' };
+  };
+
   const registerHotel = (newHotel) => {
     if (!newHotel || (!newHotel.hotelSlug && !newHotel.slug)) return;
     const slug = newHotel.hotelSlug || newHotel.slug;
@@ -421,6 +485,8 @@ export function FeedbackProvider({ children, hotelSlug }) {
         applyIndustryTemplate,
         resolveAlert,
         updateSettings,
+        resetHotelData,
+        resetToDemoData: resetHotelData,
         refreshData: fetchData,
       }}
     >
@@ -462,6 +528,7 @@ export function useFeedback() {
       applyIndustryTemplate: async () => ({ success: false }),
       resolveAlert: async () => {},
       updateSettings: async () => ({ success: false }),
+      resetToDemoData: async () => ({ success: false }),
       refreshData: () => {},
     };
   }

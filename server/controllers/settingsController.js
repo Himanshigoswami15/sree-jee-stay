@@ -17,11 +17,24 @@ export async function get(req, res, next) {
 
 export async function update(req, res, next) {
   try {
-    const identifier = req.hotelId || req.body.hotelSlug || req.body.hotelId;
+    const identifier = req.hotelId || req.user?.hotelId;
     if (!identifier) {
-      throw new AppError('hotelSlug or hotelId is required.', 400);
+      throw new AppError('Authentication required to update hotel settings.', 401);
     }
     const result = await settingsService.updateSettings(identifier, req.body, req);
+    return res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function resetData(req, res, next) {
+  try {
+    const identifier = req.hotelId || req.user?.hotelId;
+    if (!identifier) {
+      throw new AppError('Authentication required to reset hotel data.', 401);
+    }
+    const result = await settingsService.resetHotelData(identifier, req);
     return res.status(200).json(result);
   } catch (err) {
     next(err);

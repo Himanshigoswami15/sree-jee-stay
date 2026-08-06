@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { Hotel, Settings, User, Keyword } from '../models/index.js';
+import { Hotel, Settings, User, Keyword, QrCode, Analytics } from '../models/index.js';
 import { logger } from '../utils/logger.js';
 import { BCRYPT_SALT_ROUNDS, DEFAULT_ADMIN_PIN } from '../config/constants.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
@@ -185,7 +185,22 @@ export async function onboardHotel(data) {
         sortOrder: idx,
       });
     });
-    await Keyword.insertMany(docs);
+    // 5. Create Default QR Code Record
+    await QrCode.create({
+      hotel: createdHotel._id,
+      hotelId,
+      uniqueToken: slug,
+      title: `${name} Permanent QR`,
+      status: 'active',
+    }).catch(() => {});
+
+    // 6. Create Initial Analytics Record
+    await Analytics.create({
+      hotelId,
+      date: new Date(),
+      totalReviews: 0,
+      avgRating: 0,
+    }).catch(() => {});
 
     logger.info(`🎉 [Master Hotel Registry] Hotel "${name}" (slug: ${slug}) onboarded successfully!`);
 
@@ -205,13 +220,15 @@ export async function onboardHotel(data) {
   } catch (err) {
     logger.error(`❌ [HotelOnboarding Failed] Rolling back creation for hotel "${hotelId}": ${err.message}`);
 
-    // Atomic Rollback Cleanup
+    // Atomic Rollback Cleanup across all collections
     if (createdHotel) {
       await Promise.all([
         Hotel.deleteOne({ hotelId }),
         Settings.deleteOne({ hotelId }),
         User.deleteMany({ hotelId }),
         Keyword.deleteMany({ hotelId }),
+        QrCode.deleteMany({ hotelId }),
+        Analytics.deleteMany({ hotelId }),
       ]).catch(() => {});
     }
 

@@ -1,7 +1,4 @@
-let rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || 'https://sree-jee-stay.onrender.com/api';
-if (rawApiUrl.includes('jj-review-system.onrender.com')) {
-  rawApiUrl = rawApiUrl.replace('jj-review-system.onrender.com', 'sree-jee-stay.onrender.com');
-}
+let rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || '/api';
 const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');
 const CSRF_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -29,6 +26,49 @@ function getCsrfToken() {
   }
 }
 
+function parseJwtPayload(token) {
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    return JSON.parse(atob(base64));
+  } catch (e) {
+    return null;
+  }
+}
+
+function isTokenMatchingCurrentRoute(token) {
+  if (!token || typeof window === 'undefined') return false;
+  const payload = parseJwtPayload(token);
+  if (!payload) return false;
+
+  const currentSlug = window.location.pathname.split('/')[1]?.toLowerCase();
+  if (!currentSlug || currentSlug === 'r' || currentSlug === 'api') return true;
+
+  const tokenHotel = (payload.hotelSlug || payload.hotelId || '').toLowerCase();
+  if (tokenHotel && tokenHotel !== currentSlug) {
+    return false;
+  }
+  return true;
+}
+
+function setScopedAccessToken(token) {
+  if (typeof window === 'undefined') return;
+  if (!token) {
+    localStorage.removeItem('jj_access_token');
+    return;
+  }
+  if (isTokenMatchingCurrentRoute(token)) {
+    localStorage.setItem('jj_access_token', token);
+  } else {
+    localStorage.removeItem('jj_access_token');
+  }
+}
+
 export async function apiClient(endpoint, options = {}) {
   let fullUrl = getFullUrl(endpoint);
 
@@ -46,8 +86,12 @@ export async function apiClient(endpoint, options = {}) {
   };
 
   const savedToken = typeof window !== 'undefined' ? localStorage.getItem('jj_access_token') : null;
-  if (savedToken && !headers['Authorization']) {
-    headers['Authorization'] = `Bearer ${savedToken}`;
+  if (savedToken && isTokenMatchingCurrentRoute(savedToken)) {
+    if (!headers['Authorization']) {
+      headers['Authorization'] = `Bearer ${savedToken}`;
+    }
+  } else if (savedToken) {
+    localStorage.removeItem('jj_access_token');
   }
 
   if (!CSRF_SAFE_METHODS.has(options.method || 'GET')) {
@@ -81,8 +125,10 @@ export async function apiClient(endpoint, options = {}) {
       if (refreshRes.ok) {
         const refreshData = await refreshRes.json().catch(() => ({}));
         if (refreshData?.accessToken && typeof window !== 'undefined') {
-          localStorage.setItem('jj_access_token', refreshData.accessToken);
-          config.headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
+          setScopedAccessToken(refreshData.accessToken);
+          if (isTokenMatchingCurrentRoute(refreshData.accessToken)) {
+            config.headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
+          }
         }
         config._isRetry = true;
         const csrfToken = getCsrfToken();
@@ -100,7 +146,7 @@ export async function apiClient(endpoint, options = {}) {
     }
 
     if (data?.accessToken && typeof window !== 'undefined') {
-      localStorage.setItem('jj_access_token', data.accessToken);
+      setScopedAccessToken(data.accessToken);
     }
 
     if (!response.ok) {

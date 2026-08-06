@@ -12,9 +12,9 @@ async function verify() {
   console.log('✅ Connected to MongoDB Atlas.');
 
   const testHotels = [
-    { name: 'Sree Jee Stay', hotelSlug: 'sree-jee-stay', googlePlaceId: 'ChIJSreeJeeStayVaranasiDemo1' },
-    { name: 'JJ Elevate', hotelSlug: 'jj-elevate', googlePlaceId: 'ChIJJJElevateDemo2' },
-    { name: 'ABC Resort', hotelSlug: 'abc-resort', googlePlaceId: 'ChIJABCResortDemo3' },
+    { name: 'Hotel Alpha', hotelSlug: 'hotel-alpha', googlePlaceId: 'ChIJHotelAlphaPlaceId1' },
+    { name: 'Hotel Beta', hotelSlug: 'hotel-beta', googlePlaceId: 'ChIJHotelBetaPlaceId2' },
+    { name: 'Hotel Gamma', hotelSlug: 'hotel-gamma', googlePlaceId: 'ChIJHotelGammaPlaceId3' },
   ];
 
   // 1. Clean previous test entries

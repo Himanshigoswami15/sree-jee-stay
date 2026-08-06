@@ -138,17 +138,17 @@ function QrRedirectWrapper() {
 function RootRedirector() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [hotels, setHotels] = useState([]);
   const [isRegistryOpen, setIsRegistryOpen] = useState(false);
 
   useEffect(() => {
     apiClient(`/api/hotels?_t=${Date.now()}`).then((res) => {
-      if (res && res.success && Array.isArray(res.hotels) && res.hotels.length > 0) {
-        navigate(`/${res.hotels[0].hotelSlug}`, { replace: true });
-      } else {
-        setLoading(false);
+      if (res && res.success && Array.isArray(res.hotels)) {
+        setHotels(res.hotels);
       }
+      setLoading(false);
     }).catch(() => setLoading(false));
-  }, [navigate]);
+  }, []);
 
   if (loading) {
     return (
@@ -159,13 +159,45 @@ function RootRedirector() {
   }
 
   return (
-    <div style={{ maxWidth: '520px', margin: '4rem auto', padding: '2rem', textAlign: 'center', background: '#ffffff', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 12px 30px rgba(0,0,0,0.06)' }}>
+    <div style={{ maxWidth: '560px', margin: '3rem auto', padding: '2rem', textAlign: 'center', background: '#ffffff', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 12px 30px rgba(0,0,0,0.06)' }}>
       <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>
         JJ Review System
       </h1>
       <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-        Welcome to the Enterprise Hotel Review & QR Management Platform. No hotels are currently onboarded in MongoDB Atlas.
+        Enterprise Multi-Client Guest Review & Analytics Platform. Select a registered hotel or onboard a new business:
       </p>
+
+      {hotels.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', textAlign: 'left' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+            Registered Hotel Portals ({hotels.length})
+          </div>
+          {hotels.map((h) => (
+            <button
+              key={h.hotelSlug || h.hotelId}
+              type="button"
+              onClick={() => navigate(`/${h.hotelSlug || h.hotelId}`)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.85rem 1rem',
+                background: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                borderRadius: '14px',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem' }}>{h.name}</div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>/{h.hotelSlug || h.hotelId}</div>
+              </div>
+              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#2563eb' }}>Open Portal &rarr;</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <button
         type="button"
@@ -173,7 +205,7 @@ function RootRedirector() {
         onClick={() => setIsRegistryOpen(true)}
         style={{ width: '100%', padding: '0.85rem' }}
       >
-        + Add New Hotel (2 Minute Setup)
+        + Add New Hotel Business
       </button>
 
       <HotelRegistryModal

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Settings, Keyword, Hotel } from '../models/index.js';
+import { Settings, Keyword, Hotel, Feedback, Notification } from '../models/index.js';
 import { getHotel } from './hotelService.js';
 import { logEvent } from './auditService.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
@@ -268,14 +268,15 @@ export async function addKeyword(identifier, type, tagData, req = null) {
 export async function deleteKeyword(identifier, type, tagId, req = null) {
   if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  const hotelId = hotel ? hotel.hotelId : String(identifier).toLowerCase().trim();
+  if (!hotelId) throw new AppError('Valid hotel identifier is required.', 400);
 
   await Keyword.deleteMany({
-    $or: [{ hotelId }, { hotelId: identifier }],
+    hotelId,
     tagId,
   });
 
-  const updatedGroup = await getKeywords(identifier);
+  const updatedGroup = await getKeywords(hotelId);
 
   await logEvent(hotelId, 'KEYWORD_DELETED', { type, tagId }, req).catch(() => {});
   broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED', { keywords: updatedGroup });
@@ -285,11 +286,12 @@ export async function deleteKeyword(identifier, type, tagId, req = null) {
 export async function updateKeyword(identifier, type, tagId, tagData, req = null) {
   if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  const hotelId = hotel ? hotel.hotelId : String(identifier).toLowerCase().trim();
+  if (!hotelId) throw new AppError('Valid hotel identifier is required.', 400);
 
   await Keyword.updateMany(
     {
-      $or: [{ hotelId }, { hotelId: identifier }],
+      hotelId,
       tagId,
     },
     {
@@ -302,7 +304,7 @@ export async function updateKeyword(identifier, type, tagId, tagData, req = null
     }
   );
 
-  const updatedGroup = await getKeywords(identifier);
+  const updatedGroup = await getKeywords(hotelId);
 
   await logEvent(hotelId, 'KEYWORD_UPDATED', { type, tagId, label: tagData.label }, req).catch(() => {});
   broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED', { keywords: updatedGroup });
@@ -317,12 +319,13 @@ export async function updateKeyword(identifier, type, tagId, tagData, req = null
 export async function reorderKeywords(identifier, type, tagIds = [], req = null) {
   if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  const hotelId = hotel ? hotel.hotelId : String(identifier).toLowerCase().trim();
+  if (!hotelId) throw new AppError('Valid hotel identifier is required.', 400);
 
   const ops = tagIds.map((tagId, index) => ({
     updateMany: {
       filter: {
-        $or: [{ hotelId }, { hotelId: identifier }],
+        hotelId,
         tagId,
       },
       update: { $set: { sortOrder: index } },
@@ -341,10 +344,11 @@ export async function reorderKeywords(identifier, type, tagIds = [], req = null)
 export async function applyKeywordTemplate(identifier, templateKey, customKeywords = [], req = null) {
   if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
-  const hotelId = hotel ? hotel.hotelId : identifier;
+  const hotelId = hotel ? hotel.hotelId : String(identifier).toLowerCase().trim();
+  if (!hotelId) throw new AppError('Valid hotel identifier is required.', 400);
 
   await Keyword.deleteMany({
-    $or: [{ hotelId }, { hotelId: identifier }]
+    hotelId,
   });
 
   const docs = customKeywords.map((item, idx) => ({
@@ -363,9 +367,101 @@ export async function applyKeywordTemplate(identifier, templateKey, customKeywor
     await Keyword.insertMany(docs);
   }
 
-  const updatedGroup = await getKeywords(identifier);
+  const updatedGroup = await getKeywords(hotelId);
 
   await logEvent(hotelId, 'KEYWORD_TEMPLATE_APPLIED', { templateKey, count: customKeywords.length }, req).catch(() => {});
   broadcastSystemEvent(hotelId, 'KEYWORDS_UPDATED', { keywords: updatedGroup });
   return { success: true, count: customKeywords.length, keywords: updatedGroup };
+}
+
+/**
+ * Reset all business data for a single hotel back to clean defaults.
+ * Deletes: feedbacks, notifications.
+ * Resets: settings to defaults, keywords to default RATING_KEYWORDS.
+ * Scoped strictly to hotelId — never touches other hotels.
+ */
+export async function resetHotelData(identifier, req = null) {
+  if (!identifier) throw new AppError('Hotel identifier is required.', 400);
+  const hotel = await getHotel(identifier);
+  if (!hotel) throw new AppError(`Hotel "${identifier}" not found.`, 404);
+
+  const hotelId = hotel.hotelId;
+  const hotelSlug = hotel.hotelSlug || hotelId;
+
+  // 1. Delete all feedbacks for this hotel
+  const feedbackResult = await Feedback.deleteMany({ hotelId });
+  logger.info(`[ResetHotelData] Deleted ${feedbackResult.deletedCount} feedbacks for "${hotelId}".`);
+
+  // 2. Delete all notifications for this hotel
+  const notifResult = await Notification.deleteMany({ hotelId });
+  logger.info(`[ResetHotelData] Deleted ${notifResult.deletedCount} notifications for "${hotelId}".`);
+
+  // 3. Reset settings to clean defaults (preserve googleReviewUrl, googlePlaceId, name)
+  await Settings.updateOne(
+    { hotelId },
+    {
+      $set: {
+        alertThreshold: 3,
+        preventDuplicateReviews: true,
+        tone: 'friendly',
+        reviewLength: 'short',
+        includeEmojis: true,
+        mentionStaff: true,
+        mentionCleanliness: true,
+        mentionFood: true,
+        mentionLocation: true,
+        customPrompt: '',
+        footerText: '',
+        language: 'en',
+      },
+    }
+  );
+  logger.info(`[ResetHotelData] Settings reset to defaults for "${hotelId}".`);
+
+  // 4. Delete all custom keywords and re-insert default RATING_KEYWORDS
+  await Keyword.deleteMany({ hotelId });
+
+  const defaultKeywords = [
+    ...RATING_KEYWORDS.positive.map((k, idx) => ({
+      hotelId,
+      type: 'positive',
+      tagId: k.id,
+      label: k.label,
+      category: k.category || 'General',
+      snippet: k.snippet || k.label,
+      snippets: k.snippets || [k.snippet || k.label],
+      sortOrder: idx,
+      isActive: true,
+    })),
+    ...RATING_KEYWORDS.negative.map((k, idx) => ({
+      hotelId,
+      type: 'negative',
+      tagId: k.id,
+      label: k.label,
+      category: k.category || 'General',
+      snippet: k.snippet || k.label,
+      snippets: k.snippets || [k.snippet || k.label],
+      sortOrder: idx,
+      isActive: true,
+    })),
+  ];
+
+  if (defaultKeywords.length > 0) {
+    await Keyword.insertMany(defaultKeywords);
+  }
+  logger.info(`[ResetHotelData] Re-inserted ${defaultKeywords.length} default keywords for "${hotelId}".`);
+
+  // 5. Fetch fresh state to return
+  const freshSettings = await getSettings(hotelId);
+  const freshKeywords = await getKeywords(hotelId);
+
+  await logEvent(hotelId, 'HOTEL_DATA_RESET', { feedbacksDeleted: feedbackResult.deletedCount }, req).catch(() => {});
+  broadcastSystemEvent(hotelSlug, 'HOTEL_RESET', { settings: freshSettings, keywords: freshKeywords });
+
+  return {
+    success: true,
+    message: `All data for "${hotel.name}" has been reset to defaults.`,
+    settings: freshSettings,
+    keywords: freshKeywords,
+  };
 }

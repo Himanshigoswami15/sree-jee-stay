@@ -3,8 +3,6 @@
  * Direct Google Review URL for JJ Review System.
  */
 
-export const GOOGLE_SYDNEY_DEMO_ID = 'ChIJN1t_tDeuEmsRUsoyG83frY4';
-
 export const GOOGLE_PLACE_ID = '';
 
 /**
@@ -38,7 +36,7 @@ export function generateGoogleReviewUrl(placeIdOrUrl = '', hotelName = '') {
 
   if (input) {
     const extractedId = extractPlaceId(input);
-    if (extractedId && extractedId !== GOOGLE_SYDNEY_DEMO_ID) {
+    if (extractedId) {
       return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(extractedId)}`;
     }
 
@@ -46,11 +44,7 @@ export function generateGoogleReviewUrl(placeIdOrUrl = '', hotelName = '') {
       return input;
     }
 
-    if (
-      input && 
-      input !== GOOGLE_SYDNEY_DEMO_ID && 
-      input !== 'YOUR_GOOGLE_PLACE_ID_HERE'
-    ) {
+    if (input && input !== 'YOUR_GOOGLE_PLACE_ID_HERE') {
       return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(input)}`;
     }
   }

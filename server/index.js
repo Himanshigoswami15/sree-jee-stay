@@ -87,7 +87,7 @@ if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
 }
 
-// SPA fallback for non-API routes (e.g. /sree-jee-stay, /jj-elevates)
+// SPA fallback for non-API routes (e.g. /hotel-slug)
 app.get('{*path}', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/r/')) {
     return next();

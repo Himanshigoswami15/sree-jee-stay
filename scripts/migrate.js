@@ -12,8 +12,8 @@ async function runMigration() {
   await connectDB();
 
   const hotelList = [
-    { hotelId: 'sree-jee-stay', hotelSlug: 'sree-jee-stay', name: 'Sree Jee Stay - Homestay in Varanasi' },
-    { hotelId: 'demo', hotelSlug: 'demo', name: 'Sree Jee Stay - Homestay in Varanasi' },
+    { hotelId: 'hotel-alpha', hotelSlug: 'hotel-alpha', name: 'Hotel Alpha Resort' },
+    { hotelId: 'hotel-beta', hotelSlug: 'hotel-beta', name: 'Hotel Beta Inn' },
   ];
 
   for (const hotelInfo of hotelList) {
