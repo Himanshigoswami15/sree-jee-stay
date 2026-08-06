@@ -71,12 +71,21 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.get('/api/db-debug', async (_req, res) => {
+  let connError = null;
+  try {
+    await ensureDbConnected();
+  } catch (err) {
+    connError = err.message;
+  }
+  const dbStatus = getDbStatus();
   return res.json({
     readyState: mongoose.connection.readyState,
     host: mongoose.connection.host || null,
     db: mongoose.connection.name || null,
     models: mongoose.modelNames(),
     uriExists: !!process.env.MONGODB_URI,
+    maskedUri: dbStatus?.maskedUri || null,
+    connectionError: connError || dbStatus?.lastError || null,
   });
 });
 

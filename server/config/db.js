@@ -96,8 +96,10 @@ export async function connectDB(retries = 3, delay = 1000) {
         await mongoose.connect(MONGODB_URI, MONGOOSE_OPTIONS);
         logger.info(`[MongoDB] ✅ Connected successfully to: ${maskedUri} | Host: ${mongoose.connection.host || 'Atlas'} | Database: ${mongoose.connection.name}`);
         lastFailedAt = 0;
+        lastConnectionError = null;
         return true;
       } catch (err) {
+        lastConnectionError = err.message;
         logger.warn(`[MongoDB] ❌ Connection attempt ${attempt} failed: ${err.message}`);
         if (attempt < retries) {
           logger.info(`[MongoDB] Retrying in ${delay}ms...`);
@@ -117,6 +119,8 @@ export async function connectDB(retries = 3, delay = 1000) {
   return connectionPromise;
 }
 
+let lastConnectionError = null;
+
 export function getDbStatus() {
   const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
   const stateCode = mongoose.connection.readyState;
@@ -132,6 +136,7 @@ export function getDbStatus() {
     isAtlas,
     hasPlaceholderUri: hasPlaceholders,
     maskedUri: MONGODB_URI.replace(/\/\/[^@]*@/, '//***:***@'),
+    lastError: lastConnectionError,
   };
 }
 
