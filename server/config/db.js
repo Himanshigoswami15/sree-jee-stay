@@ -2,9 +2,16 @@ import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
 
 const ATLAS_FALLBACK_URI = 'mongodb+srv://jjreview:JJelevate@cluster0.xiitj9c.mongodb.net/jj_review_system?retryWrites=true&w=majority&appName=Cluster0';
-const MONGODB_URI = process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('127.0.0.1') && !process.env.MONGODB_URI.includes('localhost')
-  ? process.env.MONGODB_URI
-  : ATLAS_FALLBACK_URI;
+
+function getEffectiveMongoUri() {
+  const envUri = process.env.MONGODB_URI || '';
+  if (!envUri || envUri.includes('127.0.0.1') || envUri.includes('localhost') || /<username>|<password>|<cluster>/i.test(envUri)) {
+    return ATLAS_FALLBACK_URI;
+  }
+  return envUri;
+}
+
+const MONGODB_URI = getEffectiveMongoUri();
 
 // Mongoose connection options optimized for MongoDB Atlas
 const MONGOOSE_OPTIONS = {
