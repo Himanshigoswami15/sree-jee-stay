@@ -18,6 +18,7 @@ const MONGOOSE_OPTIONS = {
 
 let connectionPromise = null;
 let lastFailedAt = 0;
+let lastConnectionError = null;
 
 /**
  * Ensure active database connection before executing service queries
@@ -118,8 +119,6 @@ export async function connectDB(retries = 3, delay = 1000) {
 
   return connectionPromise;
 }
-
-let lastConnectionError = null;
 
 export function getDbStatus() {
   const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
