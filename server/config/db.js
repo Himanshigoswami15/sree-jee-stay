@@ -20,6 +20,14 @@ let connectionPromise = null;
 let lastFailedAt = 0;
 
 /**
+ * Ensure active database connection before executing service queries
+ */
+export async function ensureDbConnected() {
+  if (mongoose.connection.readyState === 1) return true;
+  return await connectDB(3, 1000);
+}
+
+/**
  * Connect to MongoDB (Atlas or local) with state checks and retry logic
  */
 export async function connectDB(retries = 3, delay = 1000) {

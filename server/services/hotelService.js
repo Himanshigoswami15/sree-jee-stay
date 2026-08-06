@@ -6,8 +6,11 @@ import { BCRYPT_SALT_ROUNDS, DEFAULT_ADMIN_PIN } from '../config/constants.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 
+import { ensureDbConnected } from '../config/db.js';
+
 export async function getHotel(identifier) {
   if (!identifier) return null;
+  await ensureDbConnected();
   const cleanId = String(identifier).toLowerCase().trim();
 
   if (mongoose.connection.readyState === 1) {
@@ -92,6 +95,7 @@ export async function onboardHotel(data) {
   const managerEmail = (data.managerEmail || `${hotelId}@jjreviewsystem.com`).toLowerCase().trim();
   const password = data.password || DEFAULT_ADMIN_PIN;
 
+  await ensureDbConnected();
   if (mongoose.connection.readyState !== 1) {
     throw new Error('Database connection unavailable. Cannot onboard new hotel without active MongoDB Atlas connection.');
   }

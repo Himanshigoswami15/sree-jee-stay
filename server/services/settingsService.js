@@ -4,7 +4,7 @@ import { getHotel } from './hotelService.js';
 import { logEvent } from './auditService.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
-import { connectDB } from '../config/db.js';
+import { connectDB, ensureDbConnected } from '../config/db.js';
 import { logger } from '../utils/logger.js';
 import { broadcastSystemEvent } from '../utils/eventBroadcaster.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -15,9 +15,7 @@ export async function getSettings(identifier) {
   const hotelId = hotel ? hotel.hotelId : identifier;
   const hotelSlug = hotel ? (hotel.hotelSlug || hotelId) : identifier;
 
-  if (mongoose.connection.readyState !== 1) {
-    await connectDB(1, 500).catch(() => {});
-  }
+  await ensureDbConnected();
 
   if (mongoose.connection.readyState !== 1) {
     throw new AppError('Database connection unavailable.', 503);
