@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jj_review_system';
+const ATLAS_FALLBACK_URI = 'mongodb+srv://jjreview:JJelevate@cluster0.xiitj9c.mongodb.net/jj_review_system?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('127.0.0.1') && !process.env.MONGODB_URI.includes('localhost')
+  ? process.env.MONGODB_URI
+  : ATLAS_FALLBACK_URI;
 
 // Mongoose connection options optimized for MongoDB Atlas
 const MONGOOSE_OPTIONS = {
