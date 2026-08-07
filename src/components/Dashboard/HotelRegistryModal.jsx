@@ -127,17 +127,41 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          <div className="form-group">
-            <label className="form-label" style={{ fontWeight: 800 }}>Business Name:</label>
-            <input
-              type="text"
-              className="form-input"
-              value={form.name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g. Downtown Cafe / Artisan Salon / Hotel Paradise"
-              required
-              autoFocus
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 800 }}>Business Name:</label>
+              <input
+                type="text"
+                className="form-input"
+                value={form.name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="e.g. Acme Marketing / Hotel Kiran / Downtown Cafe"
+                required
+                autoFocus
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ fontWeight: 800 }}>Business Category / Industry:</label>
+              <select
+                className="form-input"
+                value={form.businessType || 'hotel'}
+                onChange={(e) => setForm({ ...form, businessType: e.target.value })}
+                style={{ fontWeight: 700 }}
+              >
+                <option value="hotel">🏨 Hotel & Lodging</option>
+                <option value="marketing">🚀 Marketing Agency</option>
+                <option value="restaurant">🍽️ Restaurant & Dining</option>
+                <option value="clinic">🩺 Clinic & Healthcare</option>
+                <option value="salon">✂️ Salon & Spa</option>
+                <option value="gym">🏋️ Gym & Fitness</option>
+                <option value="cafe">☕ Café & Bakery</option>
+                <option value="packers">🚚 Packers & Movers</option>
+                <option value="real_estate">🏠 Real Estate & Property</option>
+                <option value="consulting">💼 Professional Consulting</option>
+                <option value="other">🏢 Other Business Type</option>
+              </select>
+            </div>
           </div>
 
           <div className="form-group" style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1' }}>

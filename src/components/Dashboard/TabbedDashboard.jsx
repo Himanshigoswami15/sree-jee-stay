@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, QrCode, Save, CheckCircle2 } from 'lucide-react';
+import { Building2, QrCode, Save, CheckCircle2, Tag, Sparkles, Settings } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { QrStudio } from './QrStudio';
+import { SettingsModal } from '../Common/SettingsModal';
 import { validateGoogleReviewLink } from '../../utils/googleReview';
 import { apiClient } from '../../services/apiClient';
 
 export function TabbedDashboard() {
   const { settings, updateSettings, feedbacks } = useFeedback();
-  const [activeSection, setActiveSection] = useState('qr'); // 'qr' | 'business' | 'feedbacks'
+  const [activeSection, setActiveSection] = useState('qr'); // 'qr' | 'business'
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const [businessForm, setBusinessForm] = useState({
     hotelName: settings?.hotelName || '',
@@ -205,12 +207,39 @@ export function TabbedDashboard() {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
               <button type="submit" className="btn-primary-action" disabled={isSaving} style={{ width: 'auto', padding: '0.65rem 1.5rem' }}>
-                <Save size={16} /> {isSaving ? 'Saving...' : 'Save Hotel Settings'}
+                <Save size={16} /> {isSaving ? 'Saving...' : 'Save Business Settings'}
               </button>
             </div>
           </form>
+
+          {/* KEYWORD TAGS & INDUSTRY PRESETS CARD */}
+          <div style={{ marginTop: '1.5rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '14px', padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 800, color: '#0f172a', fontSize: '1rem' }}>
+                <Tag size={18} color="#2563eb" />
+                <span>Review Keywords & Industry Presets</span>
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: '0.25rem' }}>
+                Add custom tags (e.g. ROI Results, Fast Check-in, High ROAS), edit snippets, or apply presets for Marketing Agencies, Hotels, Restaurants & Clinics.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-primary-action"
+              onClick={() => setIsSettingsModalOpen(true)}
+              style={{ width: 'auto', padding: '0.6rem 1.25rem', background: '#2563eb', color: '#ffffff', fontSize: '0.85rem', fontWeight: 800 }}
+            >
+              <Sparkles size={15} /> Manage Keywords & Presets
+            </button>
+          </div>
         </div>
       )}
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+      />
     </div>
   );
 }

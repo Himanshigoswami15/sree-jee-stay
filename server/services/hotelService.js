@@ -4,6 +4,7 @@ import { Hotel, Settings, User, Keyword, QrCode, Analytics } from '../models/ind
 import { logger } from '../utils/logger.js';
 import { BCRYPT_SALT_ROUNDS, DEFAULT_ADMIN_PIN } from '../config/constants.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
+import { INDUSTRY_TEMPLATES } from '../../src/config/industryTemplates.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 
 import { ensureDbConnected } from '../config/db.js';
@@ -161,21 +162,41 @@ export async function onboardHotel(data) {
       tokenVersion: 0,
     });
 
-    // 4. Seed Keywords
+    // 4. Seed Keywords based on businessType or default
     const docs = [];
-    RATING_KEYWORDS.positive.forEach((item, idx) => {
-      docs.push({
-        hotel: createdHotel._id,
-        hotelId,
-        type: 'positive',
-        tagId: item.id,
-        label: item.label,
-        category: item.category || 'General',
-        snippet: item.snippet || item.label,
-        snippets: item.snippets || [],
-        sortOrder: idx,
+    const bType = (data.businessType || 'hotel').toLowerCase();
+    const templateObj = INDUSTRY_TEMPLATES[bType] || INDUSTRY_TEMPLATES.hotel;
+
+    if (templateObj && Array.isArray(templateObj.keywords) && templateObj.keywords.length > 0) {
+      templateObj.keywords.forEach((item, idx) => {
+        docs.push({
+          hotel: createdHotel._id,
+          hotelId,
+          type: 'positive',
+          tagId: item.id,
+          label: item.label,
+          category: item.category || 'General',
+          snippet: item.snippet || item.label,
+          snippets: item.snippets || [item.snippet || item.label],
+          sortOrder: idx,
+        });
       });
-    });
+    } else {
+      RATING_KEYWORDS.positive.forEach((item, idx) => {
+        docs.push({
+          hotel: createdHotel._id,
+          hotelId,
+          type: 'positive',
+          tagId: item.id,
+          label: item.label,
+          category: item.category || 'General',
+          snippet: item.snippet || item.label,
+          snippets: item.snippets || [],
+          sortOrder: idx,
+        });
+      });
+    }
+
     RATING_KEYWORDS.negative.forEach((item, idx) => {
       docs.push({
         hotel: createdHotel._id,
@@ -189,6 +210,10 @@ export async function onboardHotel(data) {
         sortOrder: idx,
       });
     });
+
+    if (docs.length > 0) {
+      await Keyword.insertMany(docs).catch(() => {});
+    }
     // 5. Create Default QR Code Record
     await QrCode.create({
       hotel: createdHotel._id,
