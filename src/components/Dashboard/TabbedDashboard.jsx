@@ -97,7 +97,7 @@ export function TabbedDashboard() {
             onClick={() => setActiveSection('qr')}
             style={{ fontSize: '0.85rem', padding: '0.55rem 1rem', fontWeight: 700, whiteSpace: 'nowrap' }}
           >
-            <QrCode size={16} color="#2563eb" /> 1. Paste Review Link & Unique QR Studio
+            <QrCode size={16} color={activeSection === 'qr' ? '#ffffff' : '#374151'} /> 1. Paste Review Link & Unique QR Studio
           </button>
 
           <button
@@ -106,7 +106,7 @@ export function TabbedDashboard() {
             onClick={() => setActiveSection('business')}
             style={{ fontSize: '0.85rem', padding: '0.55rem 1rem', fontWeight: 700, whiteSpace: 'nowrap' }}
           >
-            <Building2 size={16} color="#4f46e5" /> 2. Hotel & Company Settings
+            <Building2 size={16} color={activeSection === 'business' ? '#ffffff' : '#374151'} /> 2. Hotel & Company Settings
           </button>
         </div>
       </div>

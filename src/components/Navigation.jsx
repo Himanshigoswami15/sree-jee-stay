@@ -172,7 +172,7 @@ export function Navigation() {
               className={`nav-tab-btn ${activeTab === 'guest' ? 'active' : ''}`}
               onClick={() => setActiveTab('guest')}
             >
-              <Building2 size={15} />
+              <Building2 size={15} color={activeTab === 'guest' ? '#ffffff' : '#374151'} />
               <span className="nav-tab-text-full">Guest Review Page</span>
               <span className="nav-tab-text-mobile">Review Page</span>
             </button>
@@ -182,11 +182,15 @@ export function Navigation() {
               className={`nav-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
               onClick={() => setActiveTab('dashboard')}
             >
-              {isManagerAuthenticated ? <LayoutDashboard size={15} /> : <Lock size={14} color={activeTab === 'dashboard' ? '#ffffff' : '#1d4ed8'} />}
+              {isManagerAuthenticated ? (
+                <LayoutDashboard size={15} color={activeTab === 'dashboard' ? '#ffffff' : '#374151'} />
+              ) : (
+                <Lock size={14} color={activeTab === 'dashboard' ? '#ffffff' : '#374151'} />
+              )}
               <span className="nav-tab-text-full">Hotel Dashboard</span>
               <span className="nav-tab-text-mobile">Dashboard</span>
               {!isManagerAuthenticated && (
-                <span className="protected-badge">
+                <span className="protected-badge" style={{ color: activeTab === 'dashboard' ? '#2563eb' : '#374151', background: activeTab === 'dashboard' ? '#ffffff' : '#e2e8f0' }}>
                   Lock
                 </span>
               )}

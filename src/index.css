@@ -201,26 +201,26 @@ body {
 
 .nav-tabs {
   display: flex;
-  background: #f1f5f9;
+  background: #F1F5F9;
   padding: 4px;
-  border-radius: var(--radius-md);
-  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  border: 1px solid #E5E7EB;
 }
 
 .nav-tab-btn {
   background: transparent;
   border: none;
-  color: var(--text-main);
+  color: #374151; /* Dark charcoal - clear & high contrast for inactive tabs */
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.85rem;
   padding: 0.55rem 1.15rem;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  transition: var(--transition);
+  transition: all 0.2s ease;
   white-space: nowrap;
   min-height: 42px;
 }
@@ -230,14 +230,15 @@ body {
 }
 
 .nav-tab-btn.active {
-  background: var(--primary-gradient);
-  color: white;
-  box-shadow: var(--shadow-glow);
+  background: #2563EB;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .nav-tab-btn:hover:not(.active) {
-  color: var(--primary);
-  background: var(--primary-light);
+  color: #111827;
+  background: #E2E8F0;
 }
 
 /* Alert Notification Toast / Banner */
