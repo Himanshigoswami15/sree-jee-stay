@@ -90,23 +90,23 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-card" style={{ maxWidth: '480px', textAlign: 'left' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.2rem', color: '#0f172a' }}>
+    <div className="modal-overlay" style={{ zIndex: 1000 }}>
+      <div className="modal-card" style={{ maxWidth: '480px', textAlign: 'left', maxHeight: '85vh', overflowY: 'auto', padding: '1.5rem', position: 'relative' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.15rem', color: '#0f172a' }}>
             <Building2 size={22} color="#2563eb" />
             <span>Add New Business — 2 Minute Setup</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}
+            style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0.25rem' }}
           >
             <X size={20} />
           </button>
         </div>
 
-        <p style={{ fontSize: '0.825rem', color: '#475569', lineHeight: '1.4', marginBottom: '1.25rem' }}>
+        <p style={{ fontSize: '0.825rem', color: '#475569', lineHeight: '1.4', marginBottom: '1rem' }}>
           Paste your Google Place ID and click Onboard. The system automatically creates your review profile, direct Google link, sentiment tags, and permanent QR code!
         </p>
 
@@ -122,7 +122,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
           <div className="form-group">
             <label className="form-label" style={{ fontWeight: 800 }}>Business Name:</label>
             <input
@@ -136,7 +136,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
             />
           </div>
 
-          <div className="form-group" style={{ background: '#f8fafc', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
+          <div className="form-group" style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
             <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>
               🔒 Admin Secret Key (Required):
             </label>
@@ -193,11 +193,12 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+          {/* STICKY ACTION BUTTONS FOOTER */}
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #e2e8f0', position: 'sticky', bottom: 0, background: '#ffffff', zIndex: 10 }}>
             <button
               type="button"
               className="btn-secondary-action"
-              style={{ flex: 1 }}
+              style={{ flex: 1, padding: '0.75rem' }}
               onClick={onClose}
             >
               Cancel
@@ -206,10 +207,10 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
             <button
               type="submit"
               className="btn-primary-action"
-              style={{ flex: 2 }}
+              style={{ flex: 2, padding: '0.75rem', background: '#2563eb', color: '#ffffff', fontWeight: 800, fontSize: '0.9rem' }}
               disabled={isSubmitting}
             >
-              <Plus size={16} /> {isSubmitting ? 'Onboarding Business...' : 'Create Business QR'}
+              <Plus size={16} /> {isSubmitting ? 'Onboarding Business...' : 'Confirm & Onboard Business'}
             </button>
           </div>
         </form>
