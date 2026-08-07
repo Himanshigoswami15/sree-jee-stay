@@ -562,9 +562,9 @@ export function SettingsModal({ isOpen, onClose }) {
               </div>
 
               {/* Add Custom Keyword Form */}
-              <form onSubmit={handleAddCustomKeyword} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.85rem 1rem', borderRadius: '12px', display: 'grid', gridTemplateColumns: '1fr 120px 1.5fr auto', gap: '0.65rem', alignItems: 'end' }}>
+              <form onSubmit={handleAddCustomKeyword} style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', padding: '1rem', borderRadius: '12px', display: 'grid', gridTemplateColumns: '1fr 120px 1.5fr auto', gap: '0.75rem', alignItems: 'end', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.2rem' }}>Keyword Label:</label>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e293b', display: 'block', marginBottom: '0.3rem' }}>Keyword Label:</label>
                   <input
                     type="text"
                     className="form-input"
@@ -572,37 +572,61 @@ export function SettingsModal({ isOpen, onClose }) {
                     value={newTagLabel}
                     onChange={(e) => setNewTagLabel(e.target.value)}
                     required
+                    style={{ height: '40px', fontSize: '0.85rem' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.2rem' }}>Category:</label>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e293b', display: 'block', marginBottom: '0.3rem' }}>Category:</label>
                   <select
                     className="form-input"
                     value={newTagCategory}
                     onChange={(e) => setNewTagCategory(e.target.value)}
+                    style={{ height: '40px', fontSize: '0.85rem', fontWeight: 700 }}
                   >
                     <option value="General">General</option>
                     <option value="Rooms">Rooms</option>
                     <option value="Food">Food</option>
                     <option value="Service">Service</option>
                     <option value="Location">Location</option>
+                    <option value="Performance">Performance</option>
+                    <option value="Pricing">Pricing</option>
                   </select>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.2rem' }}>AI Review Snippet:</label>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e293b', display: 'block', marginBottom: '0.3rem' }}>AI Review Snippet:</label>
                   <input
                     type="text"
                     className="form-input"
                     placeholder="e.g. Delicious breakfast served hot!"
                     value={newTagSnippet}
                     onChange={(e) => setNewTagSnippet(e.target.value)}
+                    style={{ height: '40px', fontSize: '0.85rem' }}
                   />
                 </div>
 
-                <button type="submit" className="btn-primary-action" style={{ width: 'auto', padding: '0.6rem 0.9rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <Plus size={14} /> Add Tag
+                <button
+                  type="submit"
+                  style={{
+                    height: '40px',
+                    padding: '0 1.25rem',
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.35rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 6px rgba(37,99,235,0.25)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <Plus size={16} /> Save Keyword Tag
                 </button>
               </form>
 
