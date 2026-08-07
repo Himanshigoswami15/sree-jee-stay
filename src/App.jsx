@@ -7,6 +7,7 @@ import { ManagerPinModal } from './components/Common/ManagerPinModal';
 import { GuestReviewCard } from './components/GuestFlow/GuestReviewCard';
 import { TabbedDashboard } from './components/Dashboard/TabbedDashboard';
 import { HotelRegistryModal } from './components/Dashboard/HotelRegistryModal';
+import { SuperAdminPortal } from './components/Dashboard/SuperAdminPortal';
 import { apiClient } from './services/apiClient';
 
 class ErrorBoundary extends Component {
@@ -222,6 +223,9 @@ export default function App() {
     <ErrorBoundary>
       <Routes>
         <Route path="/" element={<RootRedirector />} />
+        <Route path="/super-admin" element={<SuperAdminPortal />} />
+        <Route path="/super" element={<SuperAdminPortal />} />
+        <Route path="/admin" element={<SuperAdminPortal />} />
         <Route path="/r/:hotelSlug" element={<QrRedirectWrapper />} />
         <Route path="/:hotelSlug" element={<HotelWrapper />} />
       </Routes>

@@ -9,6 +9,7 @@ import { refreshTokenSchema } from '../validators/hotelSchemas.js';
 const router = express.Router();
 
 router.post('/login', rateLimiter(15 * 60 * 1000, 10), validate(loginSchema, 'body'), authController.login);
+router.post('/super-login', rateLimiter(15 * 60 * 1000, 5), authController.superAdminLogin);
 router.post('/verify', rateLimiter(15 * 60 * 1000, 10), validate(loginSchema, 'body'), authController.login);
 router.post('/change-password', authenticate, validate(changePasswordSchema, 'body'), authController.changePassword);
 router.post('/refresh', validate(refreshTokenSchema, 'body'), authController.refresh);

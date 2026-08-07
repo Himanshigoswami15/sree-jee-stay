@@ -222,3 +222,37 @@ export async function getAuthStatus(identifier) {
     hasPassword: Boolean(user && user.passwordHash),
   };
 }
+
+export async function superAdminLogin(secretKey) {
+  const expectedKey = process.env.ADMIN_SECRET_KEY || 'JJR-2026-SUPER-6X8F91ZP-K29A';
+  if (!secretKey || secretKey.trim() !== expectedKey.trim()) {
+    logEvent('SYSTEM', 'SUPER_ADMIN_LOGIN_FAILED', { reason: 'Invalid secret key' }).catch(() => {});
+    throw new AppError('Invalid Admin Secret Key.', 403);
+  }
+
+  const payload = {
+    userId: 'super_admin',
+    hotelId: 'system',
+    hotelSlug: 'system',
+    role: 'SUPER_ADMIN',
+    email: 'admin@jjreviewsystem.com',
+    tokenVersion: 1,
+  };
+
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
+
+  logEvent('SYSTEM', 'SUPER_ADMIN_LOGIN_SUCCESS', {}).catch(() => {});
+
+  return {
+    success: true,
+    user: {
+      userId: 'super_admin',
+      email: 'admin@jjreviewsystem.com',
+      role: 'SUPER_ADMIN',
+      displayName: 'Super Admin',
+    },
+    accessToken,
+    refreshToken,
+  };
+}

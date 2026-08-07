@@ -125,3 +125,15 @@ export async function logout(req, res, next) {
     next(err);
   }
 }
+
+export async function superAdminLogin(req, res, next) {
+  try {
+    const secretKey = req.body.secretKey || req.body.adminSecretKey;
+    const result = await authService.superAdminLogin(secretKey);
+    setAuthCookies(res, result.accessToken, result.refreshToken);
+    setCsrfCookie(res);
+    return res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}

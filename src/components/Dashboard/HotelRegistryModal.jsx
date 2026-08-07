@@ -12,6 +12,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
     googlePlaceId: '',
     password: '1234',
     tone: 'friendly',
+    secretKey: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,6 +134,23 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
               required
               autoFocus
             />
+          </div>
+
+          <div className="form-group" style={{ background: '#f8fafc', padding: '0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
+            <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>
+              🔒 Admin Secret Key (Required):
+            </label>
+            <input
+              type="password"
+              className="form-input"
+              value={form.secretKey}
+              onChange={(e) => setForm({ ...form, secretKey: e.target.value })}
+              placeholder="Enter Admin Secret Key..."
+              required
+            />
+            <span style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
+              Restricted to Super Admin authorization.
+            </span>
           </div>
 
           <div className="form-group">

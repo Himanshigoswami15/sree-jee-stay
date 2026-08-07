@@ -24,8 +24,11 @@ export const AUDIT_LOG_TTL_DAYS = 90;
 // Default Settings
 export const DEFAULT_ALERT_THRESHOLD = 3;
 
+export const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'JJR-2026-SUPER-6X8F91ZP-K29A';
+
 // User Roles
 export const USER_ROLES = {
+  SUPER_ADMIN: 'SUPER_ADMIN',
   OWNER: 'owner',
   MANAGER: 'manager',
   RECEPTION: 'reception',

@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const onboardHotelSchema = z.object({
   name: z.string().min(1, 'Hotel name is required'),
   hotelSlug: z.string().optional(),
+  secretKey: z.string().optional(),
   logoUrl: z.string().optional(),
   themeColor: z.string().optional(),
   googlePlaceId: z.string().optional(),
