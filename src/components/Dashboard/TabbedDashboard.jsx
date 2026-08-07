@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, QrCode, MessageSquare, Save, CheckCircle2, Star } from 'lucide-react';
+import { Building2, QrCode, Save, CheckCircle2 } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
 import { QrStudio } from './QrStudio';
-import { FeedbackTable } from './FeedbackTable';
 import { validateGoogleReviewLink } from '../../utils/googleReview';
 import { apiClient } from '../../services/apiClient';
 
@@ -109,20 +108,6 @@ export function TabbedDashboard() {
           >
             <Building2 size={16} color="#4f46e5" /> 2. Hotel & Company Settings
           </button>
-
-          <button
-            type="button"
-            className={`nav-tab-btn ${activeSection === 'feedbacks' ? 'active' : ''}`}
-            onClick={() => setActiveSection('feedbacks')}
-            style={{ fontSize: '0.85rem', padding: '0.55rem 1rem', fontWeight: 700, whiteSpace: 'nowrap' }}
-          >
-            <MessageSquare size={16} color="#059669" /> 3. Guest Submissions ({safeFeedbacks.length})
-            {alertCount > 0 && (
-              <span style={{ background: '#ef4444', color: 'white', fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '10px', marginLeft: '0.35rem', fontWeight: 800 }}>
-                {alertCount} Alert{alertCount > 1 ? 's' : ''}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 
@@ -224,38 +209,6 @@ export function TabbedDashboard() {
               </button>
             </div>
           </form>
-        </div>
-      )}
-
-      {/* SECTION 3: GUEST SUBMISSIONS & FEEDBACK TRAIL */}
-      {activeSection === 'feedbacks' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Quick Metrics Bar */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '1.1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-              <div style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 800 }}>Total Guest Reviews</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', marginTop: '0.25rem' }}>
-                {safeFeedbacks.length}
-              </div>
-            </div>
-
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '1.1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-              <div style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 800 }}>Average Rating</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#f59e0b', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                {avgRating} <Star size={20} fill="#f59e0b" color="#f59e0b" />
-              </div>
-            </div>
-
-            <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '1.1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-              <div style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 800 }}>Unresolved Alerts</div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: alertCount > 0 ? '#dc2626' : '#059669', marginTop: '0.25rem' }}>
-                {alertCount}
-              </div>
-            </div>
-          </div>
-
-          {/* Feedback Table */}
-          <FeedbackTable feedbacks={safeFeedbacks} />
         </div>
       )}
     </div>
