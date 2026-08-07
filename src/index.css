@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   
   /* Design System Color Tokens */
   --bg-main: #FAFAFB;
@@ -18,10 +18,10 @@
   --error: #EF4444;
   
   /* High-Contrast Typography */
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
-  --text-main: #111827;
-  --text-muted: #6B7280;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
 
   --star-gold: #F59E0B;
   --star-gold-glow: rgba(245, 158, 11, 0.2);
@@ -60,6 +60,50 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Global Typography Hierarchy */
+h1, .h1 {
+  font-family: var(--font-family);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: #0F172A;
+}
+
+h2, .h2 {
+  font-family: var(--font-family);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: #0F172A;
+}
+
+h3, .h3 {
+  font-family: var(--font-family);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  color: #0F172A;
+}
+
+p, .body-text {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #475569;
+}
+
+small, .caption {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #64748B;
 }
 
 /* Custom Scrollbar */
