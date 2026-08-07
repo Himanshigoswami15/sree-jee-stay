@@ -189,7 +189,7 @@ export async function apiClient(endpoint, options = {}) {
     if (!response.ok) {
       return {
         success: false,
-        error: data.error || `HTTP ${response.status}: Request failed`,
+        error: data.message || data.error || `HTTP ${response.status}: Request failed`,
         status: response.status,
       };
     }

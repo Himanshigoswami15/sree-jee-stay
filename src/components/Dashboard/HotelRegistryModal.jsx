@@ -57,12 +57,16 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
     const payload = {
       ...form,
       hotelSlug: cleanSlug,
+      secretKey: (form.secretKey || '').trim(),
       password: form.password.trim(),
     };
 
     try {
       const res = await apiClient('/api/hotels/onboard', {
         method: 'POST',
+        headers: {
+          'X-Admin-Secret-Key': (form.secretKey || '').trim(),
+        },
         body: JSON.stringify(payload),
       });
 
