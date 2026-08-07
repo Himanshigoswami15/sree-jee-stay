@@ -572,7 +572,7 @@ export function SettingsModal({ isOpen, onClose }) {
                     value={newTagLabel}
                     onChange={(e) => setNewTagLabel(e.target.value)}
                     required
-                    style={{ height: '40px', fontSize: '0.85rem' }}
+                    style={{ height: '40px', padding: '0 0.65rem', fontSize: '0.85rem', color: '#0f172a' }}
                   />
                 </div>
 
@@ -582,7 +582,7 @@ export function SettingsModal({ isOpen, onClose }) {
                     className="form-input"
                     value={newTagCategory}
                     onChange={(e) => setNewTagCategory(e.target.value)}
-                    style={{ height: '40px', fontSize: '0.85rem', fontWeight: 700 }}
+                    style={{ height: '40px', padding: '0 0.5rem', fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}
                   >
                     <option value="General">General</option>
                     <option value="Rooms">Rooms</option>
@@ -602,7 +602,7 @@ export function SettingsModal({ isOpen, onClose }) {
                     placeholder="e.g. Delicious breakfast served hot!"
                     value={newTagSnippet}
                     onChange={(e) => setNewTagSnippet(e.target.value)}
-                    style={{ height: '40px', fontSize: '0.85rem' }}
+                    style={{ height: '40px', padding: '0 0.65rem', fontSize: '0.85rem', color: '#0f172a' }}
                   />
                 </div>
 
