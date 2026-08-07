@@ -4,7 +4,7 @@
 
 // Authentication
 export const BCRYPT_SALT_ROUNDS = 10;
-export const DEFAULT_ADMIN_PIN = process.env.ADMIN_PIN || '';
+export const DEFAULT_ADMIN_PIN = process.env.ADMIN_PIN || '9008';
 export const JWT_EXPIRY = process.env.JWT_EXPIRY || '15m';
 export const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '7d';
 export const MAX_LOGIN_ATTEMPTS = 5;

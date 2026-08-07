@@ -10,7 +10,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
     name: '',
     hotelSlug: '',
     googlePlaceId: '',
-    password: '1234',
+    password: '9008',
     tone: 'friendly',
     secretKey: '',
   });
