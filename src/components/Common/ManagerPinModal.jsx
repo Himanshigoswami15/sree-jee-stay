@@ -191,33 +191,37 @@ export function ManagerPinModal() {
                 )}
               </div>
 
-              <button type="submit" className="btn-primary-action" disabled={isSubmitting}>
+              <button
+                type="submit"
+                className="btn-primary-action"
+                disabled={isSubmitting}
+                style={{
+                  height: '48px',
+                  width: '100%',
+                  background: '#2563eb',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '0.95rem',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  border: 'none',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+                  cursor: 'pointer',
+                  marginTop: '0.25rem',
+                }}
+              >
                 {isSubmitting ? (
                   <>
                     <RefreshCw size={18} className="spin" /> Verifying PIN...
                   </>
                 ) : (
                   <>
-                    <Lock size={18} /> Unlock Manager Dashboard
+                    <Lock size={18} /> Continue to Hotel Dashboard &rarr;
                   </>
                 )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleStartForgotPassword}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#2563eb',
-                  fontSize: '0.825rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  padding: '0.35rem',
-                  textDecoration: 'underline'
-                }}
-              >
-                Forgot Security PIN / Password?
               </button>
             </form>
           </>
