@@ -32,6 +32,7 @@ export function GuestReviewCard() {
   const [tone, setTone] = useState(settings?.tone || 'friendly');
   const [guestContact, setGuestContact] = useState('');
   const [roomNumber] = useState(roomParam);
+  const [variationSeed, setVariationSeed] = useState(() => Math.random());
 
   const [submitted, setSubmitted] = useState(false);
 
@@ -56,6 +57,7 @@ export function GuestReviewCard() {
     mentionFood: settings?.mentionFood !== false,
     mentionLocation: settings?.mentionLocation !== false,
     keywordsList: keywords,
+    variationSeed,
   });
 
   // Effective review text shown to user (custom edited or auto generated)
@@ -66,10 +68,12 @@ export function GuestReviewCard() {
       prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
     );
     setCustomNote(''); // Reset custom override so new tags update the text
+    setVariationSeed(Math.random());
   };
 
   const handleRefreshPhrasing = () => {
     setCustomNote(''); // Regenerate natural variation
+    setVariationSeed(Math.random());
   };
 
   const handlePostToProvider = async (provider) => {
@@ -241,6 +245,7 @@ export function GuestReviewCard() {
                     setRating(star);
                     setSelectedTags([]);
                     setCustomNote('');
+                    setVariationSeed(Math.random());
                   }}
                   style={{
                     background: 'transparent',
@@ -304,6 +309,7 @@ export function GuestReviewCard() {
           onChangeTone={(t) => {
             setTone(t);
             setCustomNote('');
+            setVariationSeed(Math.random());
           }}
         />
 
