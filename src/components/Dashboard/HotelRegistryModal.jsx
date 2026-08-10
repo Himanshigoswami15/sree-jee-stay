@@ -169,15 +169,15 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
               🔒 Admin Secret Key (Required):
             </label>
             <input
-              type="password"
+              type="text"
               className="form-input"
               value={form.secretKey}
               onChange={(e) => setForm({ ...form, secretKey: e.target.value })}
-              placeholder="Enter Admin Secret Key..."
+              placeholder="Enter Secret Key (e.g. 9008)"
               required
             />
-            <span style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
-              Restricted to Super Admin authorization.
+            <span style={{ fontSize: '0.725rem', color: '#2563eb', fontWeight: 700, marginTop: '0.25rem', display: 'block' }}>
+              💡 Common Master Key: <code>9008</code>
             </span>
           </div>
 
