@@ -153,14 +153,14 @@ export function SuperAdminPortal() {
         <form onSubmit={handleSuperLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
           <div className="form-group">
             <label className="form-label" style={{ fontWeight: 600, color: '#374151', fontSize: '0.8125rem' }}>
-              🔑 Admin Secret Key (`ADMIN_SECRET_KEY`):
+              🔑 Admin Secret Key:
             </label>
             <input
               type="password"
               className="form-input"
               value={secretKey}
               onChange={(e) => setSecretKey(e.target.value)}
-              placeholder="e.g. JJR-2026-SUPER-6X8F91ZP-K29A"
+              placeholder="Enter Admin Secret Key"
               required
               autoFocus
               style={{ height: '44px', fontSize: '0.875rem', borderRadius: '12px', border: '1px solid #E5E7EB', background: '#FAFAFB', padding: '0 0.85rem' }}
@@ -223,9 +223,9 @@ export function SuperAdminPortal() {
         </div>
 
         <div style={{ background: '#ffffff', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-          <div style={{ color: '#6B7280', fontSize: '0.8125rem', fontWeight: 600 }}>Security Key Status</div>
+          <div style={{ color: '#6B7280', fontSize: '0.8125rem', fontWeight: 600 }}>Security Status</div>
           <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#15803D', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <CheckCircle2 size={18} color="#22C55E" /> Validated (`ADMIN_SECRET_KEY`)
+            <CheckCircle2 size={18} color="#22C55E" /> Authenticated Super Admin
           </div>
         </div>
       </div>

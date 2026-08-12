@@ -21,8 +21,8 @@ export async function onboard(req, res, next) {
 
       return res.status(403).json({
         success: false,
-        error: 'Invalid Admin Secret Key. Common Master Key is 9008.',
-        message: 'Invalid Admin Secret Key. Common Master Key is 9008.',
+        error: 'Invalid Admin Secret Key.',
+        message: 'Invalid Admin Secret Key.',
       });
     }
 

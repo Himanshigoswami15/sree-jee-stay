@@ -11,7 +11,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
     name: '',
     hotelSlug: '',
     googlePlaceId: '',
-    password: '9008',
+    password: '',
     tone: 'friendly',
     secretKey: '',
   });
@@ -165,21 +165,16 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
             </div>
           </div>
 
-          <div className="form-group" style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
-            <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>
-              🔒 Admin Secret Key (Required):
-            </label>
+          <div className="form-group">
+            <label className="form-label" style={{ fontWeight: 800 }}>Admin Secret Key (Required):</label>
             <input
-              type="text"
+              type="password"
               className="form-input"
               value={form.secretKey}
               onChange={(e) => setForm({ ...form, secretKey: e.target.value })}
-              placeholder="Enter Secret Key (e.g. 9008)"
+              placeholder="Enter Admin Secret Key"
               required
             />
-            <span style={{ fontSize: '0.725rem', color: '#2563eb', fontWeight: 700, marginTop: '0.25rem', display: 'block' }}>
-              💡 Common Master Key: <code>9008</code>
-            </span>
           </div>
 
           <div className="form-group">
@@ -250,7 +245,7 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
                 className="form-input"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder="1234"
+                placeholder="••••"
                 required
               />
             </div>
