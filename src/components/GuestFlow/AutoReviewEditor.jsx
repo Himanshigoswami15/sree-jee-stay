@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, RefreshCw, Copy, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Sparkles, Copy, Check } from 'lucide-react';
 import { copyToMobileClipboard } from '../../utils/clipboardHelper';
 
 export function AutoReviewEditor({
@@ -18,77 +17,48 @@ export function AutoReviewEditor({
     const ok = await copyToMobileClipboard(reviewText);
     if (ok) {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
+  const wordCount = reviewText ? reviewText.trim().split(/\s+/).filter(Boolean).length : 0;
+
   return (
-    <div style={{ textAlign: 'left', margin: '1.25rem 0' }}>
-      {/* Section Header */}
-      <div style={{ marginBottom: '0.625rem' }}>
-        <div
-          style={{
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            color: 'var(--slate-900)',
-            letterSpacing: '-0.01em',
-          }}
-        >
+    <div className="guest-review-editorial">
+      <div className="guest-section-header">
+        <div className="guest-section-title">
           Tell us about your stay
         </div>
-        <div style={{ fontSize: '0.78125rem', color: 'var(--slate-500)', marginTop: '0.15rem' }}>
-          Your feedback helps us improve and guides future guests.
+        <div className="guest-section-subtitle">
+          Share anything that made your experience memorable.
         </div>
       </div>
 
-      {/* Large Elegant Textarea */}
       <div style={{ position: 'relative' }}>
         <textarea
-          className="saas-textarea"
+          className="guest-editorial-textarea"
           value={reviewText}
           onChange={(e) => onTextChange(e.target.value)}
-          placeholder="Share your thoughts on the room, dining, service, or amenities..."
+          placeholder="Tell us what you enjoyed about your stay..."
           rows={4}
-          style={{
-            minHeight: '110px',
-            fontSize: '0.875rem',
-            lineHeight: '1.6',
-          }}
         />
       </div>
 
-      {/* Bottom Bar: Character Count + AI Assistant Trigger & Copy */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: '0.5rem',
-          flexWrap: 'wrap',
-          gap: '0.5rem',
-        }}
-      >
-        <span style={{ fontSize: '0.75rem', color: 'var(--slate-400)', fontWeight: 500 }}>
-          {reviewText ? `${reviewText.trim().split(/\s+/).filter(Boolean).length} words · ${reviewText.length} chars` : '0 characters'}
+      <div className="guest-review-footer">
+        <span style={{ fontSize: '0.75rem', color: '#78716C', fontWeight: 500 }}>
+          {wordCount > 0 ? `${wordCount} words · ${reviewText.length} characters` : '0 characters'}
         </span>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {onRefreshPhrasing && (
             <button
               type="button"
               onClick={onRefreshPhrasing}
-              className="saas-btn saas-btn-ghost"
-              style={{
-                padding: '0.3rem 0.625rem',
-                fontSize: '0.75rem',
-                color: 'var(--slate-600)',
-                background: 'var(--slate-100)',
-                borderRadius: 'var(--radius-sm)',
-              }}
-              title="Generate a fresh phrasing variation based on your selected highlights"
+              className="guest-ai-helper-btn"
+              title="Compose review draft from your selected highlights"
             >
-              <Sparkles size={13} color="var(--gold-600)" />
-              <span>Create review from highlights</span>
+              <Sparkles size={13} color="#D97706" />
+              <span>Create my review</span>
             </button>
           )}
 
@@ -96,16 +66,14 @@ export function AutoReviewEditor({
             <button
               type="button"
               onClick={handleCopy}
-              className="saas-btn saas-btn-ghost"
+              className="guest-ai-helper-btn"
               style={{
-                padding: '0.3rem 0.625rem',
-                fontSize: '0.75rem',
-                color: copied ? 'var(--emerald-700)' : 'var(--slate-600)',
-                background: copied ? 'var(--emerald-50)' : 'var(--slate-100)',
-                borderRadius: 'var(--radius-sm)',
+                background: copied ? '#ECFDF5' : '#F5F5F4',
+                color: copied ? '#047857' : '#78716C',
+                borderColor: copied ? '#D1FAE5' : '#E7E5E4',
               }}
             >
-              {copied ? <Check size={13} color="var(--emerald-600)" /> : <Copy size={13} />}
+              {copied ? <Check size={13} color="#047857" /> : <Copy size={13} />}
               <span>{copied ? 'Copied' : 'Copy'}</span>
             </button>
           )}

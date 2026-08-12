@@ -129,11 +129,9 @@ function MainContent() {
   }
 
   return (
-    <main>
+    <main style={{ minHeight: '100vh' }}>
       {activeTab === 'guest' ? (
-        <div className="guest-view-container">
-          <GuestReviewCard />
-        </div>
+        <GuestReviewCard />
       ) : (
         <TabbedDashboard />
       )}
@@ -148,14 +146,22 @@ function HotelWrapper() {
   return (
     <ErrorBoundary>
       <FeedbackProvider key={hotelSlug} hotelSlug={hotelSlug}>
-        <div className="app-root" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          <Navigation />
-          <AlertBanner />
-          <ManagerPinModal />
-          <MainContent />
-        </div>
+        <HotelContentWrapper />
       </FeedbackProvider>
     </ErrorBoundary>
+  );
+}
+
+function HotelContentWrapper() {
+  const { activeTab } = useFeedback();
+
+  return (
+    <div className="app-root" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {activeTab === 'dashboard' && <Navigation />}
+      <AlertBanner />
+      <ManagerPinModal />
+      <MainContent />
+    </div>
   );
 }
 
