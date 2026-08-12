@@ -206,14 +206,6 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
               <span>Submit Another Note</span>
             </button>
           </div>
-
-          {/* Discreet Manager Footer Link */}
-          <div className="guest-discreet-footer">
-            <button type="button" onClick={() => setActiveTab('dashboard')}>
-              <Lock size={12} />
-              <span>Property Manager Access</span>
-            </button>
-          </div>
         </motion.div>
       </div>
     </div>

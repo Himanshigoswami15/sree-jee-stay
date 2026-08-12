@@ -64,13 +64,14 @@ export function Navigation() {
     <>
       <header
         style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(8px)',
+          background: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(10px)',
           borderBottom: '1px solid var(--border-subtle)',
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          padding: '0.75rem 1.25rem',
+          padding: '0.625rem 1rem',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
         }}
       >
         <div
@@ -80,12 +81,12 @@ export function Navigation() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '1rem',
+            gap: '0.75rem',
             flexWrap: 'wrap',
           }}
         >
-          {/* LEFT: BRAND & PROPERTY SWITCHER */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+          {/* LEFT: BRAND LOGO + HOTEL SWITCHER */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             <div
               onClick={handleBrandClick}
               style={{
@@ -96,20 +97,38 @@ export function Navigation() {
                 userSelect: 'none',
               }}
             >
-              <JJLogo size={34} rounded={9} showGlow={true} />
+              <JJLogo size={36} rounded={10} showGlow={true} />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'var(--slate-900)', lineHeight: '1.2', letterSpacing: '-0.02em' }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '0.9375rem',
+                    fontWeight: 800,
+                    color: 'var(--slate-900)',
+                    lineHeight: '1.2',
+                    letterSpacing: '-0.02em',
+                  }}
+                >
                   JJ Review System
                 </span>
-                <span style={{ fontSize: '0.6875rem', color: 'var(--brand-rose)', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.6875rem',
+                    color: 'var(--brand-rose)',
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                  }}
+                >
                   Hospitality OS
                 </span>
               </div>
             </div>
 
-            <div style={{ width: '1px', height: '24px', background: 'var(--slate-200)' }} />
+            <div style={{ width: '1px', height: '22px', background: 'var(--slate-200)' }} />
 
-            {/* Property Switcher Dropdown */}
+            {/* Hotel Switcher Dropdown */}
             <div style={{ position: 'relative' }}>
               <button
                 type="button"
@@ -121,11 +140,12 @@ export function Navigation() {
                   fontWeight: 600,
                   gap: '0.4rem',
                   maxWidth: '220px',
+                  height: '34px',
                 }}
               >
                 <Building2 size={14} color="var(--slate-600)" />
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {settings?.hotelName || settings?.name || 'Select Property'}
+                  {settings?.hotelName || settings?.name || 'Select Hotel'}
                 </span>
                 <ChevronDown size={13} color="var(--slate-400)" />
               </button>
@@ -161,7 +181,7 @@ export function Navigation() {
                       <input
                         type="text"
                         className="saas-input"
-                        placeholder="Search properties..."
+                        placeholder="Search hotels..."
                         value={switcherFilter}
                         onChange={(e) => setSwitcherFilter(e.target.value)}
                         autoFocus
@@ -169,8 +189,8 @@ export function Navigation() {
                       />
                     </div>
 
-                    <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                      Properties ({filteredHotels.length})
+                    <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                      Registered Hotels ({filteredHotels.length})
                     </div>
                   </div>
 
@@ -191,7 +211,7 @@ export function Navigation() {
                             border: 'none',
                             background: isSelected ? 'var(--slate-100)' : 'transparent',
                             color: isSelected ? 'var(--slate-900)' : 'var(--slate-700)',
-                            fontWeight: isSelected ? 600 : 500,
+                            fontWeight: isSelected ? 700 : 500,
                             borderRadius: 'var(--radius-sm)',
                             cursor: 'pointer',
                             textAlign: 'left',
@@ -200,7 +220,7 @@ export function Navigation() {
                         >
                           <Building2 size={14} color={isSelected ? 'var(--slate-900)' : 'var(--slate-400)'} />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.name}</div>
+                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>{h.name}</div>
                             <div style={{ fontSize: '0.6875rem', color: 'var(--slate-400)' }}>/{h.hotelSlug || h.hotelId}</div>
                           </div>
                           {isSelected && <CheckCircle2 size={13} color="var(--emerald-600)" />}
@@ -217,10 +237,10 @@ export function Navigation() {
                         setIsRegistryOpen(true);
                       }}
                       className="saas-btn saas-btn-ghost"
-                      style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.78125rem', color: 'var(--brand-accent)' }}
+                      style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.78125rem', color: 'var(--brand-rose)', fontWeight: 600 }}
                     >
                       <Plus size={13} />
-                      <span>Onboard New Property</span>
+                      <span>Onboard New Hotel</span>
                     </button>
                   </div>
                 </div>
@@ -228,8 +248,8 @@ export function Navigation() {
             </div>
           </div>
 
-          {/* RIGHT: PORTAL / DASHBOARD SEGMENT SWITCHER & ACTIONS */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          {/* RIGHT: TABS & ACTIONS */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <div className="saas-tabs-container">
               <button
                 type="button"
@@ -246,11 +266,11 @@ export function Navigation() {
                 onClick={() => setActiveTab('dashboard')}
               >
                 {isManagerAuthenticated ? <LayoutDashboard size={14} /> : <Lock size={13} />}
-                <span>Manager Dashboard</span>
+                <span>Manager Portal</span>
                 {isManagerAuthenticated && unresolvedAlertCount > 0 && (
                   <span
                     style={{
-                      background: 'var(--rose-600)',
+                      background: 'var(--brand-rose)',
                       color: '#FFFFFF',
                       fontSize: '0.6875rem',
                       fontWeight: 700,
@@ -271,7 +291,7 @@ export function Navigation() {
                   onClick={() => setIsSettingsOpen(true)}
                   className="saas-btn saas-btn-secondary"
                   style={{ padding: '0.45rem', height: '34px', width: '34px' }}
-                  title="Property Settings"
+                  title="Hotel Settings"
                 >
                   <Settings size={15} color="var(--slate-700)" />
                 </button>
@@ -280,7 +300,7 @@ export function Navigation() {
                   type="button"
                   onClick={lockDashboard}
                   className="saas-btn saas-btn-ghost"
-                  style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', height: '34px' }}
+                  style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', height: '34px', color: '#DC2626' }}
                   title="Lock Dashboard"
                 >
                   <LogOut size={13} />

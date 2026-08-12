@@ -153,11 +153,9 @@ function HotelWrapper() {
 }
 
 function HotelContentWrapper() {
-  const { activeTab } = useFeedback();
-
   return (
     <div className="app-root" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {activeTab === 'dashboard' && <Navigation />}
+      <Navigation />
       <AlertBanner />
       <ManagerPinModal />
       <MainContent />

@@ -329,14 +329,6 @@ export function GuestReviewCard() {
               </button>
             )}
           </div>
-
-          {/* 7. DISCREET MANAGER FOOTER ACCESS */}
-          <div className="guest-discreet-footer">
-            <button type="button" onClick={() => setActiveTab('dashboard')}>
-              <Lock size={12} />
-              <span>Property Manager Access</span>
-            </button>
-          </div>
         </motion.div>
       </div>
     </div>
