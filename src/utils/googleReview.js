@@ -12,19 +12,49 @@ export function extractPlaceId(inputStr = '') {
   if (!inputStr || typeof inputStr !== 'string') return '';
   const str = inputStr.trim();
 
+  // Direct Place ID (e.g. ChIJN1t_tDeuEmsRUsoyG83frY4)
   if (/^(ChIJ|GhIJ)[a-zA-Z0-9_-]+$/.test(str)) {
     return str;
   }
 
+  // URL parameter: ?placeid=ChIJ... or &placeid=ChIJ...
   const placeIdParam = str.match(/[?&]placeid=([a-zA-Z0-9_-]+)/i);
   if (placeIdParam && placeIdParam[1]) return placeIdParam[1];
 
+  // URL fragment: place_id:ChIJ...
   const placeIdColon = str.match(/place_id:([a-zA-Z0-9_-]+)/i);
   if (placeIdColon && placeIdColon[1]) return placeIdColon[1];
 
+  // Google Maps data parameter: !1sChIJ... (common in maps.google.com URLs)
+  const mapsDataMatch = str.match(/!1s(ChIJ[a-zA-Z0-9_-]+|GhIJ[a-zA-Z0-9_-]+)/);
+  if (mapsDataMatch && mapsDataMatch[1]) return mapsDataMatch[1];
+
+  // Google Maps URL path: /place/ChIJ.../
+  const placePathMatch = str.match(/\/place\/[^/]*\/(ChIJ[a-zA-Z0-9_-]+|GhIJ[a-zA-Z0-9_-]+)/);
+  if (placePathMatch && placePathMatch[1]) return placePathMatch[1];
+
+  // Google Maps ftid parameter: ftid=0x...:0x... (not a ChIJ but can be used)
+  const ftidMatch = str.match(/ftid=(0x[a-fA-F0-9]+:0x[a-fA-F0-9]+)/);
+  if (ftidMatch && ftidMatch[1]) return ftidMatch[1];
+
+  // Any embedded ChIJ or GhIJ pattern anywhere in the string
   const embeddedMatch = str.match(/(ChIJ[a-zA-Z0-9_-]+|GhIJ[a-zA-Z0-9_-]+)/);
   if (embeddedMatch && embeddedMatch[1]) return embeddedMatch[1];
 
+  return '';
+}
+
+/**
+ * Extract a human-readable place name from a Google Maps URL path
+ */
+function extractPlaceNameFromUrl(url = '') {
+  try {
+    // Matches /place/Hotel+Name+Here/ or /place/Hotel%20Name/
+    const match = url.match(/\/place\/([^/@?#]+)/);
+    if (match && match[1]) {
+      return decodeURIComponent(match[1].replace(/\+/g, ' '));
+    }
+  } catch (e) {}
   return '';
 }
 
@@ -40,8 +70,19 @@ export function generateGoogleReviewUrl(placeIdOrUrl = '', hotelName = '') {
       return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(extractedId)}`;
     }
 
+    // If it's a Google Maps URL but we couldn't extract a Place ID,
+    // try to extract the business name from the URL and generate a search-based review link
+    // instead of returning the raw Maps URL (which just opens the map location, not the review form)
     if (input.startsWith('http://') || input.startsWith('https://')) {
-      return input;
+      const nameFromUrl = extractPlaceNameFromUrl(input);
+      if (nameFromUrl) {
+        return `https://www.google.com/search?q=${encodeURIComponent(nameFromUrl + ' reviews')}`;
+      }
+      // For non-Google URLs or URLs we can't parse, return as-is
+      if (!input.includes('google.com/maps')) {
+        return input;
+      }
+      // Google Maps URL without extractable info — fall through to hotelName-based fallback
     }
 
     if (input && input !== 'YOUR_GOOGLE_PLACE_ID_HERE') {
@@ -49,12 +90,14 @@ export function generateGoogleReviewUrl(placeIdOrUrl = '', hotelName = '') {
     }
   }
 
+  // Fallback: use hotel name to create a Google Search for reviews
   const cleanName = (hotelName || '').trim();
   if (cleanName) {
-    return `https://www.google.com/search?q=${encodeURIComponent(cleanName + ' review')}`;
+    return `https://www.google.com/search?q=${encodeURIComponent(cleanName + ' Google reviews')}`;
   }
 
   return 'https://search.google.com/local/writereview';
+
 }
 
 /**

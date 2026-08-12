@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Lock, Building2, Plus, RefreshCw, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
+import { ShieldCheck, Lock, Building2, Plus, RefreshCw, CheckCircle2, AlertCircle, FileText, Trash2 } from 'lucide-react';
 import { apiClient } from '../../services/apiClient';
 import { useFeedback } from '../../context/FeedbackContext';
 import { HotelRegistryModal } from './HotelRegistryModal';
 
 export function SuperAdminPortal() {
-  const { registeredHotels, refreshHotels } = useFeedback();
+  const { registeredHotels, refreshHotels, deleteHotel } = useFeedback();
 
   const [secretKey, setSecretKey] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -15,6 +15,55 @@ export function SuperAdminPortal() {
   const [isRegistryOpen, setIsRegistryOpen] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+
+  // Delete confirmation modal state
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteSuccess, setDeleteSuccess] = useState('');
+
+  const openDeleteModal = (hotel) => {
+    setDeleteTarget(hotel);
+    setDeleteConfirmText('');
+    setDeleteError('');
+    setDeleteSuccess('');
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteTarget(null);
+    setDeleteConfirmText('');
+    setDeleteError('');
+    setDeleteSuccess('');
+    setIsDeleting(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const slug = deleteTarget.hotelSlug || deleteTarget.hotelId;
+    if (deleteConfirmText !== slug) {
+      setDeleteError(`Please type "${slug}" exactly to confirm deletion.`);
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError('');
+    try {
+      const result = await deleteHotel(slug);
+      if (result && result.success) {
+        setDeleteSuccess(result.message || `Hotel "${deleteTarget.name}" deleted successfully.`);
+        refreshHotels();
+        fetchAuditLogs();
+        setTimeout(() => closeDeleteModal(), 2000);
+      } else {
+        setDeleteError(result?.error || 'Failed to delete hotel. Please try again.');
+      }
+    } catch (err) {
+      setDeleteError(err?.message || 'An unexpected error occurred while deleting.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Auto-check stored session or attempt Super Admin login
   useEffect(() => {
@@ -203,12 +252,24 @@ export function SuperAdminPortal() {
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#111827' }}>{h.name}</div>
                 <div style={{ fontSize: '0.75rem', color: '#6B7280', fontFamily: 'monospace' }}>/{h.hotelSlug || h.hotelId}</div>
               </div>
-              <a
-                href={`/${h.hotelSlug || h.hotelId}`}
-                style={{ fontSize: '0.775rem', fontWeight: 600, color: '#2563EB', textDecoration: 'none', background: '#EFF6FF', padding: '0.35rem 0.65rem', borderRadius: '8px', border: '1px solid #BFDBFE' }}
-              >
-                View Profile ↗
-              </a>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <a
+                  href={`/${h.hotelSlug || h.hotelId}`}
+                  style={{ fontSize: '0.775rem', fontWeight: 600, color: '#2563EB', textDecoration: 'none', background: '#EFF6FF', padding: '0.35rem 0.65rem', borderRadius: '8px', border: '1px solid #BFDBFE' }}
+                >
+                  View Profile ↗
+                </a>
+                <button
+                  type="button"
+                  onClick={() => openDeleteModal(h)}
+                  title={`Delete ${h.name}`}
+                  style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#DC2626', padding: '0.35rem 0.5rem', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.borderColor = '#F87171'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.borderColor = '#FCA5A5'; }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -266,6 +327,89 @@ export function SuperAdminPortal() {
           </div>
         )}
       </div>
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deleteTarget && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: '#ffffff', borderRadius: '18px', maxWidth: '480px', width: '100%', padding: '2rem', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', border: '1px solid #E5E7EB', position: 'relative' }}>
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={closeDeleteModal}
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', fontSize: '1.25rem', color: '#6B7280', cursor: 'pointer', lineHeight: 1 }}
+            >
+              ✕
+            </button>
+
+            {/* Icon */}
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#FEF2F2', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', border: '1px solid #FCA5A5' }}>
+              <Trash2 size={28} />
+            </div>
+
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', margin: '0 0 0.35rem', textAlign: 'center', letterSpacing: '-0.02em' }}>
+              Delete Hotel Permanently
+            </h2>
+
+            <p style={{ fontSize: '0.85rem', color: '#6B7280', textAlign: 'center', lineHeight: 1.6, margin: '0 0 1rem' }}>
+              You are about to permanently delete <strong style={{ color: '#111827' }}>{deleteTarget.name}</strong> and all its associated data including feedbacks, users, settings, QR codes, keywords, analytics, and audit logs.
+            </p>
+
+            <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '0.75rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#92400E', fontWeight: 600, display: 'flex', alignItems: 'flex-start', gap: '0.4rem' }}>
+              <AlertCircle size={16} color="#F59E0B" style={{ flexShrink: 0, marginTop: '1px' }} />
+              <span>This action is <strong>irreversible</strong>. All data for this hotel will be permanently erased from the database.</span>
+            </div>
+
+            {deleteSuccess && (
+              <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#15803D', padding: '0.75rem', borderRadius: '10px', fontSize: '0.825rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1rem' }}>
+                <CheckCircle2 size={16} color="#22C55E" />
+                <span>{deleteSuccess}</span>
+              </div>
+            )}
+
+            {deleteError && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '0.75rem', borderRadius: '10px', fontSize: '0.825rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1rem' }}>
+                <AlertCircle size={16} color="#EF4444" />
+                <span>{deleteError}</span>
+              </div>
+            )}
+
+            {!deleteSuccess && (
+              <>
+                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>
+                  Type <code style={{ background: '#F3F4F6', padding: '0.15rem 0.4rem', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.8rem', color: '#DC2626' }}>{deleteTarget.hotelSlug || deleteTarget.hotelId}</code> to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => { setDeleteConfirmText(e.target.value); setDeleteError(''); }}
+                  placeholder={deleteTarget.hotelSlug || deleteTarget.hotelId}
+                  autoFocus
+                  style={{ width: '100%', height: '44px', fontSize: '0.875rem', borderRadius: '12px', border: `1px solid ${deleteConfirmText === (deleteTarget.hotelSlug || deleteTarget.hotelId) ? '#22C55E' : '#E5E7EB'}`, background: '#FAFAFB', padding: '0 0.85rem', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.15s ease' }}
+                />
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
+                  <button
+                    type="button"
+                    onClick={closeDeleteModal}
+                    style={{ flex: 1, height: '44px', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 600, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151', cursor: 'pointer' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    disabled={isDeleting || deleteConfirmText !== (deleteTarget.hotelSlug || deleteTarget.hotelId)}
+                    style={{ flex: 1, height: '44px', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 600, background: deleteConfirmText === (deleteTarget.hotelSlug || deleteTarget.hotelId) ? '#DC2626' : '#E5E7EB', color: deleteConfirmText === (deleteTarget.hotelSlug || deleteTarget.hotelId) ? '#ffffff' : '#9CA3AF', border: 'none', cursor: deleteConfirmText === (deleteTarget.hotelSlug || deleteTarget.hotelId) ? 'pointer' : 'not-allowed', transition: 'all 0.15s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                  >
+                    <Trash2 size={15} />
+                    {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <HotelRegistryModal
         isOpen={isRegistryOpen}

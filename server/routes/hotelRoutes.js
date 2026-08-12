@@ -16,4 +16,12 @@ router.post(
   hotelController.onboard
 );
 
+router.delete(
+  '/:hotelId',
+  rateLimiter(15 * 60 * 1000, 5),
+  optionalAuth,
+  hotelController.deleteHotel
+);
+
 export default router;
+

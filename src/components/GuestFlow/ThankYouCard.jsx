@@ -180,7 +180,7 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
               letterSpacing: '-0.01em',
             }}
           >
-            <ExternalLink size={18} /> Open {provider.name} Profile
+            <ExternalLink size={18} /> Post Review on {provider.name}
           </motion.button>
         ))}
 

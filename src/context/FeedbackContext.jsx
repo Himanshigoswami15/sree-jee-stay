@@ -453,6 +453,23 @@ export function FeedbackProvider({ children, hotelSlug }) {
     });
   };
 
+  const deleteHotel = async (hotelIdToDelete) => {
+    if (!hotelIdToDelete) return { success: false, error: 'Hotel ID is required.' };
+
+    const adminKey = localStorage.getItem('jj_super_admin_key') || '';
+    const res = await apiClient(`/api/hotels/${encodeURIComponent(hotelIdToDelete)}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ secretKey: adminKey }),
+    });
+
+    if (res && res.success) {
+      setRegisteredHotels((prev) => prev.filter(h => h.hotelSlug !== hotelIdToDelete && h.hotelId !== hotelIdToDelete));
+      return { success: true, message: res.message };
+    }
+
+    return { success: false, error: res?.error || 'Failed to delete hotel.' };
+  };
+
   return (
     <FeedbackContext.Provider
       value={{
@@ -462,6 +479,7 @@ export function FeedbackProvider({ children, hotelSlug }) {
         registeredHotels,
         refreshHotels: fetchHotelsList,
         registerHotel,
+        deleteHotel,
         loading,
         hotelNotFound,
         activeTab,
@@ -505,6 +523,7 @@ export function useFeedback() {
       registeredHotels: [],
       refreshHotels: () => {},
       registerHotel: () => {},
+      deleteHotel: async () => ({ success: false }),
       loading: false,
       hotelNotFound: false,
       activeTab: 'guest',

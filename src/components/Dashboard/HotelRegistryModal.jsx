@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Building2, X, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Building2, X, Plus, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import { apiClient } from '../../services/apiClient';
 import { useFeedback } from '../../context/FeedbackContext';
+import { extractPlaceId, validateGoogleReviewLink } from '../../utils/googleReview';
 
 export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
   const { refreshHotels, registerHotel } = useFeedback();
@@ -189,9 +190,43 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
               value={form.googlePlaceId}
               onChange={(e) => setForm({ ...form, googlePlaceId: e.target.value })}
               placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4"
+              style={{
+                borderColor: form.googlePlaceId
+                  ? (extractPlaceId(form.googlePlaceId) ? '#22C55E' : '#F59E0B')
+                  : undefined
+              }}
             />
+            {form.googlePlaceId && (() => {
+              const validation = validateGoogleReviewLink(form.googlePlaceId);
+              const extracted = extractPlaceId(form.googlePlaceId);
+              if (extracted) {
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.35rem', fontSize: '0.725rem', color: '#15803D', fontWeight: 700 }}>
+                    <CheckCircle2 size={13} color="#22C55E" />
+                    ✅ Valid Place ID detected: <code style={{ background: '#ECFDF5', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>{extracted}</code> — Review popup link will work!
+                  </div>
+                );
+              }
+              if (form.googlePlaceId.includes('google.com/maps')) {
+                return (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.3rem', marginTop: '0.35rem', fontSize: '0.725rem', color: '#92400E', fontWeight: 600, background: '#FFFBEB', padding: '0.4rem 0.6rem', borderRadius: '8px', border: '1px solid #FDE68A' }}>
+                    <AlertCircle size={13} color="#F59E0B" style={{ flexShrink: 0, marginTop: '1px' }} />
+                    <span>⚠️ Google Maps URL detected but <strong>no Place ID found</strong>. The review button will open Google Search instead of the direct review popup. For best results, paste the Place ID (starts with <strong>ChIJ...</strong>) from your Google Business Profile.</span>
+                  </div>
+                );
+              }
+              if (!validation.isValid) {
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.35rem', fontSize: '0.725rem', color: '#DC2626', fontWeight: 600 }}>
+                    <AlertCircle size={13} color="#EF4444" />
+                    {validation.message}
+                  </div>
+                );
+              }
+              return null;
+            })()}
             <span style={{ fontSize: '0.725rem', color: '#64748b', marginTop: '0.25rem', display: 'block' }}>
-              💡 Enables direct 1-tap 5-star Google review popup for customers!
+              💡 For the direct 1-tap Write Review popup, paste a Place ID starting with <strong>ChIJ...</strong>. You can find it in your <a href="https://developers.google.com/maps/documentation/places/web-service/place-id-lookup" target="_blank" rel="noopener noreferrer" style={{ color: '#2563EB' }}>Google Place ID Finder</a>.
             </span>
           </div>
 

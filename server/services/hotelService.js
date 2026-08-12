@@ -290,3 +290,62 @@ export async function updateHotel(hotelId, updateData) {
   );
   return hotel;
 }
+
+/**
+ * Permanently delete a hotel and ALL associated data across every collection.
+ */
+export async function deleteHotel(identifier) {
+  if (!identifier) throw new Error('hotelId or hotelSlug is required to delete a hotel.');
+
+  await ensureDbConnected();
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error('Database connection unavailable. Cannot delete hotel without active MongoDB Atlas connection.');
+  }
+
+  const cleanId = String(identifier).toLowerCase().trim();
+  const hotel = await Hotel.findOne({
+    $or: [{ hotelId: cleanId }, { hotelSlug: cleanId }],
+  });
+
+  if (!hotel) {
+    throw new Error(`Hotel "${cleanId}" not found. Cannot delete a non-existent hotel.`);
+  }
+
+  const hotelId = hotel.hotelId;
+  const hotelName = hotel.name;
+
+  // Import remaining models that are not already imported at the top
+  const { Feedback } = await import('../models/Feedback.js');
+  const { AuditLog } = await import('../models/AuditLog.js');
+  const { Notification } = await import('../models/Notification.js');
+
+  // Cascading delete across ALL collections tied to this hotel
+  const results = await Promise.allSettled([
+    Hotel.deleteOne({ hotelId }),
+    Settings.deleteMany({ hotelId }),
+    User.deleteMany({ hotelId }),
+    Keyword.deleteMany({ hotelId }),
+    QrCode.deleteMany({ hotelId }),
+    Analytics.deleteMany({ hotelId }),
+    Feedback.deleteMany({ hotelId }),
+    AuditLog.deleteMany({ hotelId }),
+    Notification.deleteMany({ hotelId }),
+  ]);
+
+  const failedOps = results.filter((r) => r.status === 'rejected');
+  if (failedOps.length > 0) {
+    logger.warn(`[HotelService] ${failedOps.length} collection(s) had errors during deletion of "${hotelId}".`);
+  }
+
+  logger.info(`🗑️ [HotelService] Hotel "${hotelName}" (${hotelId}) and all associated data permanently deleted.`);
+
+  return {
+    success: true,
+    message: `Hotel "${hotelName}" and all associated data have been permanently deleted.`,
+    deletedHotel: {
+      hotelId,
+      hotelSlug: hotel.hotelSlug,
+      name: hotelName,
+    },
+  };
+}
