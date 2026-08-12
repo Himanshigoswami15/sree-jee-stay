@@ -40,12 +40,12 @@ export function JJLogo({ size = 34, rounded = 10, showGlow = false, className = 
           fill="rgba(0, 0, 0, 0.08)"
         />
 
-        {/* Yellow/Gold Accent Dot above left stem */}
+        {/* Pure White Accent Dot above left stem */}
         <circle
           cx="28"
           cy="30"
           r="9.5"
-          fill="#FFC107"
+          fill="#FFFFFF"
         />
 
         {/* Main stylized U shape with left stem (i) */}

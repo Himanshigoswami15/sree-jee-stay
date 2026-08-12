@@ -42,10 +42,22 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
               />
             ) : (
               <div
-                className="hotel-hero-monogram"
-                style={{ background: brandColor }}
+                style={{
+                  width: '68px',
+                  height: '68px',
+                  borderRadius: '20px',
+                  background: 'linear-gradient(135deg, #FF0055 0%, #E11D48 50%, #BE123C 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 0.75rem',
+                  boxShadow: '0 8px 22px rgba(225, 29, 72, 0.3)',
+                  userSelect: 'none',
+                }}
               >
-                {hotelName.charAt(0).toUpperCase()}
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#FFFFFF' }}>
+                  {hotelName.charAt(0).toUpperCase()}
+                </span>
               </div>
             )}
 

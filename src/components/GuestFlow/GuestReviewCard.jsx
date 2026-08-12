@@ -86,14 +86,14 @@ export function GuestReviewCard() {
       postedPublic: true,
     });
 
-    // 3. Subtle celebratory confetti for positive rating
+    // 3. Celebratory confetti for positive rating
     if (isHighRating) {
       try {
         confetti({
           particleCount: 65,
           spread: 60,
           origin: { y: 0.6 },
-          colors: ['#FF0055', '#E11D48', '#FFC107', '#10B981'],
+          colors: ['#FF0055', '#E11D48', '#F59E0B', '#10B981'],
         });
       } catch (e) {}
     }
@@ -148,7 +148,7 @@ export function GuestReviewCard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* 1. HERO HOTEL IDENTITY WITH OFFICIAL LOGO GRADIENT MONOGRAM */}
+          {/* 1. HERO HOTEL IDENTITY (CLEAN MONOGRAM WITHOUT FLOATING DOT) */}
           <div style={{ marginBottom: '1.25rem' }}>
             {logoUrl ? (
               <img
@@ -166,26 +166,11 @@ export function GuestReviewCard() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  position: 'relative',
                   margin: '0 auto 0.75rem',
                   boxShadow: '0 8px 22px rgba(225, 29, 72, 0.3)',
                   userSelect: 'none',
                 }}
               >
-                {/* Yellow Accent Dot from Logo */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '5px',
-                    right: '5px',
-                    width: '11px',
-                    height: '11px',
-                    borderRadius: '50%',
-                    background: '#FFC107',
-                    border: '2px solid #FFFFFF',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                  }}
-                />
                 <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#FFFFFF' }}>
                   {hotelName.charAt(0).toUpperCase()}
                 </span>
@@ -223,7 +208,7 @@ export function GuestReviewCard() {
             </div>
           </div>
 
-          {/* 2. ELEGANT STAR RATING INTERACTION (WARM GOLDEN SUN STARS) */}
+          {/* 2. ELEGANT STAR RATING INTERACTION */}
           <div className="guest-rating-section">
             <div className="guest-rating-heading">
               How was your stay?
@@ -265,7 +250,7 @@ export function GuestReviewCard() {
             </div>
           </div>
 
-          {/* 3. HIGHLIGHTS & AMENITIES SELECTION (CRISP BLACK TEXT) */}
+          {/* 3. HIGHLIGHTS & AMENITIES SELECTION */}
           <KeywordChips
             rating={rating}
             selectedTags={selectedTags}
@@ -315,23 +300,25 @@ export function GuestReviewCard() {
             )}
           </div>
 
-          {/* 6. PRIMARY SUBMIT CTA WITH LOGO GRADIENT */}
+          {/* 6. PRIMARY SUBMIT CTA WITH PROPER NON-OVERLAPPING GAP */}
           <div style={{ marginTop: '1.75rem' }}>
             {isHighRating ? (
               <>
-                {activeProviders.map((provider) => (
-                  <button
-                    key={provider.type}
-                    type="button"
-                    className="guest-submit-cta"
-                    onClick={() => handlePostToProvider(provider)}
-                    disabled={isDuplicate}
-                  >
-                    <ExternalLink size={16} />
-                    <span>Submit Your Review on {provider.name}</span>
-                  </button>
-                ))}
-                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, marginTop: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {activeProviders.map((provider) => (
+                    <button
+                      key={provider.type}
+                      type="button"
+                      className="guest-submit-cta"
+                      onClick={() => handlePostToProvider(provider)}
+                      disabled={isDuplicate}
+                    >
+                      <ExternalLink size={16} />
+                      <span>Submit Your Review on {provider.name}</span>
+                    </button>
+                  ))}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, marginTop: '0.625rem' }}>
                   Review text is automatically copied to your clipboard upon tapping.
                 </div>
               </>
