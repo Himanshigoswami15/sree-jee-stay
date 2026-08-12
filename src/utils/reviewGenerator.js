@@ -460,6 +460,202 @@ function pickVariation(items = [], seed = Math.random()) {
 }
 
 /**
+ * Helper to strip emojis and unwanted symbols from a string
+ */
+export function cleanEmoji(str = '') {
+  return String(str || '')
+    .replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/gu, '')
+    .replace(/^[^a-zA-Z0-9]+/, '')
+    .trim();
+}
+
+/**
+ * Ensures a string starts with a capital letter and has no trailing punctuation
+ */
+function cleanSentence(str = '') {
+  let s = String(str || '').trim();
+  s = s.replace(/[.,;!]+$/, '').trim();
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Robust tag finder across custom keywords, templates, and defaults
+ */
+function findTagObject(tagId, keywordsList, isPositive) {
+  const primaryList = isPositive
+    ? (Array.isArray(keywordsList?.positive) ? keywordsList.positive : [])
+    : (Array.isArray(keywordsList?.negative) ? keywordsList.negative : []);
+
+  const secondaryList = isPositive
+    ? (Array.isArray(keywordsList?.negative) ? keywordsList.negative : [])
+    : (Array.isArray(keywordsList?.positive) ? keywordsList.positive : []);
+
+  const flatList = Array.isArray(keywordsList) ? keywordsList : [];
+  const defaultList = isPositive ? RATING_KEYWORDS.positive : RATING_KEYWORDS.negative;
+  const defaultAlt = isPositive ? RATING_KEYWORDS.negative : RATING_KEYWORDS.positive;
+
+  const allSearches = [primaryList, flatList, secondaryList, defaultList, defaultAlt];
+
+  for (const list of allSearches) {
+    if (!Array.isArray(list)) continue;
+    const found = list.find((t) => {
+      if (!t) return false;
+      return (
+        t.id === tagId ||
+        t.tagId === tagId ||
+        t._id === tagId ||
+        t.label === tagId ||
+        (t.label && cleanEmoji(t.label).toLowerCase() === cleanEmoji(tagId).toLowerCase())
+      );
+    });
+    if (found) return found;
+  }
+
+  // Fallback dynamic tag object from the tagId string itself
+  return {
+    id: tagId,
+    tagId: tagId,
+    label: tagId,
+    snippet: tagId,
+    snippets: [tagId],
+  };
+}
+
+/**
+ * Transforms any keyword, template, or custom tag into a natural, grammatically correct review sentence
+ */
+export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.random()) {
+  if (!tagObj) return null;
+
+  // 1. If valid snippets array exists with natural sentences
+  if (Array.isArray(tagObj.snippets) && tagObj.snippets.length > 0) {
+    const validSnippets = tagObj.snippets.filter((s) => typeof s === 'string' && s.trim().length > 0);
+    if (validSnippets.length > 0) {
+      const chosen = pickVariation(validSnippets, tagSeed);
+      const clean = cleanEmoji(chosen).trim();
+      if (clean && clean.split(/\s+/).length >= 3) {
+        return cleanSentence(clean);
+      }
+    }
+  }
+
+  // 2. If snippet property exists and has sentence-like content
+  const rawSnippet = typeof tagObj.snippet === 'string' ? tagObj.snippet.trim() : '';
+  const cleanSnippet = cleanEmoji(rawSnippet).trim();
+  if (cleanSnippet && cleanSnippet.split(/\s+/).length >= 4) {
+    return cleanSentence(cleanSnippet);
+  }
+
+  // 3. Extract best label or keyword text
+  const labelToUse = cleanSnippet || cleanEmoji(tagObj.label || tagObj.tagId || tagObj.id || '').trim();
+  if (!labelToUse) return null;
+  const lower = labelToUse.toLowerCase();
+
+  // Superlative / Title statements (e.g. "Best Hotel in Jodhpur", "Top Marketing Agency", "Best Restaurant in Town")
+  if (/^(best|top|truly the best|undoubtedly the best|number 1|#1|greatest|premier|finest|highly recommended)/i.test(labelToUse)) {
+    return cleanSentence(labelToUse);
+  }
+
+  // Positive keyword patterns
+  if (isPositive) {
+    // Staff / Team / Reception / Service
+    if (lower.includes('staff') || lower.includes('team') || lower.includes('doctor') || lower.includes('trainer') || lower.includes('barista') || lower.includes('stylist') || lower.includes('service') || lower.includes('hospitality') || lower.includes('reception')) {
+      if (lower.includes('friendly') || lower.includes('warm') || lower.includes('helpful') || lower.includes('polite') || lower.includes('attentive')) {
+        return cleanSentence(`The ${lower} were exceptionally warm, welcoming, and helpful`);
+      }
+      return cleanSentence(`The staff and service were warm, attentive, and very professional`);
+    }
+
+    // Room / Cleanliness / Hygiene
+    if (lower.includes('room') || lower.includes('clean') || lower.includes('hygien') || lower.includes('spotless') || lower.includes('sparkling')) {
+      return cleanSentence(`The room was impeccably clean, fresh, and spotless`);
+    }
+
+    // Bed / Sleep / Comfort / AC / Pool
+    if (lower.includes('bed') || lower.includes('mattress') || lower.includes('pillow') || lower.includes('sleep') || lower.includes('comfort')) {
+      return cleanSentence(`The bed was super comfortable with cozy linens for a restful sleep`);
+    }
+    if (lower.includes('ac') || lower.includes('air condition') || lower.includes('cooling')) {
+      return cleanSentence(`The room AC worked perfectly, keeping the room pleasantly cool and quiet`);
+    }
+    if (lower.includes('pool') || lower.includes('swimming')) {
+      return cleanSentence(`The pool area was pristine, clean, and very relaxing`);
+    }
+
+    // Food / Dining / Breakfast / Coffee
+    if (lower.includes('breakfast') || lower.includes('food') || lower.includes('dining') || lower.includes('coffee') || lower.includes('meal') || lower.includes('dish') || lower.includes('pastr') || lower.includes('buffet') || lower.includes('drink')) {
+      if (lower.includes('superb') || lower.includes('delicious') || lower.includes('fresh') || lower.includes('great') || lower.includes('tasty')) {
+        return cleanSentence(`The breakfast and dining were fresh, delicious, and offered great variety`);
+      }
+      return cleanSentence(`The food was mouth-watering, fresh, and beautifully prepared`);
+    }
+
+    // Location / Ambience / Vibe / View
+    if (lower.includes('location') || lower.includes('spot') || lower.includes('prime')) {
+      return cleanSentence(`The location was ideal, peaceful, and super convenient`);
+    }
+    if (lower.includes('ambien') || lower.includes('vibe') || lower.includes('atmosphere') || lower.includes('peaceful') || lower.includes('serene')) {
+      return cleanSentence(`The ambience and atmosphere were wonderfully relaxing and pleasant`);
+    }
+    if (lower.includes('view') || lower.includes('scenic') || lower.includes('mountain') || lower.includes('ocean')) {
+      return cleanSentence(`Loved the stunning and picturesque views`);
+    }
+
+    // Wi-Fi / Tech / Speed
+    if (lower.includes('wi-fi') || lower.includes('wifi') || lower.includes('internet') || lower.includes('speed')) {
+      return cleanSentence(`The high-speed Wi-Fi was ultra-fast and reliable throughout`);
+    }
+
+    // Value / Pricing
+    if (lower.includes('value') || lower.includes('price') || lower.includes('pricing') || lower.includes('affordable') || lower.includes('worth') || lower.includes('cost')) {
+      return cleanSentence(`Offered great value for money and outstanding service quality`);
+    }
+
+    // Check-in / Arrival
+    if (lower.includes('check-in') || lower.includes('checkin') || lower.includes('arrival')) {
+      return cleanSentence(`Check-in was quick, organized, and completely seamless`);
+    }
+
+    // Marketing / SEO / Leads / Agency
+    if (lower.includes('seo') || lower.includes('ranking')) {
+      return cleanSentence(`Boosted our Google search rankings and organic traffic significantly`);
+    }
+    if (lower.includes('lead') || lower.includes('conversion') || lower.includes('sales')) {
+      return cleanSentence(`Delivered steady, high-converting leads that drove great business growth`);
+    }
+    if (lower.includes('ads') || lower.includes('roas') || lower.includes('roi')) {
+      return cleanSentence(`Managed our ad campaigns with exceptional ROI and high ROAS`);
+    }
+
+    // Default clean sentence for any custom positive tag
+    return cleanSentence(labelToUse);
+  }
+
+  // Negative tags (1-3 stars)
+  if (lower.includes('wifi') || lower.includes('wi-fi') || lower.includes('internet')) {
+    return cleanSentence(`The Wi-Fi connection was unstable and very slow`);
+  }
+  if (lower.includes('ac') || lower.includes('cooling') || lower.includes('air condition')) {
+    return cleanSentence(`The air conditioning in the room was not cooling properly`);
+  }
+  if (lower.includes('noise') || lower.includes('loud') || lower.includes('sound')) {
+    return cleanSentence(`There was noticeable noise disrupting our sleep and rest`);
+  }
+  if (lower.includes('clean') || lower.includes('dirty') || lower.includes('hygiene') || lower.includes('bath')) {
+    return cleanSentence(`Room cleanliness and housekeeping fell below expected standards`);
+  }
+  if (lower.includes('food') || lower.includes('breakfast') || lower.includes('cold')) {
+    return cleanSentence(`The food served was delayed and lacked hot freshness`);
+  }
+  if (lower.includes('staff') || lower.includes('service') || lower.includes('reception') || lower.includes('delay')) {
+    return cleanSentence(`Front desk and service response times were slow`);
+  }
+
+  return cleanSentence(`${labelToUse} required improvement`);
+}
+
+/**
  * Generate unique, Review Assistant-guided review text
  */
 export function generateReviewText({
@@ -470,10 +666,6 @@ export function generateReviewText({
   tone = 'friendly',
   reviewLength = 'short',
   includeEmojis = true,
-  mentionStaff = true,
-  mentionCleanliness = true,
-  mentionFood = true,
-  mentionLocation = true,
   keywordsList = RATING_KEYWORDS,
   variationSeed = Math.random()
 }) {
@@ -486,80 +678,36 @@ export function generateReviewText({
   const availableOpenings = openingsDict[rating] || openingsDict[5];
   let opening = pickVariation(availableOpenings, variationSeed);
 
-  const selectedList = isPositive
-    ? (keywordsList?.positive || RATING_KEYWORDS.positive || [])
-    : (keywordsList?.negative || RATING_KEYWORDS.negative || []);
-
+  // Map each selected tag to a natural sentence using robust finder and formatter
   let tagSnippets = selectedTags
     .map((tagId, idx) => {
-      const tagObj = selectedList.find(t => t.id === tagId || t.tagId === tagId);
+      const tagObj = findTagObject(tagId, keywordsList, isPositive);
       if (!tagObj) return null;
 
-      // Honor style toggles
-      if (!mentionStaff && tagObj.category === 'Service') return null;
-      if (!mentionCleanliness && tagObj.category === 'Cleanliness') return null;
-      if (!mentionFood && tagObj.category === 'Dining') return null;
-      if (!mentionLocation && tagObj.category === 'General') return null;
-
       const tagSeed = variationSeed * (idx + 1) * 31.7;
-
-      if (tagObj.snippets && tagObj.snippets.length > 0) {
-        return pickVariation(tagObj.snippets, tagSeed);
-      }
-      if (tagObj.snippet && tagObj.snippet.trim().length > 3) {
-        return tagObj.snippet.trim();
-      }
-
-      // Format custom raw label into natural sentence
-      const rawLabel = (tagObj.label || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}]/gu, '').trim();
-      if (!rawLabel) return null;
-      const lower = rawLabel.toLowerCase();
-
-      if (lower.includes('staff') || lower.includes('doctor') || lower.includes('barista') || lower.includes('trainer') || lower.includes('stylist')) {
-        return `the ${lower} were exceptionally friendly, attentive, and helpful`;
-      }
-      if (lower.includes('room') || lower.includes('clean') || lower.includes('salon') || lower.includes('clinic')) {
-        return `the ${lower} was spotlessly clean and pristine`;
-      }
-      if (lower.includes('food') || lower.includes('coffee') || lower.includes('breakfast') || lower.includes('pastry') || lower.includes('dessert') || lower.includes('drink')) {
-        return `the ${lower} was fresh, delicious, and full of flavor`;
-      }
-      if (lower.includes('location')) {
-        return `the location was ideal and very convenient`;
-      }
-      if (lower.includes('bed') || lower.includes('seat') || lower.includes('vibe') || lower.includes('ambience') || lower.includes('atmosphere')) {
-        return `the ${lower} was cozy, comfortable, and pleasant`;
-      }
-      if (lower.includes('wi-fi') || lower.includes('wifi') || lower.includes('equipment')) {
-        return `the ${lower} was ultra-fast and top quality`;
-      }
-      if (lower.includes('price') || lower.includes('value') || lower.includes('pricing') || lower.includes('cost')) {
-        return `the ${lower} offered great value for money`;
-      }
-
-      return `the ${lower} was wonderful`;
+      return formatTagToSentence(tagObj, isPositive, tagSeed);
     })
     .filter(Boolean);
 
-  // If reviewLength is 'short', cap tag snippets to 2 max
-  if (reviewLength === 'short' && tagSnippets.length > 2) {
-    tagSnippets = tagSnippets.slice(0, 2);
+  // If reviewLength is 'short', cap tag snippets to 3 max
+  if (reviewLength === 'short' && tagSnippets.length > 3) {
+    tagSnippets = tagSnippets.slice(0, 3);
   }
 
   let body = '';
   if (tagSnippets.length > 0) {
-    if (isPositive) {
-      body = ' ' + tagSnippets.join('. ') + '.';
-    } else {
-      body = ' Specifically, ' + tagSnippets.join(', and ') + '.';
-    }
+    body = ' ' + tagSnippets.join('. ') + '.';
   }
 
   const availableClosings = isPositive ? closingsDict.positive : closingsDict.negative;
   const closingSeed = variationSeed * 17.3 + selectedTags.length;
   let closing = pickVariation(availableClosings, closingSeed);
 
-  let fullText = `${opening}${body} ${closing}`.replace(/\s+/g, ' ').trim();
+  // Combine and clean up spacing and punctuation
+  let fullText = `${opening}${body} ${closing}`
+    .replace(/\s*\.\s*\./g, '.')
+    .replace(/\s+/g, ' ')
+    .trim();
 
   if (customNote && customNote.trim()) {
     fullText += ` Note: ${customNote.trim()}`;
