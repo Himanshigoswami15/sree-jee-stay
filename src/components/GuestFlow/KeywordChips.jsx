@@ -101,21 +101,21 @@ export function KeywordChips({ rating, selectedTags = [], onToggleTag }) {
                 color={
                   isSelected
                     ? isPositive
-                      ? '#B45309'
+                      ? '#E11D48'
                       : '#BE123C'
-                    : '#78716C'
+                    : '#334155'
                 }
                 style={{ flexShrink: 0 }}
               />
 
-              <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: isSelected ? (isPositive ? '#BE123C' : '#BE123C') : '#000000', fontWeight: isSelected ? 700 : 600 }}>
                 {cleanLabel}
               </span>
 
               {isSelected && (
                 <Check
                   size={15}
-                  color={isPositive ? '#B45309' : '#BE123C'}
+                  color={isPositive ? '#E11D48' : '#BE123C'}
                   strokeWidth={2.5}
                   style={{ flexShrink: 0 }}
                 />

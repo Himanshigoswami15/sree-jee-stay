@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Star, ShieldCheck, ExternalLink, Smartphone, HeartHandshake, Lock } from 'lucide-react';
+import { Star, ShieldCheck, ExternalLink, Smartphone, HeartHandshake } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion } from 'framer-motion';
 import { useFeedback } from '../../context/FeedbackContext';
@@ -23,7 +23,7 @@ export function GuestReviewCard() {
   const [searchParams] = useSearchParams();
   const roomParam = searchParams.get('room') || searchParams.get('table') || '';
 
-  const { settings, keywords, addFeedback, checkIsDuplicate, setActiveTab } = useFeedback();
+  const { settings, keywords, addFeedback, checkIsDuplicate } = useFeedback();
 
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
@@ -35,9 +35,8 @@ export function GuestReviewCard() {
   const [variationSeed, setVariationSeed] = useState(() => Math.random());
   const [submitted, setSubmitted] = useState(false);
 
-  const hotelName = settings?.hotelName || settings?.name || 'Boutique Hotel';
+  const hotelName = settings?.hotelName || settings?.name || 'Sree Jee Stay';
   const logoUrl = settings?.logoUrl || '';
-  const brandColor = settings?.themeColor || '#1C1917';
   const locationText = settings?.location || 'Rajasthan · India';
   const isHighRating = rating >= 4;
   const activeProviders = getActiveProviders(settings);
@@ -94,7 +93,7 @@ export function GuestReviewCard() {
           particleCount: 65,
           spread: 60,
           origin: { y: 0.6 },
-          colors: ['#F59E0B', '#D97706', '#E11D48', '#10B981'],
+          colors: ['#FF0055', '#E11D48', '#FFC107', '#10B981'],
         });
       } catch (e) {}
     }
@@ -149,8 +148,8 @@ export function GuestReviewCard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* 1. HERO HOTEL IDENTITY */}
-          <div style={{ marginBottom: '1.5rem' }}>
+          {/* 1. HERO HOTEL IDENTITY WITH OFFICIAL LOGO GRADIENT MONOGRAM */}
+          <div style={{ marginBottom: '1.25rem' }}>
             {logoUrl ? (
               <img
                 src={logoUrl}
@@ -159,10 +158,37 @@ export function GuestReviewCard() {
               />
             ) : (
               <div
-                className="hotel-hero-monogram"
-                style={{ background: brandColor }}
+                style={{
+                  width: '68px',
+                  height: '68px',
+                  borderRadius: '20px',
+                  background: 'linear-gradient(135deg, #FF0055 0%, #E11D48 50%, #BE123C 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  margin: '0 auto 0.75rem',
+                  boxShadow: '0 8px 22px rgba(225, 29, 72, 0.3)',
+                  userSelect: 'none',
+                }}
               >
-                {hotelName.charAt(0).toUpperCase()}
+                {/* Yellow Accent Dot from Logo */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '5px',
+                    right: '5px',
+                    width: '11px',
+                    height: '11px',
+                    borderRadius: '50%',
+                    background: '#FFC107',
+                    border: '2px solid #FFFFFF',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                  }}
+                />
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#FFFFFF' }}>
+                  {hotelName.charAt(0).toUpperCase()}
+                </span>
               </div>
             )}
 
@@ -184,10 +210,10 @@ export function GuestReviewCard() {
                 <span
                   style={{
                     fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: '#78716C',
-                    background: '#F5F5F4',
-                    padding: '0.25rem 0.65rem',
+                    fontWeight: 700,
+                    color: '#000000',
+                    background: '#F1F5F9',
+                    padding: '0.2rem 0.65rem',
                     borderRadius: 'var(--radius-full)',
                   }}
                 >
@@ -197,7 +223,7 @@ export function GuestReviewCard() {
             </div>
           </div>
 
-          {/* 2. ELEGANT STAR RATING INTERACTION */}
+          {/* 2. ELEGANT STAR RATING INTERACTION (WARM GOLDEN SUN STARS) */}
           <div className="guest-rating-section">
             <div className="guest-rating-heading">
               How was your stay?
@@ -224,9 +250,9 @@ export function GuestReviewCard() {
                     aria-label={`Rate ${star} star`}
                   >
                     <Star
-                      size={36}
-                      color={isFilled ? 'var(--gold-star)' : 'var(--gold-star-idle)'}
-                      fill={isFilled ? 'var(--gold-star)' : 'transparent'}
+                      size={38}
+                      color={isFilled ? '#F59E0B' : '#CBD5E1'}
+                      fill={isFilled ? '#F59E0B' : 'transparent'}
                       strokeWidth={1.5}
                     />
                   </button>
@@ -239,7 +265,7 @@ export function GuestReviewCard() {
             </div>
           </div>
 
-          {/* 3. HIGHLIGHTS & AMENITIES SELECTION */}
+          {/* 3. HIGHLIGHTS & AMENITIES SELECTION (CRISP BLACK TEXT) */}
           <KeywordChips
             rating={rating}
             selectedTags={selectedTags}
@@ -263,12 +289,12 @@ export function GuestReviewCard() {
                 gap: '0.35rem',
                 fontFamily: 'var(--font-sans)',
                 fontSize: '0.8125rem',
-                fontWeight: 600,
-                color: '#44403C',
+                fontWeight: 700,
+                color: '#000000',
                 marginBottom: '0.35rem',
               }}
             >
-              <Smartphone size={14} color="#78716C" />
+              <Smartphone size={14} color="#64748B" />
               <span>Phone or Room Number (Verification):</span>
             </label>
             <input
@@ -278,18 +304,18 @@ export function GuestReviewCard() {
               onChange={(e) => setGuestContact(e.target.value)}
               placeholder="e.g. 9876543210 or Room 204"
               style={{
-                borderColor: isDuplicate ? '#DC2626' : '#E7E5E4',
+                borderColor: isDuplicate ? '#DC2626' : '#E2E8F0',
                 background: isDuplicate ? '#FFF1F2' : '#FFFFFF',
               }}
             />
             {isDuplicate && (
-              <div style={{ fontSize: '0.75rem', color: '#DC2626', fontWeight: 500, marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '0.75rem', color: '#DC2626', fontWeight: 600, marginTop: '0.25rem' }}>
                 A review has already been recorded for this identifier.
               </div>
             )}
           </div>
 
-          {/* 6. PRIMARY SUBMIT CTA */}
+          {/* 6. PRIMARY SUBMIT CTA WITH LOGO GRADIENT */}
           <div style={{ marginTop: '1.75rem' }}>
             {isHighRating ? (
               <>
@@ -300,16 +326,12 @@ export function GuestReviewCard() {
                     className="guest-submit-cta"
                     onClick={() => handlePostToProvider(provider)}
                     disabled={isDuplicate}
-                    style={{
-                      background: brandColor,
-                      color: '#FFFFFF',
-                    }}
                   >
                     <ExternalLink size={16} />
                     <span>Submit Your Review on {provider.name}</span>
                   </button>
                 ))}
-                <div style={{ fontSize: '0.75rem', color: '#78716C', fontWeight: 500, marginTop: '0.5rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600, marginTop: '0.5rem' }}>
                   Review text is automatically copied to your clipboard upon tapping.
                 </div>
               </>

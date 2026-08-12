@@ -1,7 +1,7 @@
 /* ==============================================================================
    JJ REVIEW SYSTEM — MODERN PREMIUM SAAS & GUEST REVIEW PLATFORM
-   Electric Crimson-Rose (#E11D48), Warm Sun-Gold (#F59E0B),
-   Modern Geometric Typography (Plus Jakarta Sans & Inter)
+   Electric Crimson-Rose (#FF0055 / #E11D48), Radiant Golden Sun (#FFC107 / #F59E0B),
+   Bold Pure Black Text (#000000), Modern Geometric Typography (Plus Jakarta Sans & Inter)
    ============================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap');
@@ -11,7 +11,7 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  /* Signature Brand Gradient & Colors */
+  /* Signature Brand Gradient & Colors (From Official Logo) */
   --brand-gradient: linear-gradient(135deg, #FF0055 0%, #E11D48 50%, #BE123C 100%);
   --brand-gradient-hover: linear-gradient(135deg, #FF1744 0%, #BE123C 100%);
   --brand-rose: #E11D48;
@@ -20,14 +20,18 @@
   --brand-rose-border: #FECDD6;
   --brand-rose-glow: rgba(225, 29, 72, 0.25);
 
-  /* Warm Gold / Champagne Accents */
-  --accent-gold: #F59E0B;
+  /* Radiant Yellow/Gold Dot Accent (From Official Logo) */
+  --accent-gold: #FFC107;
+  --gold-star: #F59E0B;
+  --gold-star-active: #FFC107;
+  --gold-star-idle: #CBD5E1;
   --accent-gold-hover: #D97706;
   --accent-gold-light: #FFFBEB;
   --accent-gold-border: #FDE68A;
   --accent-gold-text: #92400E;
 
-  /* Neutral Slate Palette */
+  /* Crisp Pure Black & Neutral Slate Palette */
+  --text-pure-black: #000000;
   --slate-50: #F8FAFC;
   --slate-100: #F1F5F9;
   --slate-200: #E2E8F0;
@@ -51,6 +55,7 @@
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 12px 28px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
+  --shadow-rose: 0 6px 20px rgba(225, 29, 72, 0.25);
   --shadow-dropdown: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
 
   /* Radii */
@@ -87,7 +92,7 @@ html, body {
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-app);
-  color: var(--slate-900);
+  color: #000000;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -95,25 +100,25 @@ body {
 }
 
 /* ==============================================================================
-   TYPOGRAPHY HIERARCHY (MODERN GEOMETRIC SANS)
+   TYPOGRAPHY HIERARCHY (BOLD CRISP BLACK TEXT)
    ============================================================================== */
 
 h1, .h1 {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.625rem;
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   line-height: 1.25;
-  color: var(--slate-900);
+  color: #000000;
 }
 
 h2, .h2 {
   font-family: var(--font-display);
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.3;
-  color: var(--slate-900);
+  color: #000000;
 }
 
 h3, .h3 {
@@ -122,7 +127,7 @@ h3, .h3 {
   font-weight: 700;
   letter-spacing: -0.015em;
   line-height: 1.35;
-  color: var(--slate-900);
+  color: #000000;
 }
 
 p, .body-text {
@@ -130,7 +135,7 @@ p, .body-text {
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--slate-600);
+  color: #334155;
 }
 
 /* ==============================================================================
@@ -147,7 +152,7 @@ p, .body-text {
 
 .guest-container {
   width: 100%;
-  max-width: 620px;
+  max-width: 580px;
   margin: 0 auto;
 }
 
@@ -156,15 +161,15 @@ p, .body-text {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-  padding: 2.25rem 2rem;
+  padding: 2.25rem 1.85rem;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
 
 .hotel-hero-logo {
-  width: 68px;
-  height: 68px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   object-fit: cover;
   margin: 0 auto 0.875rem;
@@ -173,28 +178,13 @@ p, .body-text {
   background: #FFFFFF;
 }
 
-.hotel-hero-monogram {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin: 0 auto 0.875rem;
-  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
-  color: #FFFFFF;
-}
-
 .hotel-hero-title {
   font-family: var(--font-display);
   font-size: 1.625rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.25;
-  color: var(--slate-900);
+  line-height: 1.2;
+  color: #000000;
   margin-bottom: 0.25rem;
 }
 
@@ -202,7 +192,7 @@ p, .body-text {
   font-family: var(--font-sans);
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--slate-500);
+  color: #64748B;
   letter-spacing: 0.02em;
   margin-bottom: 0.75rem;
 }
@@ -213,7 +203,7 @@ p, .body-text {
   gap: 0.35rem;
   font-family: var(--font-sans);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #047857;
   background: #ECFDF5;
   border: 1px solid #D1FAE5;
@@ -222,7 +212,7 @@ p, .body-text {
 }
 
 /* ==============================================================================
-   STAR RATING SECTION
+   STAR RATING SECTION (WARM GOLDEN SUN STARS)
    ============================================================================== */
 
 .guest-rating-section {
@@ -235,16 +225,16 @@ p, .body-text {
 
 .guest-rating-heading {
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--slate-900);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #000000;
   margin-bottom: 0.2rem;
 }
 
 .guest-rating-subtext {
   font-family: var(--font-sans);
   font-size: 0.8125rem;
-  color: var(--slate-500);
+  color: #64748B;
   margin-bottom: 0.875rem;
 }
 
@@ -269,7 +259,7 @@ p, .body-text {
 }
 
 .guest-star-btn:hover {
-  transform: scale(1.18);
+  transform: scale(1.2);
 }
 
 .guest-star-btn:active {
@@ -278,14 +268,14 @@ p, .body-text {
 
 .guest-rating-feedback-label {
   font-family: var(--font-sans);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--accent-gold-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000000;
   min-height: 20px;
 }
 
 /* ==============================================================================
-   HIGHLIGHTS GRID
+   HIGHLIGHTS GRID (CRISP BLACK TEXT & CLEAN CHIPS)
    ============================================================================== */
 
 .guest-highlights-section {
@@ -299,9 +289,9 @@ p, .body-text {
 
 .guest-section-title {
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--slate-900);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #000000;
   letter-spacing: -0.015em;
   margin-bottom: 0.15rem;
 }
@@ -309,7 +299,7 @@ p, .body-text {
 .guest-section-subtitle {
   font-family: var(--font-sans);
   font-size: 0.78125rem;
-  color: var(--slate-500);
+  color: #64748B;
 }
 
 .guest-highlights-grid {
@@ -323,7 +313,7 @@ p, .body-text {
   align-items: center;
   justify-content: flex-start;
   gap: 0.5rem;
-  padding: 0.625rem 0.75rem;
+  padding: 0.65rem 0.85rem;
   background: #FFFFFF;
   border: 1px solid var(--slate-200);
   border-radius: var(--radius-md);
@@ -331,16 +321,16 @@ p, .body-text {
   text-align: left;
   font-family: var(--font-sans);
   font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--slate-700);
+  font-weight: 600;
+  color: #000000;
   transition: var(--transition-fast);
   outline: none;
 }
 
 .guest-highlight-chip:hover {
-  border-color: var(--slate-300);
-  background: var(--slate-50);
-  color: var(--slate-900);
+  border-color: var(--brand-rose-border);
+  background: var(--brand-rose-light);
+  color: var(--brand-rose);
 }
 
 .guest-highlight-chip.selected {
@@ -363,8 +353,8 @@ p, .body-text {
   border: none;
   font-family: var(--font-sans);
   font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--slate-600);
+  font-weight: 700;
+  color: #000000;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -375,7 +365,7 @@ p, .body-text {
 }
 
 .guest-expand-btn:hover {
-  color: var(--slate-900);
+  color: var(--brand-rose);
   background: var(--slate-100);
 }
 
@@ -394,7 +384,7 @@ p, .body-text {
   font-family: var(--font-sans);
   font-size: 0.875rem;
   line-height: 1.6;
-  color: var(--slate-900);
+  color: #000000;
   background: #FFFFFF;
   border: 1px solid var(--slate-200);
   border-radius: var(--radius-md);
@@ -425,8 +415,8 @@ p, .body-text {
   gap: 0.35rem;
   font-family: var(--font-sans);
   font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--slate-600);
+  font-weight: 700;
+  color: #000000;
   background: var(--slate-100);
   border: 1px solid var(--slate-200);
   padding: 0.35rem 0.65rem;
@@ -436,8 +426,9 @@ p, .body-text {
 }
 
 .guest-ai-helper-btn:hover {
-  color: var(--slate-900);
-  background: var(--slate-200);
+  color: var(--brand-rose);
+  background: var(--brand-rose-light);
+  border-color: var(--brand-rose-border);
 }
 
 .guest-submit-cta {
@@ -515,7 +506,7 @@ p, .body-text {
   gap: 0.4rem;
   font-family: var(--font-sans);
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 0.5rem 0.875rem;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
@@ -542,26 +533,26 @@ p, .body-text {
 
 .saas-btn-secondary {
   background: #FFFFFF;
-  color: var(--slate-700);
+  color: #000000;
   border-color: var(--slate-200);
   box-shadow: var(--shadow-xs);
 }
 
 .saas-btn-secondary:hover:not(:disabled) {
   background: var(--slate-50);
-  color: var(--slate-900);
-  border-color: var(--slate-300);
+  color: var(--brand-rose);
+  border-color: var(--brand-rose-border);
 }
 
 .saas-btn-ghost {
   background: transparent;
-  color: var(--slate-600);
+  color: #000000;
   border-color: transparent;
 }
 
 .saas-btn-ghost:hover:not(:disabled) {
   background: var(--slate-100);
-  color: var(--slate-900);
+  color: var(--brand-rose);
 }
 
 .saas-btn-danger {
@@ -582,7 +573,7 @@ p, .body-text {
   padding: 0 0.875rem;
   font-family: var(--font-sans);
   font-size: 0.875rem;
-  color: var(--slate-900);
+  color: #000000;
   background: #FFFFFF;
   border: 1px solid var(--slate-200);
   border-radius: var(--radius-md);
@@ -602,7 +593,7 @@ p, .body-text {
   gap: 0.3rem;
   font-family: var(--font-sans);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 0.25rem 0.625rem;
   border-radius: var(--radius-full);
   line-height: 1.2;
@@ -634,7 +625,7 @@ p, .body-text {
 
 .saas-badge-neutral {
   background: var(--slate-100);
-  color: var(--slate-700);
+  color: #000000;
   border: 1px solid var(--slate-200);
 }
 
@@ -653,8 +644,8 @@ p, .body-text {
   gap: 0.35rem;
   padding: 0.4rem 0.75rem;
   font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--slate-600);
+  font-weight: 700;
+  color: var(--slate-700);
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
@@ -664,14 +655,14 @@ p, .body-text {
 }
 
 .saas-tab-btn:hover {
-  color: var(--slate-900);
+  color: #000000;
 }
 
 .saas-tab-btn.active {
   background: #FFFFFF;
   color: var(--brand-rose);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .saas-table-wrapper {
@@ -696,7 +687,7 @@ p, .body-text {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--slate-500);
+  color: #000000;
   border-bottom: 1px solid var(--slate-200);
   white-space: nowrap;
 }
@@ -704,7 +695,7 @@ p, .body-text {
 .saas-table td {
   padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--slate-100);
-  color: var(--slate-700);
+  color: #000000;
   vertical-align: middle;
 }
 
@@ -738,8 +729,8 @@ p, .body-text {
 
 .kpi-label {
   font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--slate-500);
+  font-weight: 700;
+  color: #64748B;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -750,13 +741,13 @@ p, .body-text {
   font-size: 1.75rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--slate-900);
+  color: #000000;
   line-height: 1.1;
 }
 
 .kpi-subtext {
   font-size: 0.75rem;
-  color: var(--slate-500);
+  color: #64748B;
   font-weight: 500;
 }
 
