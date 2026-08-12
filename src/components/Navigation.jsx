@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Settings, Sparkles, Lock, LogOut, Building2, Plus, ChevronDown, CheckCircle2 } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Settings,
+  Sparkles,
+  Lock,
+  LogOut,
+  Building2,
+  Plus,
+  ChevronDown,
+  CheckCircle2,
+  Smartphone,
+  ShieldCheck,
+  Search
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFeedback } from '../context/FeedbackContext';
 import { SettingsModal } from './Common/SettingsModal';
 import { HotelRegistryModal } from './Dashboard/HotelRegistryModal';
+import { JJLogo } from './Common/JJLogo';
 
 export function Navigation() {
   const {
@@ -13,13 +27,14 @@ export function Navigation() {
     settings,
     registeredHotels,
     isManagerAuthenticated,
-    lockDashboard
+    lockDashboard,
   } = useFeedback();
 
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const [isRegistryOpen, setIsRegistryOpen] = useState(false);
+  const [switcherFilter, setSwitcherFilter] = useState('');
 
   const alertThreshold = settings?.alertThreshold ?? 3;
   const unresolvedAlertCount = (feedbacks || []).filter(
@@ -40,198 +55,240 @@ export function Navigation() {
     }
   };
 
+  const filteredHotels = (registeredHotels || []).filter((h) =>
+    (h.name || '').toLowerCase().includes(switcherFilter.toLowerCase()) ||
+    (h.hotelSlug || h.hotelId || '').toLowerCase().includes(switcherFilter.toLowerCase())
+  );
+
   return (
     <>
-      <header className="app-header">
-        {/* TOP ROW: BRAND TITLE + HOTEL SWITCHER */}
-        <div className="header-top-row">
-          <div className="brand-title" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
-            <div className="brand-icon" style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)' }}>
-              <Sparkles size={18} color="#ffffff" />
-            </div>
-            <span className="brand-text">
-              JJ Review System
-            </span>
-          </div>
-
-          {/* Hotel Switcher Dropdown */}
-          <div style={{ position: 'relative' }}>
-            <button
-              type="button"
-              onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
+      <header
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(8px)',
+          borderBottom: '1px solid var(--border-subtle)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          padding: '0.75rem 1.25rem',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* LEFT: BRAND & PROPERTY SWITCHER */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+            <div
+              onClick={handleBrandClick}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.35rem',
-                background: '#eff6ff',
-                border: '1px solid #bfdbfe',
-                color: '#1d4ed8',
-                padding: '0.35rem 0.65rem',
-                borderRadius: '20px',
-                fontSize: '0.775rem',
-                fontWeight: 700,
+                gap: '0.625rem',
                 cursor: 'pointer',
+                userSelect: 'none',
               }}
             >
-              <Building2 size={13} color="#1d4ed8" />
-              <span className="hotel-switcher-label">{settings?.hotelName || settings?.name || 'Select Hotel'}</span>
-              <ChevronDown size={12} color="#1d4ed8" />
-            </button>
+              <JJLogo size={34} rounded={9} showGlow={true} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'var(--slate-900)', lineHeight: '1.2', letterSpacing: '-0.02em' }}>
+                  JJ Review System
+                </span>
+                <span style={{ fontSize: '0.6875rem', color: 'var(--brand-rose)', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                  Hospitality OS
+                </span>
+              </div>
+            </div>
 
-            {isSwitcherOpen && (
-              <div
+            <div style={{ width: '1px', height: '24px', background: 'var(--slate-200)' }} />
+
+            {/* Property Switcher Dropdown */}
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
+                className="saas-btn saas-btn-secondary"
                 style={{
-                  position: 'absolute',
-                  top: '115%',
-                  right: 0,
-                  background: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 25px rgba(15, 23, 42, 0.15)',
-                  minWidth: '240px',
-                  maxWidth: '300px',
-                  zIndex: 100,
-                  padding: '0.5rem',
+                  padding: '0.35rem 0.65rem',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  gap: '0.4rem',
+                  maxWidth: '220px',
                 }}
               >
-                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', padding: '0.35rem 0.65rem', textTransform: 'uppercase' }}>
-                  Registered Hotels ({registeredHotels.length})
-                </div>
+                <Building2 size={14} color="var(--slate-600)" />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {settings?.hotelName || settings?.name || 'Select Property'}
+                </span>
+                <ChevronDown size={13} color="var(--slate-400)" />
+              </button>
 
-                <div style={{ maxHeight: '240px', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                  {registeredHotels.map((h) => {
-                    const isSelected = h.hotelSlug === settings.hotelSlug || h.hotelId === settings.hotelSlug;
-                    return (
-                      <button
-                        key={h.hotelSlug || h.hotelId}
-                        type="button"
-                        onClick={() => handleSelectHotel(h.hotelSlug || h.hotelId)}
+              {isSwitcherOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '115%',
+                    left: 0,
+                    background: '#FFFFFF',
+                    border: '1px solid var(--slate-200)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'var(--shadow-dropdown)',
+                    minWidth: '260px',
+                    maxWidth: '320px',
+                    zIndex: 200,
+                    padding: '0.5rem',
+                  }}
+                >
+                  <div style={{ padding: '0.35rem 0.5rem' }}>
+                    <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
+                      <Search
+                        size={13}
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          width: '100%',
-                          padding: '0.5rem 0.65rem',
-                          border: 'none',
-                          background: isSelected ? '#f0fdf4' : 'transparent',
-                          color: isSelected ? '#166534' : '#0f172a',
-                          fontWeight: isSelected ? 800 : 600,
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          fontSize: '0.825rem',
-                          margin: '2px 0',
+                          position: 'absolute',
+                          left: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          color: 'var(--slate-400)',
                         }}
-                      >
-                        <Building2 size={15} color={isSelected ? '#166534' : '#64748b'} style={{ flexShrink: 0 }} />
-                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                          <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontWeight: 800, fontSize: '0.8rem' }}>{h.name}</span>
-                          <span style={{ fontSize: '0.675rem', color: '#64748b', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>/{h.hotelSlug || h.hotelId}</span>
-                        </div>
-                        {isSelected && <CheckCircle2 size={14} color="#166534" style={{ flexShrink: 0 }} />}
-                      </button>
-                    );
-                  })}
-                </div>
+                      />
+                      <input
+                        type="text"
+                        className="saas-input"
+                        placeholder="Search properties..."
+                        value={switcherFilter}
+                        onChange={(e) => setSwitcherFilter(e.target.value)}
+                        autoFocus
+                        style={{ height: '32px', fontSize: '0.75rem', paddingLeft: '1.75rem' }}
+                      />
+                    </div>
 
-                <div style={{ borderTop: '1px solid #f1f5f9', marginTop: '0.35rem', paddingTop: '0.35rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSwitcherOpen(false);
-                      setIsRegistryOpen(true);
-                    }}
+                    <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                      Properties ({filteredHotels.length})
+                    </div>
+                  </div>
+
+                  <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    {filteredHotels.map((h) => {
+                      const isSelected = h.hotelSlug === settings.hotelSlug || h.hotelId === settings.hotelSlug;
+                      return (
+                        <button
+                          key={h.hotelSlug || h.hotelId}
+                          type="button"
+                          onClick={() => handleSelectHotel(h.hotelSlug || h.hotelId)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            width: '100%',
+                            padding: '0.45rem 0.65rem',
+                            border: 'none',
+                            background: isSelected ? 'var(--slate-100)' : 'transparent',
+                            color: isSelected ? 'var(--slate-900)' : 'var(--slate-700)',
+                            fontWeight: isSelected ? 600 : 500,
+                            borderRadius: 'var(--radius-sm)',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            fontSize: '0.8125rem',
+                          }}
+                        >
+                          <Building2 size={14} color={isSelected ? 'var(--slate-900)' : 'var(--slate-400)'} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.name}</div>
+                            <div style={{ fontSize: '0.6875rem', color: 'var(--slate-400)' }}>/{h.hotelSlug || h.hotelId}</div>
+                          </div>
+                          {isSelected && <CheckCircle2 size={13} color="var(--emerald-600)" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ borderTop: '1px solid var(--slate-100)', marginTop: '0.35rem', paddingTop: '0.35rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSwitcherOpen(false);
+                        setIsRegistryOpen(true);
+                      }}
+                      className="saas-btn saas-btn-ghost"
+                      style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.78125rem', color: 'var(--brand-accent)' }}
+                    >
+                      <Plus size={13} />
+                      <span>Onboard New Property</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT: PORTAL / DASHBOARD SEGMENT SWITCHER & ACTIONS */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            <div className="saas-tabs-container">
+              <button
+                type="button"
+                className={`saas-tab-btn ${activeTab === 'guest' ? 'active' : ''}`}
+                onClick={() => setActiveTab('guest')}
+              >
+                <Smartphone size={14} />
+                <span>Guest Portal</span>
+              </button>
+
+              <button
+                type="button"
+                className={`saas-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+                onClick={() => setActiveTab('dashboard')}
+              >
+                {isManagerAuthenticated ? <LayoutDashboard size={14} /> : <Lock size={13} />}
+                <span>Manager Dashboard</span>
+                {isManagerAuthenticated && unresolvedAlertCount > 0 && (
+                  <span
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      width: '100%',
-                      padding: '0.55rem 0.65rem',
-                      border: 'none',
-                      background: '#eff6ff',
-                      color: '#2563eb',
-                      fontWeight: 800,
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem',
+                      background: 'var(--rose-600)',
+                      color: '#FFFFFF',
+                      fontSize: '0.6875rem',
+                      fontWeight: 700,
+                      padding: '0.1rem 0.4rem',
+                      borderRadius: 'var(--radius-full)',
                     }}
                   >
-                    <Plus size={14} color="#2563eb" /> + Add New Hotel
-                  </button>
-                </div>
+                    {unresolvedAlertCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {isManagerAuthenticated && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="saas-btn saas-btn-secondary"
+                  style={{ padding: '0.45rem', height: '34px', width: '34px' }}
+                  title="Property Settings"
+                >
+                  <Settings size={15} color="var(--slate-700)" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={lockDashboard}
+                  className="saas-btn saas-btn-ghost"
+                  style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', height: '34px' }}
+                  title="Lock Dashboard"
+                >
+                  <LogOut size={13} />
+                  <span>Lock</span>
+                </button>
               </div>
             )}
           </div>
-        </div>
-
-        {/* ACTIONS ROW: NAV TABS + ADD HOTEL + SETTINGS/LOCK */}
-        <div className="header-actions-row">
-          <nav className="nav-tabs">
-            <button
-              type="button"
-              className={`nav-tab-btn ${activeTab === 'guest' ? 'active' : ''}`}
-              onClick={() => setActiveTab('guest')}
-            >
-              <Building2 size={15} color={activeTab === 'guest' ? '#ffffff' : '#374151'} />
-              <span className="nav-tab-text-full">Guest Review Page</span>
-              <span className="nav-tab-text-mobile">Review Page</span>
-            </button>
-
-            <button
-              type="button"
-              className={`nav-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dashboard')}
-            >
-              {isManagerAuthenticated ? (
-                <LayoutDashboard size={15} color={activeTab === 'dashboard' ? '#ffffff' : '#374151'} />
-              ) : (
-                <Lock size={14} color={activeTab === 'dashboard' ? '#ffffff' : '#374151'} />
-              )}
-              <span className="nav-tab-text-full">Hotel Dashboard</span>
-              <span className="nav-tab-text-mobile">Dashboard</span>
-              {!isManagerAuthenticated && (
-                <span className="protected-badge" style={{ color: activeTab === 'dashboard' ? '#2563eb' : '#374151', background: activeTab === 'dashboard' ? '#ffffff' : '#e2e8f0' }}>
-                  Lock
-                </span>
-              )}
-              {isManagerAuthenticated && unresolvedAlertCount > 0 && (
-                <span
-                  style={{
-                    background: '#ef4444',
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    fontWeight: 800,
-                    padding: '0.1rem 0.45rem',
-                    borderRadius: '10px',
-                  }}
-                >
-                  {unresolvedAlertCount}
-                </span>
-              )}
-            </button>
-          </nav>
-
-          {isManagerAuthenticated && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-              <button
-                type="button"
-                onClick={() => setIsSettingsOpen(true)}
-                className="icon-btn-header"
-                title="Hotel Settings"
-              >
-                <Settings size={16} />
-              </button>
-
-              <button
-                type="button"
-                onClick={lockDashboard}
-                className="lock-btn-header"
-                title="Lock Dashboard"
-              >
-                <LogOut size={13} /> <span className="add-hotel-text">Lock</span>
-              </button>
-            </div>
-          )}
         </div>
       </header>
 

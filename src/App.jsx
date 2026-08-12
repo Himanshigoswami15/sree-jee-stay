@@ -1,5 +1,6 @@
 import React, { Component, useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
+import { Building2, Plus, ArrowRight, ShieldCheck, Sparkles, RefreshCw } from 'lucide-react';
 import { FeedbackProvider, useFeedback } from './context/FeedbackContext';
 import { Navigation } from './components/Navigation';
 import { AlertBanner } from './components/Common/AlertBanner';
@@ -8,6 +9,7 @@ import { GuestReviewCard } from './components/GuestFlow/GuestReviewCard';
 import { TabbedDashboard } from './components/Dashboard/TabbedDashboard';
 import { HotelRegistryModal } from './components/Dashboard/HotelRegistryModal';
 import { SuperAdminPortal } from './components/Dashboard/SuperAdminPortal';
+import { JJLogo } from './components/Common/JJLogo';
 import { apiClient } from './services/apiClient';
 
 class ErrorBoundary extends Component {
@@ -27,25 +29,41 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ maxWidth: '520px', margin: '3rem auto', padding: '2rem', textAlign: 'center', background: '#ffffff', borderRadius: '20px', border: '1.5px solid #fca5a5', boxShadow: '0 10px 25px rgba(0,0,0,0.08)' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4f46e5', marginBottom: '0.5rem' }}>
-            JJ Review System
+        <div style={{ maxWidth: '520px', margin: '4rem auto', padding: '2rem', textAlign: 'center' }} className="saas-card">
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--slate-900)', marginBottom: '0.5rem' }}>
+            Application Notice
           </h2>
-          <p style={{ fontSize: '0.875rem', color: '#475569', marginBottom: '0.75rem' }}>
-            Something went wrong loading this view:
+          <p style={{ fontSize: '0.875rem', color: 'var(--slate-600)', marginBottom: '1rem' }}>
+            An unexpected error occurred while rendering this interface.
           </p>
-          <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', padding: '0.75rem', borderRadius: '10px', fontSize: '0.775rem', textAlign: 'left', fontFamily: 'monospace', overflowX: 'auto', marginBottom: '1.25rem', whiteSpace: 'pre-wrap', maxHeight: '200px' }}>
-            {this.state.error ? String(this.state.error.stack || this.state.error.message || this.state.error) : 'Unknown Error'}
+          <div
+            style={{
+              background: 'var(--slate-50)',
+              border: '1px solid var(--slate-200)',
+              color: 'var(--rose-600)',
+              padding: '0.75rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.75rem',
+              textAlign: 'left',
+              fontFamily: 'monospace',
+              overflowX: 'auto',
+              marginBottom: '1.25rem',
+              whiteSpace: 'pre-wrap',
+              maxHeight: '160px',
+            }}
+          >
+            {this.state.error ? String(this.state.error.message || this.state.error) : 'Unknown Error'}
           </div>
           <button
             type="button"
-            className="btn-primary-action"
+            className="saas-btn saas-btn-primary"
             onClick={() => {
               this.setState({ hasError: false, error: null });
               window.location.reload();
             }}
           >
-            Reload Page
+            <RefreshCw size={14} />
+            <span>Reload Page</span>
           </button>
         </div>
       );
@@ -61,28 +79,44 @@ function MainContent() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem 1rem', color: '#64748b', fontWeight: 700 }}>
-        Loading Hotel Review System...
+      <div style={{ textAlign: 'center', padding: '6rem 1rem', color: 'var(--slate-500)', fontSize: '0.9375rem', fontWeight: 500 }}>
+        Loading property portal...
       </div>
     );
   }
 
   if (hotelNotFound) {
     return (
-      <div style={{ maxWidth: '500px', margin: '4rem auto', padding: '2rem', textAlign: 'center', background: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>
-          🏨 Hotel Not Found
+      <div style={{ maxWidth: '480px', margin: '4rem auto', padding: '2.25rem', textAlign: 'center' }} className="saas-card">
+        <div
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            background: 'var(--slate-100)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1rem',
+            color: 'var(--slate-700)',
+          }}
+        >
+          <Building2 size={24} />
+        </div>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--slate-900)', marginBottom: '0.35rem' }}>
+          Property Profile Not Found
         </h2>
-        <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-          The requested hotel profile does not exist in MongoDB Atlas.
+        <p style={{ fontSize: '0.875rem', color: 'var(--slate-600)', marginBottom: '1.5rem', lineHeight: '1.55' }}>
+          The requested hospitality profile is not registered in the system directory. You can register it in 2 minutes:
         </p>
         <button
           type="button"
-          className="btn-primary-action"
+          className="saas-btn saas-btn-primary"
           onClick={() => setIsRegistryOpen(true)}
-          style={{ width: '100%', padding: '0.75rem' }}
+          style={{ width: '100%', height: '44px', justifyContent: 'center' }}
         >
-          + Onboard This Hotel Now
+          <Plus size={16} />
+          <span>Onboard This Property Now</span>
         </button>
 
         <HotelRegistryModal
@@ -114,7 +148,7 @@ function HotelWrapper() {
   return (
     <ErrorBoundary>
       <FeedbackProvider key={hotelSlug} hotelSlug={hotelSlug}>
-        <div className="app-root">
+        <div className="app-root" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <Navigation />
           <AlertBanner />
           <ManagerPinModal />
@@ -153,60 +187,81 @@ function RootRedirector() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem 1rem', color: '#64748b', fontWeight: 700 }}>
-        Connecting to JJ Review System...
+      <div style={{ textAlign: 'center', padding: '6rem 1rem', color: 'var(--slate-500)', fontSize: '0.9375rem', fontWeight: 500 }}>
+        Connecting to Hospitality Review Platform...
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '560px', margin: '3rem auto', padding: '2rem', textAlign: 'center', background: '#ffffff', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 12px 30px rgba(0,0,0,0.06)' }}>
-      <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>
+    <div style={{ maxWidth: '540px', margin: '3.5rem auto', padding: '2.25rem 1.75rem', textAlign: 'center' }} className="saas-card">
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+        <JJLogo size={54} rounded={15} showGlow={true} />
+      </div>
+
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--slate-900)', marginBottom: '0.35rem', letterSpacing: '-0.03em' }}>
         JJ Review System
       </h1>
-      <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-        Enterprise Multi-Client Guest Review & Analytics Platform. Select a registered hotel or onboard a new business:
+
+      <p style={{ fontSize: '0.875rem', color: 'var(--slate-600)', marginBottom: '1.5rem', lineHeight: '1.55' }}>
+        Enterprise Multi-Tenant Hospitality Review & Reputation Intelligence OS.
       </p>
 
       {hotels.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem', textAlign: 'left' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-            Registered Hotel Portals ({hotels.length})
+        <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
+            Registered Properties ({hotels.length})
           </div>
-          {hotels.map((h) => (
-            <button
-              key={h.hotelSlug || h.hotelId}
-              type="button"
-              onClick={() => navigate(`/${h.hotelSlug || h.hotelId}`)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0.85rem 1rem',
-                background: '#f8fafc',
-                border: '1px solid #cbd5e1',
-                borderRadius: '14px',
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              <div>
-                <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem' }}>{h.name}</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>/{h.hotelSlug || h.hotelId}</div>
-              </div>
-              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#2563eb' }}>Open Portal &rarr;</span>
-            </button>
-          ))}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '280px', overflowY: 'auto' }}>
+            {hotels.map((h) => (
+              <button
+                key={h.hotelSlug || h.hotelId}
+                type="button"
+                onClick={() => navigate(`/${h.hotelSlug || h.hotelId}`)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.75rem 1rem',
+                  background: 'var(--slate-50)',
+                  border: '1px solid var(--slate-200)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'var(--transition-fast)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--slate-300)';
+                  e.currentTarget.style.background = 'var(--slate-100)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--slate-200)';
+                  e.currentTarget.style.background = 'var(--slate-50)';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                  <Building2 size={16} color="var(--slate-500)" />
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--slate-900)', fontSize: '0.875rem' }}>{h.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>/{h.hotelSlug || h.hotelId}</div>
+                  </div>
+                </div>
+                <ArrowRight size={15} color="var(--slate-400)" />
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       <button
         type="button"
-        className="btn-primary-action"
+        className="saas-btn saas-btn-primary"
         onClick={() => setIsRegistryOpen(true)}
-        style={{ width: '100%', padding: '0.85rem' }}
+        style={{ width: '100%', height: '44px', justifyContent: 'center' }}
       >
-        + Add New Hotel Business
+        <Plus size={16} />
+        <span>Onboard New Property</span>
       </button>
 
       <HotelRegistryModal

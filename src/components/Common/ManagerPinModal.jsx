@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, KeyRound, X, AlertCircle, Mail, ArrowLeft, CheckCircle2, Lock, Key, RefreshCw } from 'lucide-react';
 import { useFeedback } from '../../context/FeedbackContext';
+import { JJLogo } from './JJLogo';
 
 export function ManagerPinModal() {
   const { isPinModalOpen, setIsPinModalOpen, verifyPin, resetPinAndAuthenticate, authenticateAndOpenDashboard, settings } = useFeedback();
@@ -25,9 +26,9 @@ export function ManagerPinModal() {
 
   if (!isPinModalOpen) return null;
 
-  const managerEmail = settings.managerEmail || 'himanshigoswami9057@gmail.com';
+  const managerEmail = settings?.managerEmail || 'himanshigoswami9057@gmail.com';
+  const propertyName = settings?.hotelName || settings?.name || 'Selected Property';
 
-  // Handle standard PIN Login
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -47,55 +48,46 @@ export function ManagerPinModal() {
     }
   };
 
-  // Step 1: Trigger Forgot Password -> Generate & Send OTP -> Show ONLY OTP Screen
   const handleStartForgotPassword = () => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOtp(code);
     setEnteredOtp('');
     setOtpError('');
-    setOtpSentMessage(`🔒 6-Digit OTP Code automatically dispatched to: ${managerEmail}`);
+    setOtpSentMessage(`6-Digit OTP dispatched to: ${managerEmail}`);
     setViewMode('otp_verify');
   };
 
-  // Step 2: Verify OTP
   const handleVerifyOtpSubmit = (e) => {
     e.preventDefault();
-    if (enteredOtp.trim() === generatedOtp) {
-      setOtpError('');
+    if (enteredOtp.trim() === generatedOtp.trim()) {
       setViewMode('new_password');
+      setOtpError('');
     } else {
-      setOtpError('Incorrect OTP Code. Please check the code and try again.');
+      setOtpError('Invalid 6-digit OTP code. Please enter the correct code.');
     }
   };
 
-  // Step 3A: Save New Password & Directly Open Dashboard
-  const handleSaveNewPassword = async (e) => {
+  const handleSetNewPasswordSubmit = async (e) => {
     e.preventDefault();
-    if (!newPin || newPin.length < 4) {
-      setPasswordError('New Password / PIN must be at least 4 digits.');
+    if (!newPin || newPin.trim().length < 4) {
+      setPasswordError('New PIN must be at least 4 characters long.');
       return;
     }
 
     setIsSubmitting(true);
     setPasswordError('');
     try {
-      const res = await resetPinAndAuthenticate(newPin);
-      if (res.success) {
-        resetState();
+      const res = await resetPinAndAuthenticate(newPin.trim());
+      if (res && res.success) {
+        handleClose();
       } else {
-        setPasswordError(res.error || 'Failed to save new password.');
+        setPasswordError(res?.error || 'Failed to update PIN.');
       }
     } catch (err) {
-      setPasswordError('Error saving new password.');
+      setPasswordError(err?.message || 'Error updating PIN.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Step 3B: "Not Now" Option -> Keep current password and directly open dashboard
-  const handleNotNowOption = () => {
-    authenticateAndOpenDashboard();
-    resetState();
   };
 
   const resetState = () => {
@@ -116,63 +108,47 @@ export function ManagerPinModal() {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-card" style={{ maxWidth: '440px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button
-            type="button"
-            onClick={handleClose}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-          >
-            <X size={20} />
-          </button>
-        </div>
+    <div className="saas-modal-overlay" onClick={handleClose}>
+      <div className="saas-modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', padding: '2rem 1.75rem', textAlign: 'center' }}>
+        <button
+          type="button"
+          onClick={handleClose}
+          className="saas-btn saas-btn-ghost"
+          style={{ position: 'absolute', top: '1rem', right: '1rem', padding: '4px' }}
+        >
+          <X size={18} />
+        </button>
 
-        {/* ===================================================================
-            VIEW MODE 1: Standard Manager Security PIN Login
-            =================================================================== */}
+        {/* VIEW 1: Standard Manager Login */}
         {viewMode === 'login' && (
-          <>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '-0.5rem' }}>
-              <div
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '18px',
-                  background: 'linear-gradient(135deg, var(--primary), #4338ca)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  boxShadow: '0 8px 22px rgba(79, 70, 229, 0.35)',
-                }}
-              >
-                <ShieldCheck size={30} />
-              </div>
-
-              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                JJ Review System — Hotel Access
-              </h2>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                Enter your Security PIN to access analytics & settings for <strong>{settings.name || settings.hotelName || 'Selected Business'}</strong>.
-              </p>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <JJLogo size={48} rounded={13} showGlow={true} />
             </div>
 
-            <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem', marginTop: '0.5rem' }}>
-              <div className="form-group">
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--slate-900)', margin: '0 0 0.35rem' }}>
+              Manager Authentication
+            </h2>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--slate-600)', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+              Enter your Security PIN to unlock analytics and settings for <strong>{propertyName}</strong>.
+            </p>
+
+            <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <KeyRound size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem' }} />
+                  <KeyRound size={16} color="var(--slate-400)" style={{ position: 'absolute', left: '1rem' }} />
                   <input
                     type="password"
                     maxLength={8}
-                    className="form-input"
+                    className="saas-input"
                     disabled={isSubmitting}
                     style={{
-                      paddingLeft: '2.75rem',
+                      paddingLeft: '2.5rem',
                       fontSize: '1.25rem',
-                      letterSpacing: '0.35em',
+                      letterSpacing: '0.3em',
                       textAlign: 'center',
-                      fontWeight: 800,
+                      fontWeight: 700,
+                      height: '46px',
                     }}
                     value={pinInput}
                     onChange={(e) => {
@@ -185,239 +161,130 @@ export function ManagerPinModal() {
                   />
                 </div>
                 {loginError && (
-                  <div style={{ fontSize: '0.8rem', color: '#fb7185', marginTop: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
-                    <AlertCircle size={14} /> {loginError}
+                  <div className="saas-badge saas-badge-danger" style={{ marginTop: '0.5rem', width: '100%', padding: '0.4rem' }}>
+                    <AlertCircle size={13} /> <span>{loginError}</span>
                   </div>
                 )}
               </div>
 
               <button
                 type="submit"
-                className="btn-primary-action"
+                className="saas-btn saas-btn-primary"
                 disabled={isSubmitting}
-                style={{
-                  height: '48px',
-                  width: '100%',
-                  background: '#2563eb',
-                  color: '#ffffff',
-                  fontWeight: 800,
-                  fontSize: '0.95rem',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  border: 'none',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
-                  cursor: 'pointer',
-                  marginTop: '0.25rem',
-                }}
+                style={{ width: '100%', height: '44px', justifyContent: 'center', fontSize: '0.9375rem' }}
               >
-                {isSubmitting ? (
-                  <>
-                    <RefreshCw size={18} className="spin" /> Verifying PIN...
-                  </>
-                ) : (
-                  <>
-                    <Lock size={18} /> Continue to Hotel Dashboard &rarr;
-                  </>
-                )}
-              </button>
-            </form>
-          </>
-        )}
-
-        {/* ===================================================================
-            VIEW MODE 2: ONLY OTP Input Screen (After clicking Forgot Password)
-            =================================================================== */}
-        {viewMode === 'otp_verify' && (
-          <>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '-0.5rem' }}>
-              <div
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '18px',
-                  background: 'linear-gradient(135deg, #0284c7, #0369a1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  boxShadow: '0 8px 22px rgba(2, 132, 199, 0.35)',
-                }}
-              >
-                <Mail size={28} />
-              </div>
-
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                Verify OTP Code
-              </h2>
-
-              {/* OTP Sent Notification Banner */}
-              <div style={{
-                background: '#f0f9ff',
-                border: '1px solid #bae6fd',
-                borderRadius: '14px',
-                padding: '0.75rem 0.95rem',
-                fontSize: '0.825rem',
-                color: '#0369a1',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.5rem',
-                lineHeight: '1.4',
-                width: '100%'
-              }}>
-                <Mail size={18} color="#0284c7" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <strong>OTP Shared to Manager Email Account:</strong>
-                  <div style={{ fontWeight: 800, color: '#0284c7', marginTop: '2px' }}>
-                    {managerEmail}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <form onSubmit={handleVerifyOtpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.85rem' }}>
-              <div className="form-group" style={{ textAlign: 'left' }}>
-                <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>
-                  Enter 6-Digit OTP Code:
-                </label>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <Key size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
-                  <input
-                    type="text"
-                    maxLength={6}
-                    inputMode="numeric"
-                    className="form-input"
-                    style={{
-                      paddingLeft: '2.5rem',
-                      fontSize: '1.2rem',
-                      letterSpacing: '0.25em',
-                      fontWeight: 800,
-                      textAlign: 'center'
-                    }}
-                    value={enteredOtp}
-                    onChange={(e) => {
-                      setEnteredOtp(e.target.value);
-                      setOtpError('');
-                    }}
-                    placeholder="849201"
-                    autoFocus
-                    required
-                  />
-                </div>
-              </div>
-
-              {otpError && (
-                <div style={{ fontSize: '0.8rem', color: '#fb7185', background: '#fff1f2', padding: '0.55rem', borderRadius: '10px', border: '1px solid #fda4af', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
-                  <AlertCircle size={14} /> {otpError}
-                </div>
-              )}
-
-              <button type="submit" className="btn-primary-action">
-                <CheckCircle2 size={18} /> Verify OTP
+                {isSubmitting ? 'Authenticating...' : 'Unlock Dashboard'}
               </button>
 
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  className="btn-secondary-action"
-                  style={{ flex: 1, fontSize: '0.8rem' }}
-                  onClick={handleStartForgotPassword}
-                >
-                  <RefreshCw size={13} /> Resend OTP
-                </button>
-
-                <button
-                  type="button"
-                  className="btn-secondary-action"
-                  style={{ flex: 1, fontSize: '0.8rem' }}
-                  onClick={() => setViewMode('login')}
-                >
-                  <ArrowLeft size={13} /> Back to Login
-                </button>
-              </div>
-            </form>
-          </>
-        )}
-
-        {/* ===================================================================
-            VIEW MODE 3: New Password Screen (Shown ONLY after OTP Verification)
-            =================================================================== */}
-        {viewMode === 'new_password' && (
-          <>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '-0.5rem' }}>
-              <div
-                style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '18px',
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  boxShadow: '0 8px 22px rgba(16, 185, 129, 0.35)',
-                }}
-              >
-                <CheckCircle2 size={30} />
-              </div>
-
-              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                OTP Verified Successfully!
-              </h2>
-              <p style={{ fontSize: '0.835rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                Create a new Manager Password / Security PIN or skip directly to the dashboard.
-              </p>
-            </div>
-
-            <form onSubmit={handleSaveNewPassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.85rem' }}>
-              <div className="form-group" style={{ textAlign: 'left' }}>
-                <label className="form-label" style={{ fontWeight: 800, color: '#1e293b' }}>
-                  Set New Manager Security Password / PIN:
-                </label>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <KeyRound size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '0.85rem' }} />
-                  <input
-                    type="password"
-                    maxLength={8}
-                    className="form-input"
-                    style={{ paddingLeft: '2.5rem', fontSize: '1.1rem', fontWeight: 700 }}
-                    value={newPin}
-                    onChange={(e) => {
-                      setNewPin(e.target.value);
-                      setPasswordError('');
-                    }}
-                    placeholder="Enter new PIN (e.g. 5678)"
-                    autoFocus
-                    required
-                  />
-                </div>
-              </div>
-
-              {passwordError && (
-                <div style={{ fontSize: '0.8rem', color: '#fb7185', background: '#fff1f2', padding: '0.55rem', borderRadius: '10px', border: '1px solid #fda4af', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
-                  <AlertCircle size={14} /> {passwordError}
-                </div>
-              )}
-
-              {/* Action Button 1: Save New Password & Open Dashboard */}
-              <button type="submit" className="btn-primary-action">
-                <CheckCircle2 size={18} /> Save New Password & Open Dashboard
-              </button>
-
-              {/* Action Button 2: Not Now Option */}
               <button
                 type="button"
-                className="btn-secondary-action"
-                style={{ fontSize: '0.875rem', fontWeight: 700 }}
-                onClick={handleNotNowOption}
+                onClick={handleStartForgotPassword}
+                className="saas-btn saas-btn-ghost"
+                style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}
               >
-                Not Now (Skip to Dashboard)
+                Forgot PIN? Reset via OTP
               </button>
             </form>
-          </>
+          </div>
+        )}
+
+        {/* VIEW 2: OTP Verification */}
+        {viewMode === 'otp_verify' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--slate-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand-rose)' }}>
+                <Mail size={24} />
+              </div>
+            </div>
+
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--slate-900)', margin: '0 0 0.35rem' }}>
+              Security OTP Verification
+            </h2>
+
+            {otpSentMessage && (
+              <div className="saas-badge saas-badge-brand" style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem', borderRadius: 'var(--radius-md)' }}>
+                {otpSentMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyOtpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <input
+                  type="text"
+                  maxLength={6}
+                  className="saas-input"
+                  value={enteredOtp}
+                  onChange={(e) => { setEnteredOtp(e.target.value); setOtpError(''); }}
+                  placeholder="Enter 6-digit OTP"
+                  style={{ textAlign: 'center', fontSize: '1.25rem', letterSpacing: '0.25em', height: '46px', fontWeight: 700 }}
+                  autoFocus
+                  required
+                />
+                {otpError && (
+                  <div className="saas-badge saas-badge-danger" style={{ marginTop: '0.5rem', width: '100%', padding: '0.4rem' }}>
+                    <AlertCircle size={13} /> {otpError}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ background: 'var(--slate-50)', padding: '0.65rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--slate-200)', fontSize: '0.75rem', color: 'var(--slate-600)' }}>
+                Demo Verification Code: <strong style={{ color: 'var(--brand-rose)', fontFamily: 'monospace' }}>{generatedOtp}</strong>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button type="button" onClick={() => setViewMode('login')} className="saas-btn saas-btn-secondary" style={{ flex: 1 }}>
+                  Back
+                </button>
+                <button type="submit" className="saas-btn saas-btn-primary" style={{ flex: 2 }}>
+                  Verify OTP
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* VIEW 3: Set New Password */}
+        {viewMode === 'new_password' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--emerald-50)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--emerald-600)' }}>
+                <CheckCircle2 size={26} />
+              </div>
+            </div>
+
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--slate-900)', margin: '0 0 0.35rem' }}>
+              Set New Security PIN
+            </h2>
+
+            <form onSubmit={handleSetNewPasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+              <div>
+                <input
+                  type="password"
+                  className="saas-input"
+                  value={newPin}
+                  onChange={(e) => { setNewPin(e.target.value); setPasswordError(''); }}
+                  placeholder="Enter new 4+ digit PIN"
+                  style={{ textAlign: 'center', height: '46px', fontSize: '1.1rem', fontWeight: 700 }}
+                  autoFocus
+                  required
+                />
+                {passwordError && (
+                  <div className="saas-badge saas-badge-danger" style={{ marginTop: '0.5rem', width: '100%', padding: '0.4rem' }}>
+                    <AlertCircle size={13} /> {passwordError}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="saas-btn saas-btn-primary"
+                disabled={isSubmitting}
+                style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+              >
+                {isSubmitting ? 'Updating PIN...' : 'Save & Open Dashboard'}
+              </button>
+            </form>
+          </div>
         )}
       </div>
     </div>

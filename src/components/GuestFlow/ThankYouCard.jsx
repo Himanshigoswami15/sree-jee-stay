@@ -10,73 +10,63 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
 
   const isHighRating = rating >= 4;
   const activeProviders = getActiveProviders(settings);
-  const voucherCode = `VIP-${(settings?.hotelName || settings?.name || 'VIP').substring(0, 4).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const hotelName = settings?.hotelName || settings?.name || 'Us';
+  const voucherCode = `VIP-${hotelName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase() || 'STAY'}-${Math.floor(1000 + Math.random() * 9000)}`;
 
   const handleCopyVoucher = () => {
     navigator.clipboard.writeText(voucherCode);
     setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2500);
+    setTimeout(() => setCopiedCode(false), 2200);
   };
 
   return (
     <motion.div
-      className="guest-card"
-      initial={{ opacity: 0, scale: 0.96 }}
+      className="guest-portal-card"
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        textAlign: 'center',
-        padding: '2rem 1.5rem',
-        maxWidth: '480px',
-        margin: '1.5rem auto',
-        background: '#ffffff',
-        borderRadius: '18px',
-        border: '1px solid #E5E7EB',
-        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.05)',
-        boxSizing: 'border-box',
-      }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem' }}>
-        {/* Animated Badge */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.875rem' }}>
+        {/* Status Indicator Icon */}
         <div
           style={{
-            width: '64px',
-            height: '64px',
+            width: '56px',
+            height: '56px',
             borderRadius: '50%',
-            background: isHighRating ? '#ECFDF5' : '#EFF6FF',
-            border: isHighRating ? '1px solid #A7F3D0' : '1px solid #BFDBFE',
+            background: isHighRating ? 'var(--emerald-50)' : 'var(--slate-100)',
+            border: isHighRating ? '1px solid var(--emerald-100)' : '1px solid var(--slate-200)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: isHighRating ? '#22C55E' : '#2563EB',
-            marginBottom: '0.25rem',
+            color: isHighRating ? 'var(--emerald-600)' : 'var(--slate-700)',
           }}
         >
-          {isHighRating ? <CheckCircle2 size={36} /> : <Heart size={34} />}
+          {isHighRating ? <CheckCircle2 size={32} /> : <Heart size={28} />}
         </div>
 
-        <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#111827', lineHeight: '1.3', letterSpacing: '-0.02em' }}>
-          Thank You for Reviewing {settings.hotelName || settings.name || 'Us'}!
-        </h2>
+        <div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--slate-900)', margin: '0 0 0.375rem' }}>
+            Thank You for Reviewing {hotelName}
+          </h2>
 
-        <p style={{ fontSize: '0.9rem', color: '#6B7280', lineHeight: '1.55', maxWidth: '420px' }}>
-          {isHighRating
-            ? `Your review was submitted! We truly appreciate your support and look forward to welcoming you back.`
-            : `Your private feedback has been delivered directly to our Duty Manager. We are attending to your notes immediately.`}
-        </p>
+          <p style={{ fontSize: '0.875rem', color: 'var(--slate-600)', lineHeight: '1.55', maxWidth: '420px', margin: '0 auto' }}>
+            {isHighRating
+              ? `Your review has been successfully prepared. We truly appreciate your patronage and look forward to welcoming you back.`
+              : `Your private feedback has been delivered directly to our Duty Management team. We are actively reviewing your notes.`}
+          </p>
+        </div>
 
-        {/* VIP DIGITAL PERK VOUCHER (FOR HIGH RATING) */}
+        {/* VIP Digital Privilege Voucher */}
         {isHighRating && (
           <div
             style={{
               width: '100%',
-              background: '#FFFBEB',
-              border: '1px solid #FCD34D',
-              borderRadius: '14px',
-              padding: '1.25rem 1rem',
-              margin: '0.75rem 0',
+              background: 'var(--gold-50)',
+              border: '1px solid var(--gold-200)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '1.125rem 1rem',
+              margin: '0.5rem 0',
               textAlign: 'center',
-              boxSizing: 'border-box',
             }}
           >
             <div
@@ -84,135 +74,90 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.35rem',
-                background: '#F59E0B',
-                color: '#ffffff',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '9999px',
-                fontSize: '0.75rem',
+                background: 'var(--gold-600)',
+                color: '#FFFFFF',
+                padding: '0.2rem 0.65rem',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.6875rem',
                 fontWeight: 600,
-                marginBottom: '0.65rem',
+                marginBottom: '0.5rem',
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
               }}
             >
-              <Gift size={13} /> VIP Guest Privilege Reward
+              <Gift size={12} /> VIP Guest Privilege Reward
             </div>
 
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#78350F', margin: '0 0 0.25rem' }}>
-              Complimentary Welcome Drink ☕ / 10% Dining Discount
-            </h3>
+            <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--gold-800)', marginBottom: '0.2rem' }}>
+              Complimentary Welcome Beverage / 10% Dining Perk
+            </div>
 
-            <p style={{ fontSize: '0.78rem', color: '#92400E', margin: '0 0 0.85rem' }}>
-              Show this voucher screen to our reception desk or dining staff to claim your special perk!
+            <p style={{ fontSize: '0.75rem', color: 'var(--gold-700)', margin: '0 0 0.75rem' }}>
+              Present this digital voucher code to our reception or dining staff upon your next visit.
             </p>
 
             <div
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.5rem',
-                background: '#ffffff',
-                border: '1px solid #FDE68A',
-                borderRadius: '10px',
-                padding: '0.5rem 0.85rem',
-                margin: '0 auto',
-                maxWidth: '280px',
+                background: '#FFFFFF',
+                border: '1px solid var(--gold-200)',
+                borderRadius: 'var(--radius-md)',
+                padding: '0.4rem 0.75rem',
               }}
             >
-              <span style={{ fontFamily: 'monospace', fontSize: '1.05rem', fontWeight: 700, color: '#B45309', letterSpacing: '0.08em' }}>
+              <span style={{ fontFamily: 'monospace', fontSize: '0.9375rem', fontWeight: 700, color: 'var(--gold-800)', letterSpacing: '0.06em' }}>
                 {voucherCode}
               </span>
 
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.96 }}
+              <button
                 type="button"
                 onClick={handleCopyVoucher}
+                className="saas-btn"
                 style={{
-                  background: copiedCode ? '#ECFDF5' : '#FEF3C7',
-                  border: copiedCode ? '1px solid #A7F3D0' : '1px solid #FDE68A',
-                  color: copiedCode ? '#15803D' : '#92400E',
-                  borderRadius: '8px',
-                  padding: '0.3rem 0.55rem',
-                  fontSize: '0.725rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
+                  padding: '0.25rem 0.5rem',
+                  fontSize: '0.7rem',
+                  background: copiedCode ? 'var(--emerald-50)' : 'var(--gold-100)',
+                  border: copiedCode ? '1px solid var(--emerald-100)' : '1px solid var(--gold-200)',
+                  color: copiedCode ? 'var(--emerald-700)' : 'var(--gold-800)',
+                  borderRadius: 'var(--radius-xs)',
                 }}
               >
                 {copiedCode ? <Check size={12} /> : <Copy size={12} />}
-                {copiedCode ? 'Copied' : 'Copy'}
-              </motion.button>
+                <span>{copiedCode ? 'Copied' : 'Copy'}</span>
+              </button>
             </div>
           </div>
         )}
       </div>
 
       {/* Action Buttons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '1.25rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
         {activeProviders.map((provider) => (
-          <motion.button
+          <button
             key={provider.type}
             type="button"
-            className="btn-primary-action"
-            whileHover={{ translateY: -1 }}
-            whileTap={{ scale: 0.98 }}
+            className="saas-btn saas-btn-primary"
             onClick={() => window.open(provider.url, '_blank', 'noopener,noreferrer')}
-            style={{
-              height: '48px',
-              padding: '0 1.5rem',
-              borderRadius: '14px',
-              fontSize: '0.9375rem',
-              fontWeight: 600,
-              background: '#2563EB',
-              color: '#ffffff',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              border: 'none',
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(37, 99, 235, 0.15)',
-              cursor: 'pointer',
-              width: '100%',
-              letterSpacing: '-0.01em',
-            }}
+            style={{ width: '100%', height: '44px', justifyContent: 'center' }}
           >
-            <ExternalLink size={18} /> Post Review on {provider.name}
-          </motion.button>
+            <ExternalLink size={16} />
+            <span>Open {provider.name} Profile</span>
+          </button>
         ))}
 
-        <motion.button
+        <button
           type="button"
-          className="btn-secondary-action"
-          whileHover={{ translateY: -1 }}
-          whileTap={{ scale: 0.98 }}
+          className="saas-btn saas-btn-secondary"
           onClick={onReset}
-          style={{
-            height: '44px',
-            padding: '0 1.25rem',
-            borderRadius: '14px',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            background: '#ffffff',
-            border: '1px solid #E5E7EB',
-            color: '#374151',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            cursor: 'pointer',
-            width: '100%',
-            marginTop: '0.25rem',
-          }}
+          style={{ width: '100%', height: '40px', justifyContent: 'center', marginTop: '0.25rem' }}
         >
-          <RotateCcw size={15} /> Submit Another Feedback
-        </motion.button>
+          <RotateCcw size={14} />
+          <span>Submit Another Response</span>
+        </button>
       </div>
     </motion.div>
   );
 }
-
-
