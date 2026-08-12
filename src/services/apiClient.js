@@ -55,10 +55,13 @@ function isTokenMatchingCurrentRoute(token) {
   const payload = parseJwtPayload(token);
   if (!payload) return false;
 
+  // Super Admin tokens (hotelSlug: 'system') are always valid regardless of current route
+  const tokenHotel = (payload.hotelSlug || payload.hotelId || '').toLowerCase();
+  if (tokenHotel === 'system' || payload.role === 'SUPER_ADMIN') return true;
+
   const currentSlug = window.location.pathname.split('/')[1]?.toLowerCase();
   if (!currentSlug || currentSlug === 'r' || currentSlug === 'api') return true;
 
-  const tokenHotel = (payload.hotelSlug || payload.hotelId || '').toLowerCase();
   if (tokenHotel && tokenHotel !== currentSlug) {
     return false;
   }

@@ -61,25 +61,28 @@ export async function deleteHotel(req, res, next) {
       return res.status(400).json({ success: false, error: 'hotelId parameter is required.' });
     }
 
-    // Validate admin secret key (same pattern as onboard)
+    // Validate authorization: Super Admin role, admin secret key, or owner of this hotel
     const providedKey = (req.body.secretKey || req.body.adminSecretKey || req.headers['x-admin-secret-key'] || '').toString().trim();
     const isSuperAdmin = req.user && req.user.role === 'SUPER_ADMIN';
+    const isHotelOwner = req.user && req.user.role === 'owner' && req.user.hotelId === hotelId;
     const envKey = (process.env.ADMIN_SECRET_KEY || ADMIN_SECRET_KEY || 'JJR-2026-SUPER-6X8F91ZP-K29A').toString().trim();
 
     const validKeys = [envKey, '9008', 'admin', 'admin9008', '1234', 'JJR-2026-SUPER-6X8F91ZP-K29A'];
-    const isValidKey = isSuperAdmin || (providedKey && validKeys.includes(providedKey));
+    const isValidKey = providedKey && validKeys.includes(providedKey);
+    const isAuthorized = isSuperAdmin || isValidKey || isHotelOwner;
 
-    if (!isValidKey) {
+    if (!isAuthorized) {
       logEvent('SYSTEM', 'HOTEL_DELETE_FAILED', {
-        reason: 'Invalid secret key or unauthorized role',
+        reason: 'Unauthorized: not Super Admin, valid key, or hotel owner',
         hotelId,
+        userRole: req.user?.role || 'unauthenticated',
         ip: req.ip,
         userAgent: req.headers['user-agent'],
       }).catch(() => {});
 
       return res.status(403).json({
         success: false,
-        error: 'Invalid Admin Secret Key. You must be a Super Admin to delete hotels.',
+        error: 'Unauthorized. Only Super Admins or the hotel owner can delete this hotel.',
       });
     }
 

@@ -459,6 +459,7 @@ export function FeedbackProvider({ children, hotelSlug }) {
     const adminKey = localStorage.getItem('jj_super_admin_key') || '';
     const res = await apiClient(`/api/hotels/${encodeURIComponent(hotelIdToDelete)}`, {
       method: 'DELETE',
+      headers: adminKey ? { 'X-Admin-Secret-Key': adminKey } : {},
       body: JSON.stringify({ secretKey: adminKey }),
     });
 
