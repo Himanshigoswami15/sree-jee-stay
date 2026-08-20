@@ -573,7 +573,17 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
 
   // Superlative / Title statements (e.g. "Best Hotel in Jodhpur", "Top Marketing Agency")
   if (/^(best|top|truly the best|undoubtedly the best|number 1|#1|greatest|premier|finest)/i.test(labelToUse)) {
-    return cleanSentence(labelToUse);
+    // Extract the core phrase and wrap it into varied natural sentences
+    const superlativeTemplates = [
+      `In our opinion, this is easily the ${lower}`,
+      `I'd say this is the ${lower} based on our experience`,
+      `Honestly, it felt like the ${lower} we've been to`,
+      `Hard to find a better option — this really is the ${lower}`,
+      `After trying a few places, we think this is the ${lower}`,
+      `Can confidently say this is the ${lower} we've visited`,
+      `From what we experienced, it deserves to be called the ${lower}`
+    ];
+    return cleanSentence(pickVariation(superlativeTemplates, tagSeed));
   }
 
   // Positive keyword patterns — each with multiple variations for naturalness
@@ -716,8 +726,15 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
       return cleanSentence(pickVariation(adsVariations, tagSeed));
     }
 
-    // Default clean sentence for any custom positive tag
-    return cleanSentence(labelToUse);
+    // Default — wrap any custom positive keyword into a natural sentence
+    const defaultPositiveTemplates = [
+      `We really liked the ${lower} here`,
+      `The ${lower} was a nice touch and added to the experience`,
+      `Impressed with the ${lower}, it made our stay better`,
+      `The ${lower} stood out to us during our visit`,
+      `Worth mentioning that the ${lower} was really good`
+    ];
+    return cleanSentence(pickVariation(defaultPositiveTemplates, tagSeed));
   }
 
   // Negative tags (1-3 stars)
@@ -770,7 +787,13 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
     return cleanSentence(pickVariation(negServiceVariations, tagSeed));
   }
 
-  return cleanSentence(`${labelToUse} could use some improvement`);
+  const defaultNegativeTemplates = [
+    `The ${lower} could use some improvement`,
+    `We felt the ${lower} wasn't quite up to the mark`,
+    `The ${lower} was a bit of a letdown for us`,
+    `Would have been better if the ${lower} was handled properly`
+  ];
+  return cleanSentence(pickVariation(defaultNegativeTemplates, tagSeed));
 }
 
 /**

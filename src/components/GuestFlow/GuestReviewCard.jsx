@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Star, ShieldCheck, ExternalLink, Smartphone, HeartHandshake } from 'lucide-react';
+import { Star, ShieldCheck, ExternalLink, HeartHandshake } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion } from 'framer-motion';
 import { useFeedback } from '../../context/FeedbackContext';
@@ -265,40 +265,6 @@ export function GuestReviewCard() {
             onRefreshPhrasing={handleRefreshPhrasing}
           />
 
-          {/* 5. GUEST IDENTIFIER & RESERVATION FIELD */}
-          <div style={{ margin: '1.5rem 0', textAlign: 'left' }}>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.8125rem',
-                fontWeight: 700,
-                color: '#000000',
-                marginBottom: '0.35rem',
-              }}
-            >
-              <Smartphone size={14} color="#64748B" />
-              <span>Phone or Room Number (Verification):</span>
-            </label>
-            <input
-              type="text"
-              className="saas-input"
-              value={guestContact}
-              onChange={(e) => setGuestContact(e.target.value)}
-              placeholder="e.g. 9876543210 or Room 204"
-              style={{
-                borderColor: isDuplicate ? '#DC2626' : '#E2E8F0',
-                background: isDuplicate ? '#FFF1F2' : '#FFFFFF',
-              }}
-            />
-            {isDuplicate && (
-              <div style={{ fontSize: '0.75rem', color: '#DC2626', fontWeight: 600, marginTop: '0.25rem' }}>
-                A review has already been recorded for this identifier.
-              </div>
-            )}
-          </div>
 
           {/* 6. PRIMARY SUBMIT CTA WITH PROPER NON-OVERLAPPING GAP */}
           <div style={{ marginTop: '1.75rem' }}>
