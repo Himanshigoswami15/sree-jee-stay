@@ -10,117 +10,117 @@ export const RATING_KEYWORDS = {
       id: 'clean',
       label: '✨ Spotless Room',
       category: 'Cleanliness',
-      snippet: 'The room was impeccably clean and spotless',
+      snippet: 'Our room was really clean when we arrived, everything felt fresh',
       snippets: [
-        'The room was impeccably clean, fresh, and spotless',
-        'Housekeeping did a phenomenal job; the room was sparkling clean',
-        'Cleanliness was top-notch with immaculate rooms and fresh linens',
-        'Everything was pristine, well-maintained, and wonderfully clean',
-        'The hygiene and cleanliness standards were truly impressive'
+        'Our room was really clean when we checked in, everything felt fresh and well-maintained',
+        'The housekeeping was great — our room always looked tidy and well-kept',
+        'Room was spotless, you could tell they pay attention to cleanliness here',
+        'Pleasantly surprised by how clean everything was, from the floors to the linens',
+        'The room smelled fresh and was clearly well-cleaned before we got there'
       ]
     },
     {
       id: 'wifi',
       label: '⚡ Fast Wi-Fi',
       category: 'Amenities',
-      snippet: 'The Wi-Fi was fast and reliable for work and streaming',
+      snippet: 'Wi-Fi worked well, had no issues with speed or connectivity',
       snippets: [
-        'The Wi-Fi was super fast and reliable for work and video streaming',
-        'High-speed Wi-Fi made working remotely smooth and hassle-free',
-        'Internet connectivity was strong and ultra-fast throughout',
-        'Impressed by the seamless and high-speed Wi-Fi performance',
-        'Great Wi-Fi speeds in both the room and common areas'
+        'Wi-Fi worked well the whole time, no complaints about speed or dropping',
+        'Was able to do video calls and stream without any buffering, good internet',
+        'The internet was solid and connected easily on all our devices',
+        'Good Wi-Fi speed, which was a relief since I needed to work remotely',
+        'No issues with the Wi-Fi at all, worked great in the room and common areas'
       ]
     },
     {
       id: 'staff',
       label: '😊 Friendly Staff',
       category: 'Service',
-      snippet: 'The staff were incredibly warm, welcoming, and helpful',
+      snippet: 'The staff was really friendly and helped us with everything we needed',
       snippets: [
-        'The staff were incredibly warm, welcoming, and attentive',
-        'Hospitality was outstanding; everyone was extremely polite and helpful',
-        'Special thanks to the team for their gracious and prompt service',
-        'The hospitality staff went above and beyond to ensure a great stay',
-        'Every team member was friendly, respectful, and eager to assist'
+        'The staff was really friendly and helped us with everything we asked for',
+        'Everyone on the team was polite and went out of their way to help',
+        'Really appreciated how welcoming the staff was, they made us feel at home',
+        'The people here are genuinely nice, not just doing it for show',
+        'Staff was helpful whenever we needed something, very warm and approachable'
       ]
     },
     {
       id: 'breakfast',
       label: '🍳 Superb Breakfast',
       category: 'Dining',
-      snippet: 'Breakfast was fresh, delicious, and offered great variety',
+      snippet: 'Breakfast was good with plenty of options to choose from',
       snippets: [
-        'Breakfast was fresh, hot, and offered a fantastic variety of dishes',
-        'Loved the morning breakfast spread; delicious flavor and great choices',
-        'The breakfast was freshly prepared and served with high quality',
-        'Enjoyed a delightful and wholesome breakfast spread each morning',
-        'The culinary team did a wonderful job with the delicious breakfast'
+        'Breakfast had a nice variety and everything was freshly prepared',
+        'We enjoyed the breakfast each morning, good selection of dishes',
+        'The morning meal was tasty and had something for everyone',
+        'Breakfast was one of the highlights, fresh food and good portions',
+        'Really liked the breakfast spread, felt like a proper home-cooked meal'
       ]
     },
     {
       id: 'bed',
       label: '🛏️ Comfy Bed',
       category: 'Comfort',
-      snippet: 'The bed was super comfortable for a restful sleep',
+      snippet: 'The bed was comfortable and we slept really well',
       snippets: [
-        'The bed was super comfortable with premium linens for a great night sleep',
-        'Cozy mattress and plush pillows ensured a deeply restful stay',
-        'Slept amazingly well thanks to the comfortable bed and peaceful ambience',
-        'The bed and bedding quality were top tier and extremely cozy',
-        'Restful sleep was guaranteed by the very comfortable bed'
+        'The bed was comfortable and we got a great night of sleep',
+        'Slept like a log — the mattress and pillows were just right',
+        'Bed was cozy and the linens felt soft and clean',
+        'Had a really restful sleep, the bed quality was better than I expected',
+        'The bed was properly comfortable, woke up feeling refreshed every morning'
       ]
     },
     {
       id: 'pool',
       label: '🏊 Pristine Pool',
       category: 'Amenities',
-      snippet: 'The pool area was well-maintained and relaxing',
+      snippet: 'The pool was clean and a nice place to relax',
       snippets: [
-        'The pool area was well-maintained, clean, and very relaxing',
-        'Thoroughly enjoyed spending time at the refreshing pool',
-        'Pristine pool facilities with clean water and comfortable lounge seating',
-        'The pool was spotless and provided a perfect spot to unwind',
-        'Great outdoor pool atmosphere with crystal clear water'
+        'The pool area was clean and we spent a lot of time relaxing there',
+        'Nice pool with clear water, great for unwinding after a long day',
+        'We enjoyed the pool a lot, it was well-maintained and not crowded',
+        'Pool was a bonus — clean water and comfortable seating around it',
+        'The swimming pool was in great condition, a perfect spot to cool off'
       ]
     },
     {
       id: 'ac',
       label: '❄️ Quiet AC',
       category: 'Comfort',
-      snippet: 'The room AC worked perfectly and ran quietly',
+      snippet: 'The AC kept the room cool and ran quietly all night',
       snippets: [
-        'The room AC worked perfectly, keeping the room cool and quiet',
-        'Climate control was quick, powerful, and comfortably silent',
-        'Air conditioning kept the room ideal and refreshed at all times',
-        'Quiet and effective air conditioning kept the space very pleasant',
-        'Excellent air cooling that ran whisper-quiet throughout the night'
+        'AC worked perfectly, kept the room at a comfortable temperature all night',
+        'The air conditioning was quiet and cooled the room down quickly',
+        'Room stayed cool the entire time, the AC did its job well',
+        'Appreciated the quiet AC, especially since it was really hot outside',
+        'Air conditioning was effective and didn\'t make any noise while we slept'
       ]
     },
     {
       id: 'location',
       label: '📍 Great Location',
       category: 'General',
-      snippet: 'Location was ideal and very convenient',
+      snippet: 'Good location, easy to get to the main attractions from here',
       snippets: [
-        'The location was ideal, peaceful, and super convenient for sightseeing',
-        'Situated in a prime spot with easy access to major local attractions',
-        'Fantastic central location while still offering a calm environment',
-        'Great location with seamless connectivity and beautiful surroundings',
-        'Perfect base for exploring the area with key places close by'
+        'Good location with most of the main spots within easy reach',
+        'The location was convenient, didn\'t have to travel far for anything',
+        'Liked the location — close enough to everything but still felt peaceful',
+        'Great spot, we could walk to restaurants and shops nearby',
+        'Location worked well for us, easy access to local attractions'
       ]
     },
     {
       id: 'quick_checkin',
       label: '⏱️ Smooth Check-in',
       category: 'Service',
-      snippet: 'Check-in was quick and seamless',
+      snippet: 'Check-in was quick and hassle-free',
       snippets: [
-        'Check-in was quick, organized, and completely seamless',
-        'Front desk handled our arrival swiftly with zero waiting time',
-        'Warm and efficient check-in experience right from arrival',
-        'Check-in process was smooth, hassle-free, and very welcoming',
-        'Speedy reception service with all details communicated clearly'
+        'Check-in was smooth and didn\'t take long at all',
+        'Got checked in quickly, no waiting around or paperwork hassle',
+        'The front desk handled our arrival fast and was very organized',
+        'Check-in process was easy, they had everything ready for us',
+        'We were in our room within minutes of arriving, very efficient'
       ]
     },
   ],
@@ -130,97 +130,115 @@ export const RATING_KEYWORDS = {
       id: 'slow_wifi',
       label: '📶 Slow Wi-Fi',
       category: 'Amenities',
-      snippet: 'The Wi-Fi connection was unstable and very slow',
+      snippet: 'The Wi-Fi was pretty slow and kept dropping',
       snippets: [
-        'The Wi-Fi connection was unstable and very slow at times',
-        'Internet speeds were sluggish and kept disconnecting unexpectedly',
-        'Had difficulty completing online tasks due to poor Wi-Fi connectivity',
-        'Wi-Fi signal strength was weak in our room'
+        'The Wi-Fi was quite slow and kept disconnecting on us',
+        'Had trouble getting a stable internet connection in our room',
+        'Internet speed was disappointing, couldn\'t do video calls properly',
+        'Wi-Fi signal was weak, especially in the evenings'
       ]
     },
     {
       id: 'ac_issue',
       label: '🌡️ AC Not Cooling',
       category: 'Comfort',
-      snippet: 'The air conditioning in the room was not cooling properly',
+      snippet: 'The AC wasn\'t cooling the room properly',
       snippets: [
-        'The air conditioning in the room was not cooling properly',
-        'Room AC was struggling to maintain a comfortable temperature',
-        'Climate control in the room felt warm and required maintenance',
-        'The AC unit was noisy and did not cool the room sufficiently'
+        'The AC in our room wasn\'t cooling well, it stayed warm',
+        'Room felt stuffy because the air conditioning wasn\'t working right',
+        'Had to keep adjusting the AC but it never really got cool enough',
+        'The AC unit seemed old and struggled to bring the temperature down'
       ]
     },
     {
       id: 'noise',
       label: '🔊 Noisy Room',
       category: 'Comfort',
-      snippet: 'There was considerable noise disrupting our rest',
+      snippet: 'It was a bit noisy and we had trouble sleeping',
       snippets: [
-        'There was considerable ambient noise disrupting our sleep',
-        'Sound insulation could be improved as external noise was noticeable',
-        'Loud sounds from nearby areas disturbed our rest during the night',
-        'Disturbing noise levels impacted our overall relaxation'
+        'Could hear a lot of noise from outside which disturbed our sleep',
+        'The room wasn\'t very soundproof, we could hear people in the hallway',
+        'Noise was an issue at night, wish the walls were thicker',
+        'It got quite loud in the evenings which made it hard to relax'
       ]
     },
     {
       id: 'cold_food',
       label: '🥣 Cold Breakfast',
       category: 'Dining',
-      snippet: 'The food served was cold and delayed',
+      snippet: 'Breakfast could have been better, some items were cold',
       snippets: [
-        'The food served was lukewarm and delayed',
-        'Breakfast quality fell short with cold items and slow refill',
-        'Meals took longer than expected and lacked hot freshness',
-        'Dining service could be speedier and serve hotter dishes'
+        'Some of the breakfast items were served cold, which was disappointing',
+        'Food at breakfast felt reheated and not very fresh',
+        'The morning meal was underwhelming, dishes could have been hotter',
+        'Breakfast variety was okay but the food temperature needed work'
       ]
     },
     {
       id: 'dirty_bathroom',
       label: '🛁 Bath Needs Cleaning',
       category: 'Cleanliness',
-      snippet: 'The bathroom cleanliness fell below expected standards',
+      snippet: 'The bathroom could have used a better cleaning',
       snippets: [
-        'The bathroom cleanliness fell below expected standards',
-        'Bathroom area required a more thorough cleaning attention',
-        'Housekeeping missed some details in the bath section',
-        'Sanitation in the bathroom needed better inspection'
+        'The bathroom wasn\'t as clean as we\'d expected, needs more attention',
+        'Noticed the bathroom could have been cleaned more thoroughly',
+        'Housekeeping missed a few spots in the bathroom area',
+        'The washroom needed a deeper clean, noticed some stains'
       ]
     },
     {
       id: 'keycard',
       label: '🔑 Keycard Issue',
       category: 'Service',
-      snippet: 'Had trouble with the room keycard access multiple times',
+      snippet: 'Had some trouble with the room keycard not working',
       snippets: [
-        'Had trouble with the room keycard access multiple times',
-        'Keycard kept demagnetizing and needed front desk resetting',
-        'Door lock sensor took multiple attempts to recognize keycard'
+        'The keycard stopped working a couple of times and we had to get it reset',
+        'Had to go back to the front desk twice because the keycard demagnetized',
+        'Room key gave us trouble, took multiple swipes to open the door'
       ]
     },
     {
       id: 'checkin_delay',
       label: '⏳ Check-in Delay',
       category: 'Service',
-      snippet: 'We experienced a long wait time during check-in',
+      snippet: 'Check-in took longer than expected',
       snippets: [
-        'We experienced a long wait time during arrival check-in',
-        'Front desk queue was slow and check-in felt delayed',
-        'Room allocation took longer than normal upon our arrival'
+        'We waited quite a while at the front desk during check-in',
+        'Check-in was slower than we expected, the queue was long',
+        'It took a while to get our room sorted when we arrived'
       ]
     },
     {
       id: 'missing_towels',
       label: '🧼 Missing Towels',
       category: 'Amenities',
-      snippet: 'Towels and toiletries were missing upon arrival',
+      snippet: 'Had to ask for towels since they weren\'t in the room',
       snippets: [
-        'Towels and essential toiletries were missing upon arrival',
-        'Had to request fresh bath towels and soap after entering the room',
-        'Room amenities like towels were incomplete when we checked in'
+        'Towels weren\'t there when we got to the room, had to request them',
+        'Some basic things like towels and soap were missing when we checked in',
+        'Room was short on towels and toiletries, needed to call housekeeping'
       ]
     },
   ]
 };
+
+// Natural sentence connectors that join keyword sentences in flowing text
+const CONNECTORS = {
+  positive: [
+    'Also, ', 'On top of that, ', 'Another thing we liked — ',
+    'What stood out was that ', 'We also noticed that ',
+    'Plus, ', 'And ', '', '', ''  // empty strings = no connector (just period-separated, for variety)
+  ],
+  negative: [
+    'Also, ', 'On the other hand, ', 'Another issue was that ',
+    'We also found that ', 'Besides that, ', '', '', ''
+  ]
+};
+
+// Phrases that merge two sentences into one compound sentence
+const JOINERS = [
+  ' and ', ', and ', ', plus ', '. '
+];
 
 function getOpenings(hotelName = 'this place', tone = 'friendly') {
   const name = hotelName || 'this place';
@@ -229,151 +247,151 @@ function getOpenings(hotelName = 'this place', tone = 'friendly') {
     case 'casual':
       return {
         5: [
-          `Loved this place! Had an absolute blast visiting ${name}.`,
-          `Super happy with our experience at ${name}!`,
-          `Totally exceeded our expectations visiting ${name}.`,
-          `Hands down one of the best visits we've had at ${name}!`,
-          `So glad we stopped by ${name}! Everything was awesome.`,
-          `Awesome vibes and great experience at ${name}!`,
-          `Could not have asked for a better time at ${name}.`
+          `Had a great time at ${name}, really enjoyed it.`,
+          `${name} was awesome, we had a lot of fun.`,
+          `Super happy with how our visit to ${name} turned out.`,
+          `Just left ${name} and honestly it was a blast.`,
+          `Really liked ${name}, good vibes all around.`,
+          `${name} didn't disappoint at all, had a wonderful time.`,
+          `Our time at ${name} was really fun and relaxing.`
         ],
         4: [
-          `Really cool spot! Enjoyed our time at ${name}.`,
-          `Pretty great experience overall visiting ${name}.`,
-          `Super decent and fun visit to ${name}.`
+          `Had a nice time at ${name}, pretty solid overall.`,
+          `${name} was a good spot, enjoyed our visit.`,
+          `Good experience at ${name}, most things were on point.`
         ],
-        3: [`Decent spot at ${name}, though a few small things could be better.`],
-        2: [`Kinda disappointed with our visit to ${name}.`],
-        1: [`Definitely not a great experience at ${name}.`]
+        3: [`${name} was okay, some things were good but others could use work.`],
+        2: [`Bit let down by our visit to ${name} honestly.`],
+        1: [`${name} was not a good experience for us.`]
       };
 
     case 'luxury':
     case 'elegant':
       return {
         5: [
-          `Our experience at ${name} was an absolute triumph of luxury and sophistication.`,
-          `Flawless elegance and top-tier hospitality throughout our time at ${name}.`,
-          `Sublime comfort and impeccable personal attention made our visit to ${name} unforgettable.`,
-          `A truly magnificent and refined experience at ${name}.`,
-          `Extremely impressed by the exquisite standards maintained at ${name}.`,
-          `From arrival to departure, ${name} delivered an extraordinary luxury experience.`
+          `Our stay at ${name} was truly a refined and memorable experience.`,
+          `${name} delivered exactly the kind of elegant stay we were hoping for.`,
+          `We were genuinely impressed by the level of care and quality at ${name}.`,
+          `From start to finish, ${name} provided a polished and comfortable experience.`,
+          `${name} exceeded our expectations in terms of comfort and attention to detail.`,
+          `It was a pleasure staying at ${name}, everything was thoughtfully done.`
         ],
         4: [
-          `A truly refined visit to ${name} with wonderful ambiance and comfortable surroundings.`,
-          `Enjoyed a sophisticated and pleasant experience at ${name}.`
+          `Our visit to ${name} was quite pleasant with a lovely ambiance throughout.`,
+          `Enjoyed a comfortable and well-appointed stay at ${name}.`
         ],
-        3: [`A decent visit to ${name}, though a few fine details could be elevated to match expectations.`],
-        2: [`Our stay at ${name} did not reflect the high standard we anticipated.`],
-        1: [`Regrettably, the experience at ${name} fell far below expected standards.`]
+        3: [`${name} had its merits, though a few details fell short of the standard we anticipated.`],
+        2: [`Our experience at ${name} didn't quite match what we were expecting.`],
+        1: [`Unfortunately, our stay at ${name} was well below the standard one would hope for.`]
       };
 
     case 'minimal':
       return {
         5: [
-          `Great experience at ${name}. Highly recommended!`,
-          `Everything was excellent at ${name}.`,
-          `Top quality experience visiting ${name}.`,
-          `Very satisfied with our visit to ${name}.`,
-          `10/10 experience at ${name}. Will return.`
+          `Great stay at ${name}. Really enjoyed it.`,
+          `${name} was excellent. Would go back.`,
+          `Very happy with ${name}. Good experience.`,
+          `Solid experience at ${name}. No complaints.`,
+          `${name} was a great pick. Satisfied.`
         ],
         4: [
-          `Good experience overall at ${name}.`,
-          `Pleasant visit to ${name}.`,
-          `Solid service at ${name}.`
+          `Good stay at ${name} overall.`,
+          `${name} was pleasant. Enjoyed it.`,
+          `Decent experience at ${name}.`
         ],
-        3: [`Average experience at ${name}.`],
-        2: [`Subpar visit to ${name}.`],
-        1: [`Not recommended. Poor experience at ${name}.`]
+        3: [`${name} was average. Had some ups and downs.`],
+        2: [`${name} could be better in several areas.`],
+        1: [`Not a good experience at ${name}.`]
       };
 
     case 'professional':
       return {
         5: [
-          `Our experience at ${name} was highly exemplary in every regard.`,
-          `Sincere commendations to ${name} for maintaining exceptionally high standards of service.`,
-          `We were thoroughly impressed with the professionalism and quality at ${name}.`,
-          `Excellent execution and high standards of service delivered at ${name}.`,
-          `Professionalism, efficiency, and quality were consistently demonstrated at ${name}.`
+          `Our experience at ${name} was very well-managed and comfortable throughout.`,
+          `We were pleased with the standards maintained at ${name} during our stay.`,
+          `${name} demonstrated consistent quality and professionalism across all areas.`,
+          `The level of service and upkeep at ${name} was commendable.`,
+          `${name} provided a well-organized and efficient experience from start to finish.`
         ],
         4: [
-          `Overall, our visit to ${name} was very pleasant and conducted with high professionalism.`,
-          `We enjoyed a commendable visit to ${name} with reliable service throughout.`
+          `Our visit to ${name} was pleasant with reliable service throughout.`,
+          `${name} met our expectations with a well-run operation overall.`
         ],
-        3: [`Our visit to ${name} met basic requirements, though certain operational details require attention.`],
-        2: [`Unfortunately, our visit to ${name} fell short of expected professional standards.`],
-        1: [`Our experience at ${name} was unacceptable and requires management review.`]
+        3: [`${name} was adequate, though there are areas that could benefit from attention.`],
+        2: [`Our visit to ${name} fell short of the standards we anticipated.`],
+        1: [`The experience at ${name} was unsatisfactory and needs management attention.`]
       };
 
     case 'business':
       return {
         5: [
-          `Outstanding visit to ${name}! Efficient, quiet, and reliable.`,
-          `Seamless experience at ${name} — ideal environment for working and unwinding.`,
-          `Highly effective hospitality at ${name}. Everything ran like clockwork.`
+          `Stayed at ${name} during a work trip and everything went smoothly.`,
+          `${name} was a great fit for a business visit — efficient and comfortable.`,
+          `Had a productive and comfortable stay at ${name}. Everything worked well.`
         ],
         4: [
-          `Solid experience at ${name} with reliable service and comfortable conditions.`,
-          `Very dependable stay at ${name} during a busy schedule.`
+          `${name} served us well for our business stay. Reliable and comfortable.`,
+          `Decent stay at ${name} while on a work schedule.`
         ],
-        3: [`Acceptable experience at ${name}, though internet stability and workspace comfort could be enhanced.`],
-        2: [`Subpar visit to ${name} that impacted our productivity.`],
-        1: [`Extremely frustrating visit to ${name} due to service delays.`]
+        3: [`${name} was alright for a work stay, though Wi-Fi and workspace comfort could improve.`],
+        2: [`${name} wasn't ideal for a business trip, ran into a few issues.`],
+        1: [`Would not choose ${name} again for work travel due to several problems.`]
       };
 
     case 'family':
       return {
         5: [
-          `Our whole family had a wonderful and memorable time at ${name}!`,
-          `Wonderful family-friendly atmosphere at ${name}! Everyone loved every moment.`,
-          `Super welcoming environment for families at ${name}! Highly recommended.`
+          `We stayed at ${name} with our family and everyone had a great time.`,
+          `${name} was a wonderful spot for our family trip, kids loved it too.`,
+          `Great family-friendly place, our whole group felt comfortable at ${name}.`
         ],
         4: [
-          `Great family visit to ${name} with cozy surroundings and helpful staff.`,
-          `Very pleasant family vacation experience visiting ${name}.`
+          `Our family enjoyed our time at ${name}, nice and comfortable.`,
+          `${name} worked well for our family vacation overall.`
         ],
-        3: [`Decent stay with family at ${name}, though a few family-friendly touches could be added.`],
-        2: [`Our family visit to ${name} was impacted by a few comfort issues.`],
-        1: [`Poor family visit experience at ${name} that needed immediate attention.`]
+        3: [`${name} was decent for families, though a few things could be more kid-friendly.`],
+        2: [`Our family's stay at ${name} was affected by a few comfort issues.`],
+        1: [`Not a great experience for families at ${name}, needed more care.`]
       };
 
     case 'budget':
       return {
         5: [
-          `Fantastic value for money at ${name}! Clean, comfortable, and affordable.`,
-          `Best choice in the area! Super affordable experience at ${name} without compromising on quality.`,
-          `Great experience at ${name} — unbeatable price for such great service!`
+          `${name} was a great find for the price. Clean, comfortable, and affordable.`,
+          `Really good value at ${name}, got more than what we paid for.`,
+          `Impressed by ${name} — quality stay without spending too much.`
         ],
         4: [
-          `Good budget visit to ${name} with decent amenities and clean spaces.`,
-          `Pleased with the overall value provided at ${name}.`
+          `${name} was a solid budget-friendly option with decent amenities.`,
+          `Good value at ${name}, nothing fancy but everything we needed.`
         ],
-        3: [`Fair budget option at ${name}, though a few basic items need maintenance.`],
-        2: [`Below expectations even for a budget option at ${name}.`],
-        1: [`Poor value and service at ${name}.`]
+        3: [`${name} was fair for a budget stay, though some basics need attention.`],
+        2: [`Even for the price, ${name} fell below what we expected.`],
+        1: [`Not worth it even at a low price. ${name} needs work.`]
       };
 
     case 'friendly':
     default:
       return {
         5: [
-          `Had an absolutely fantastic experience visiting ${name}!`,
-          `Highly recommend ${name}! Outstanding hospitality and great memories.`,
-          `Wonderful experience overall at ${name}! Everything exceeded our expectations.`,
-          `We had an amazing time at ${name} during our recent visit.`,
-          `The experience at ${name} exceeded all our expectations!`,
-          `One of the best visits we have had in a long time at ${name}!`,
-          `From the moment we arrived at ${name}, everything was superb.`,
-          `Couldn't have asked for a better experience at ${name}!`,
-          `Highly impressed with the top-notch hospitality at ${name}.`
+          `We had a really nice stay at ${name} and enjoyed every bit of it.`,
+          `Stayed at ${name} recently and it was a great experience overall.`,
+          `${name} was a great choice for our trip, we had a wonderful time.`,
+          `Really happy with our stay at ${name}, everything went well.`,
+          `Our visit to ${name} went even better than we expected.`,
+          `Just got back from ${name} and wanted to share — it was lovely.`,
+          `We thoroughly enjoyed our time at ${name}.`,
+          `${name} made our trip really special, glad we chose this place.`,
+          `Had a wonderful experience at ${name} during our recent visit.`
         ],
         4: [
-          `Really enjoyed our visit to ${name}.`,
-          `Great experience overall during our time at ${name}.`,
-          `Good visit to ${name} with comfortable surroundings and polite service.`
+          `Enjoyed our time at ${name}, it was a good stay.`,
+          `Our visit to ${name} was pleasant and comfortable.`,
+          `${name} was a nice place to stay, had a good experience.`
         ],
-        3: [`Mixed experience during our visit to ${name}. A few things were fine, but some items could be improved.`],
-        2: [`Disappointed with our visit to ${name}. Several issues impacted our comfort.`],
-        1: [`Extremely disappointed with our visit to ${name}.`]
+        3: [`Our stay at ${name} was mixed — some things were nice but others need improvement.`],
+        2: [`We were a bit disappointed with a few things during our stay at ${name}.`],
+        1: [`Unfortunately, our experience at ${name} wasn't good.`]
       };
   }
 }
@@ -383,72 +401,73 @@ function getClosings(tone = 'friendly') {
     case 'casual':
       return {
         positive: [
-          'Will definitely be coming back again soon!',
-          '10/10 recommend checking this spot out!',
-          'Super stoked with everything, thanks a ton!'
+          'Would definitely go back.',
+          'Solid pick if you\'re in the area.',
+          'Had a good time overall, no regrets.'
         ],
-        negative: ['Hope you guys fix these things up soon!']
+        negative: ['Hoping they fix these things, could be a lot better.']
       };
     case 'minimal':
       return {
-        positive: ['Will return!', 'Recommended.', 'Great choice!'],
-        negative: ['Needs improvement.']
+        positive: ['Would stay again.', 'Good choice.', 'Satisfied overall.'],
+        negative: ['Room for improvement.']
       };
     case 'luxury':
     case 'elegant':
       return {
         positive: [
-          'A true benchmark for hospitality excellence.',
-          'We eagerly anticipate our next visit to this exquisite establishment.',
-          'Highest praise to the management and dedicated service team.'
+          'It was a stay we will remember fondly.',
+          'Looking forward to returning for another visit.',
+          'A genuinely well-run establishment.'
         ],
-        negative: ['We trust management will restore expected luxury standards.']
+        negative: ['We hope these areas are addressed for future guests.']
       };
     case 'professional':
       return {
         positive: [
-          'We look forward to returning and recommending this establishment.',
-          'Compliments to the staff and executive management team.',
-          'An asset to the industry in the region.'
+          'We would be happy to stay here again.',
+          'A well-managed place that delivers on its promise.',
+          'Credit to the team for maintaining good standards.'
         ],
-        negative: ['We request that management inspect these observations.']
+        negative: ['We hope management takes note of these observations.']
       };
     case 'business':
       return {
         positive: [
-          'Will definitely choose this location for future visits.',
-          'Great spot for visitors seeking efficiency and quality.',
-          'Appreciate the promptness and hassle-free service.'
+          'Would choose this place again for work trips.',
+          'Good option for anyone visiting on business.',
+          'Appreciated the efficient service throughout.'
         ],
-        negative: ['Hope these operational points are resolved promptly.']
+        negative: ['These issues should be resolved for business travelers.']
       };
     case 'family':
       return {
         positive: [
-          'Will definitely bring the family back again!',
-          'A true home away from home for families.',
-          'Heartfelt thanks from our entire family!'
+          'Our family would love to come back.',
+          'A comfortable spot for families visiting the area.',
+          'Everyone in the family had a good time.'
         ],
-        negative: ['Hope management makes these family comfort improvements soon.']
+        negative: ['Hoping they can make things more comfortable for families.']
       };
     case 'budget':
       return {
         positive: [
-          'Best value in town, will return!',
-          'Highly recommended for budget-conscious travelers.',
-          'Great experience without burning a hole in the pocket!'
+          'Great value for what you pay.',
+          'Would stay here again if we\'re on a budget trip.',
+          'Good deal overall, happy with our choice.'
         ],
-        negative: ['Hope management addresses these issues to offer better value.']
+        negative: ['Even at this price point, some things should be better.']
       };
     case 'friendly':
     default:
       return {
         positive: [
-          'Will definitely come back and recommend to friends!',
-          'Looking forward to visiting again very soon.',
-          'Would highly recommend this place to anyone visiting!'
+          'Would definitely stay here again.',
+          'Happy with our choice, glad we came.',
+          'Looking forward to our next visit.',
+          'Good experience overall.'
         ],
-        negative: ['Hope management can look into these issues promptly.']
+        negative: ['Hope they can address these things going forward.']
       };
   }
 }
@@ -552,80 +571,149 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
   if (!labelToUse) return null;
   const lower = labelToUse.toLowerCase();
 
-  // Superlative / Title statements (e.g. "Best Hotel in Jodhpur", "Top Marketing Agency", "Best Restaurant in Town")
-  if (/^(best|top|truly the best|undoubtedly the best|number 1|#1|greatest|premier|finest|highly recommended)/i.test(labelToUse)) {
+  // Superlative / Title statements (e.g. "Best Hotel in Jodhpur", "Top Marketing Agency")
+  if (/^(best|top|truly the best|undoubtedly the best|number 1|#1|greatest|premier|finest)/i.test(labelToUse)) {
     return cleanSentence(labelToUse);
   }
 
-  // Positive keyword patterns
+  // Positive keyword patterns — each with multiple variations for naturalness
   if (isPositive) {
     // Staff / Team / Reception / Service
     if (lower.includes('staff') || lower.includes('team') || lower.includes('doctor') || lower.includes('trainer') || lower.includes('barista') || lower.includes('stylist') || lower.includes('service') || lower.includes('hospitality') || lower.includes('reception')) {
-      if (lower.includes('friendly') || lower.includes('warm') || lower.includes('helpful') || lower.includes('polite') || lower.includes('attentive')) {
-        return cleanSentence(`The ${lower} were exceptionally warm, welcoming, and helpful`);
-      }
-      return cleanSentence(`The staff and service were warm, attentive, and very professional`);
+      const staffVariations = [
+        'The staff was friendly and always willing to help when we needed something',
+        'Everyone we interacted with was polite and genuinely helpful',
+        'Really liked how approachable and warm the team was throughout our stay'
+      ];
+      return cleanSentence(pickVariation(staffVariations, tagSeed));
     }
 
     // Room / Cleanliness / Hygiene
     if (lower.includes('room') || lower.includes('clean') || lower.includes('hygien') || lower.includes('spotless') || lower.includes('sparkling')) {
-      return cleanSentence(`The room was impeccably clean, fresh, and spotless`);
+      const cleanVariations = [
+        'The room was clean and well-maintained when we arrived',
+        'Our room was tidy and everything felt fresh and well-kept',
+        'Housekeeping did a good job, the room was neat and clean'
+      ];
+      return cleanSentence(pickVariation(cleanVariations, tagSeed));
     }
 
     // Bed / Sleep / Comfort / AC / Pool
     if (lower.includes('bed') || lower.includes('mattress') || lower.includes('pillow') || lower.includes('sleep') || lower.includes('comfort')) {
-      return cleanSentence(`The bed was super comfortable with cozy linens for a restful sleep`);
+      const bedVariations = [
+        'The bed was comfortable and we slept really well each night',
+        'Got a good night\'s rest, the mattress and pillows were just right',
+        'Bed quality was better than we expected, slept soundly'
+      ];
+      return cleanSentence(pickVariation(bedVariations, tagSeed));
     }
     if (lower.includes('ac') || lower.includes('air condition') || lower.includes('cooling')) {
-      return cleanSentence(`The room AC worked perfectly, keeping the room pleasantly cool and quiet`);
+      const acVariations = [
+        'The AC worked well and kept the room at a comfortable temperature',
+        'Air conditioning was effective and ran quietly throughout the night',
+        'Room stayed cool thanks to the well-functioning AC'
+      ];
+      return cleanSentence(pickVariation(acVariations, tagSeed));
     }
     if (lower.includes('pool') || lower.includes('swimming')) {
-      return cleanSentence(`The pool area was pristine, clean, and very relaxing`);
+      const poolVariations = [
+        'The pool was clean and a great spot to relax in the afternoon',
+        'Enjoyed spending time at the pool, it was well-maintained',
+        'The swimming pool was in good shape and the water was clean'
+      ];
+      return cleanSentence(pickVariation(poolVariations, tagSeed));
     }
 
     // Food / Dining / Breakfast / Coffee
     if (lower.includes('breakfast') || lower.includes('food') || lower.includes('dining') || lower.includes('coffee') || lower.includes('meal') || lower.includes('dish') || lower.includes('pastr') || lower.includes('buffet') || lower.includes('drink')) {
-      if (lower.includes('superb') || lower.includes('delicious') || lower.includes('fresh') || lower.includes('great') || lower.includes('tasty')) {
-        return cleanSentence(`The breakfast and dining were fresh, delicious, and offered great variety`);
-      }
-      return cleanSentence(`The food was mouth-watering, fresh, and beautifully prepared`);
+      const foodVariations = [
+        'The food was good with a nice variety of options each day',
+        'Enjoyed the meals, everything was freshly prepared and tasty',
+        'The breakfast was a highlight, good selection and quality'
+      ];
+      return cleanSentence(pickVariation(foodVariations, tagSeed));
     }
 
     // Location / Ambience / Vibe / View
     if (lower.includes('location') || lower.includes('spot') || lower.includes('prime')) {
-      return cleanSentence(`The location was ideal, peaceful, and super convenient`);
+      const locationVariations = [
+        'The location was convenient, close to all the places we wanted to visit',
+        'Good location with easy access to local attractions and restaurants',
+        'Liked where it\'s situated, made getting around quite easy'
+      ];
+      return cleanSentence(pickVariation(locationVariations, tagSeed));
     }
     if (lower.includes('ambien') || lower.includes('vibe') || lower.includes('atmosphere') || lower.includes('peaceful') || lower.includes('serene')) {
-      return cleanSentence(`The ambience and atmosphere were wonderfully relaxing and pleasant`);
+      const ambienceVariations = [
+        'The atmosphere was relaxing and it felt like a nice getaway',
+        'Loved the calm and peaceful vibe of the whole place',
+        'The ambience was pleasant, made our stay feel more special'
+      ];
+      return cleanSentence(pickVariation(ambienceVariations, tagSeed));
     }
     if (lower.includes('view') || lower.includes('scenic') || lower.includes('mountain') || lower.includes('ocean')) {
-      return cleanSentence(`Loved the stunning and picturesque views`);
+      const viewVariations = [
+        'The view from our room was beautiful, really made the stay special',
+        'We got a nice room with a lovely view, was worth it',
+        'Enjoyed the scenic surroundings, it added to the whole experience'
+      ];
+      return cleanSentence(pickVariation(viewVariations, tagSeed));
     }
 
     // Wi-Fi / Tech / Speed
     if (lower.includes('wi-fi') || lower.includes('wifi') || lower.includes('internet') || lower.includes('speed')) {
-      return cleanSentence(`The high-speed Wi-Fi was ultra-fast and reliable throughout`);
+      const wifiVariations = [
+        'Wi-Fi was reliable and fast enough for work and streaming',
+        'The internet worked well, had no connectivity issues',
+        'Good Wi-Fi speed throughout our stay'
+      ];
+      return cleanSentence(pickVariation(wifiVariations, tagSeed));
     }
 
     // Value / Pricing
     if (lower.includes('value') || lower.includes('price') || lower.includes('pricing') || lower.includes('affordable') || lower.includes('worth') || lower.includes('cost')) {
-      return cleanSentence(`Offered great value for money and outstanding service quality`);
+      const valueVariations = [
+        'Good value for what you pay, felt like we got our money\'s worth',
+        'The pricing felt fair for the quality and service we received',
+        'Definitely worth the price, no complaints about value'
+      ];
+      return cleanSentence(pickVariation(valueVariations, tagSeed));
     }
 
     // Check-in / Arrival
     if (lower.includes('check-in') || lower.includes('checkin') || lower.includes('arrival')) {
-      return cleanSentence(`Check-in was quick, organized, and completely seamless`);
+      const checkinVariations = [
+        'Check-in was quick and the front desk was well-organized',
+        'Got settled in quickly, the check-in process was smooth',
+        'No long waits at arrival, everything was handled efficiently'
+      ];
+      return cleanSentence(pickVariation(checkinVariations, tagSeed));
     }
 
     // Marketing / SEO / Leads / Agency
     if (lower.includes('seo') || lower.includes('ranking')) {
-      return cleanSentence(`Boosted our Google search rankings and organic traffic significantly`);
+      const seoVariations = [
+        'Saw real improvement in our search rankings after working with them',
+        'Our website traffic went up noticeably, they know what they\'re doing',
+        'The SEO work they did made a visible difference in our Google presence'
+      ];
+      return cleanSentence(pickVariation(seoVariations, tagSeed));
     }
     if (lower.includes('lead') || lower.includes('conversion') || lower.includes('sales')) {
-      return cleanSentence(`Delivered steady, high-converting leads that drove great business growth`);
+      const leadVariations = [
+        'We started getting more quality leads after they took over',
+        'Our conversions improved steadily since we started working together',
+        'They delivered on lead generation, we saw real business results'
+      ];
+      return cleanSentence(pickVariation(leadVariations, tagSeed));
     }
     if (lower.includes('ads') || lower.includes('roas') || lower.includes('roi')) {
-      return cleanSentence(`Managed our ad campaigns with exceptional ROI and high ROAS`);
+      const adsVariations = [
+        'Our ad campaigns performed much better under their management',
+        'They managed our ads well and the returns were solid',
+        'Good ROI on the ad spend, they know how to optimize campaigns'
+      ];
+      return cleanSentence(pickVariation(adsVariations, tagSeed));
     }
 
     // Default clean sentence for any custom positive tag
@@ -634,25 +722,55 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
 
   // Negative tags (1-3 stars)
   if (lower.includes('wifi') || lower.includes('wi-fi') || lower.includes('internet')) {
-    return cleanSentence(`The Wi-Fi connection was unstable and very slow`);
+    const negWifiVariations = [
+      'The Wi-Fi was slow and kept dropping, which was frustrating',
+      'Internet connectivity was poor in our room',
+      'Had trouble getting a stable internet connection'
+    ];
+    return cleanSentence(pickVariation(negWifiVariations, tagSeed));
   }
   if (lower.includes('ac') || lower.includes('cooling') || lower.includes('air condition')) {
-    return cleanSentence(`The air conditioning in the room was not cooling properly`);
+    const negAcVariations = [
+      'The AC wasn\'t working properly, room stayed warm',
+      'Air conditioning struggled to cool the room down',
+      'The AC in our room needed servicing, didn\'t cool well'
+    ];
+    return cleanSentence(pickVariation(negAcVariations, tagSeed));
   }
   if (lower.includes('noise') || lower.includes('loud') || lower.includes('sound')) {
-    return cleanSentence(`There was noticeable noise disrupting our sleep and rest`);
+    const negNoiseVariations = [
+      'There was quite a bit of noise that disturbed our sleep',
+      'Sound insulation wasn\'t great, could hear a lot from outside',
+      'Noise levels were higher than comfortable, especially at night'
+    ];
+    return cleanSentence(pickVariation(negNoiseVariations, tagSeed));
   }
   if (lower.includes('clean') || lower.includes('dirty') || lower.includes('hygiene') || lower.includes('bath')) {
-    return cleanSentence(`Room cleanliness and housekeeping fell below expected standards`);
+    const negCleanVariations = [
+      'Cleanliness wasn\'t up to the mark, noticed a few issues',
+      'The room could have been cleaned more thoroughly',
+      'Housekeeping needs to pay more attention to details'
+    ];
+    return cleanSentence(pickVariation(negCleanVariations, tagSeed));
   }
   if (lower.includes('food') || lower.includes('breakfast') || lower.includes('cold')) {
-    return cleanSentence(`The food served was delayed and lacked hot freshness`);
+    const negFoodVariations = [
+      'The food could have been better, some items were cold when served',
+      'Breakfast was a bit disappointing, not enough variety or freshness',
+      'Meals were underwhelming compared to what we expected'
+    ];
+    return cleanSentence(pickVariation(negFoodVariations, tagSeed));
   }
   if (lower.includes('staff') || lower.includes('service') || lower.includes('reception') || lower.includes('delay')) {
-    return cleanSentence(`Front desk and service response times were slow`);
+    const negServiceVariations = [
+      'Service was slow at times, had to wait longer than expected',
+      'The front desk response could have been quicker',
+      'Staff seemed stretched thin, service felt a bit rushed'
+    ];
+    return cleanSentence(pickVariation(negServiceVariations, tagSeed));
   }
 
-  return cleanSentence(`${labelToUse} required improvement`);
+  return cleanSentence(`${labelToUse} could use some improvement`);
 }
 
 /**
@@ -694,23 +812,61 @@ export function generateReviewText({
     tagSnippets = tagSnippets.slice(0, 3);
   }
 
+  // Build the body with natural connectors instead of plain period-separation
   let body = '';
   if (tagSnippets.length > 0) {
-    body = ' ' + tagSnippets.join('. ') + '.';
+    const connectorList = isPositive ? CONNECTORS.positive : CONNECTORS.negative;
+    const builtParts = [];
+
+    for (let i = 0; i < tagSnippets.length; i++) {
+      const snippet = tagSnippets[i];
+
+      if (i === 0) {
+        // First snippet — directly appended, no connector
+        builtParts.push(snippet);
+      } else if (i === 1 && tagSnippets.length <= 3 && Math.abs(Math.sin(variationSeed * 73)) > 0.5) {
+        // Sometimes merge second snippet with a joiner for natural compound sentence
+        const joiner = pickVariation(JOINERS, variationSeed * (i + 5));
+        // Lowercase first char of snippet when joining mid-sentence
+        const lowerSnippet = snippet.charAt(0).toLowerCase() + snippet.slice(1);
+        builtParts[builtParts.length - 1] = builtParts[builtParts.length - 1] + joiner + lowerSnippet;
+      } else {
+        // Use a connector phrase or just period-separate
+        const connectorSeed = variationSeed * (i + 1) * 17.3;
+        const connector = pickVariation(connectorList, connectorSeed);
+        if (connector) {
+          // Connector phrase like "Also, " or "What stood out was that "
+          const lowerSnippet = snippet.charAt(0).toLowerCase() + snippet.slice(1);
+          builtParts.push(connector + lowerSnippet);
+        } else {
+          // No connector, just a new sentence
+          builtParts.push(snippet);
+        }
+      }
+    }
+
+    body = ' ' + builtParts.join('. ') + '.';
   }
 
+  // Pick closing — but sometimes skip closing for shorter, more natural feel
   const availableClosings = isPositive ? closingsDict.positive : closingsDict.negative;
   const closingSeed = variationSeed * 17.3 + selectedTags.length;
-  let closing = pickVariation(availableClosings, closingSeed);
+  let closing = '';
+
+  // Only add closing ~70% of the time to avoid formulaic feel
+  const includeClosing = Math.abs(Math.sin(closingSeed * 43)) > 0.3;
+  if (includeClosing) {
+    closing = ' ' + pickVariation(availableClosings, closingSeed);
+  }
 
   // Combine and clean up spacing and punctuation
-  let fullText = `${opening}${body} ${closing}`
+  let fullText = `${opening}${body}${closing}`
     .replace(/\s*\.\s*\./g, '.')
     .replace(/\s+/g, ' ')
     .trim();
 
   if (customNote && customNote.trim()) {
-    fullText += ` Note: ${customNote.trim()}`;
+    fullText += ` ${customNote.trim()}`;
   }
 
   // Strip emojis if includeEmojis is false
