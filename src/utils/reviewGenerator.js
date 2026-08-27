@@ -532,12 +532,18 @@ function findTagObject(tagId, keywordsList, isPositive) {
   }
 
   // Fallback dynamic tag object from the tagId string itself
+  // For superlative/title tags (e.g. "Best Hotel in Jodhpur"), don't set literal text as snippet
+  // so they flow through to the natural superlative sentence handler in formatTagToSentence
+  const isSuperlativeTag = /^(best|top|truly the best|undoubtedly the best|number 1|#1|greatest|premier|finest)/i.test(
+    String(tagId || '').replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/gu, '').replace(/^[^a-zA-Z0-9]+/, '').trim()
+  );
+
   return {
     id: tagId,
     tagId: tagId,
     label: tagId,
-    snippet: tagId,
-    snippets: [tagId],
+    snippet: isSuperlativeTag ? '' : tagId,
+    snippets: isSuperlativeTag ? [] : [tagId],
   };
 }
 
@@ -547,8 +553,13 @@ function findTagObject(tagId, keywordsList, isPositive) {
 export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.random()) {
   if (!tagObj) return null;
 
-  // 1. If valid snippets array exists with natural sentences
-  if (Array.isArray(tagObj.snippets) && tagObj.snippets.length > 0) {
+  // Early detection: superlative/title tags should ALWAYS use the natural sentence generator,
+  // never output their literal text. Skip snippet checks and go straight to label-based handler.
+  const earlyLabel = cleanEmoji(tagObj.label || tagObj.tagId || tagObj.id || '').trim();
+  const isSuperlativeLabel = /^(best|top|truly the best|undoubtedly the best|number 1|#1|greatest|premier|finest)/i.test(earlyLabel);
+
+  // 1. If valid snippets array exists with natural sentences (skip for superlative tags)
+  if (!isSuperlativeLabel && Array.isArray(tagObj.snippets) && tagObj.snippets.length > 0) {
     const validSnippets = tagObj.snippets.filter((s) => typeof s === 'string' && s.trim().length > 0);
     if (validSnippets.length > 0) {
       const chosen = pickVariation(validSnippets, tagSeed);
@@ -559,10 +570,10 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
     }
   }
 
-  // 2. If snippet property exists and has sentence-like content
+  // 2. If snippet property exists and has sentence-like content (skip for superlative tags)
   const rawSnippet = typeof tagObj.snippet === 'string' ? tagObj.snippet.trim() : '';
   const cleanSnippet = cleanEmoji(rawSnippet).trim();
-  if (cleanSnippet && cleanSnippet.split(/\s+/).length >= 4) {
+  if (!isSuperlativeLabel && cleanSnippet && cleanSnippet.split(/\s+/).length >= 4) {
     return cleanSentence(cleanSnippet);
   }
 
@@ -573,17 +584,83 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
 
   // Superlative / Title statements (e.g. "Best Hotel in Jodhpur", "Top Marketing Agency")
   if (/^(best|top|truly the best|undoubtedly the best|number 1|#1|greatest|premier|finest)/i.test(labelToUse)) {
-    // Extract the core phrase and wrap it into varied natural sentences
-    const superlativeTemplates = [
-      `In our opinion, this is easily the ${lower}`,
-      `I'd say this is the ${lower} based on our experience`,
-      `Honestly, it felt like the ${lower} we've been to`,
-      `Hard to find a better option — this really is the ${lower}`,
-      `After trying a few places, we think this is the ${lower}`,
-      `Can confidently say this is the ${lower} we've visited`,
-      `From what we experienced, it deserves to be called the ${lower}`
-    ];
-    return cleanSentence(pickVariation(superlativeTemplates, tagSeed));
+    // Extract location (after "in/of/near/around") and category (hotel, restaurant, stay, etc.)
+    const locationMatch = lower.match(/\b(?:in|of|near|around)\s+(.+)$/i);
+    const location = locationMatch ? locationMatch[1].replace(/^\s+|\s+$/g, '').replace(/^(the|a)\s+/i, '') : '';
+    // Capitalize each word in location for natural display
+    const loc = location ? location.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
+
+    const categoryMatch = lower.match(/(?:best|top|finest|greatest|premier|#1|number 1)\s+(.+?)(?:\s+(?:in|of|near|around)\s|$)/i);
+    const category = categoryMatch ? categoryMatch[1].trim() : '';
+
+    // Build genuinely natural, human-sounding sentences that avoid keyword stuffing
+    let naturalTemplates;
+
+    if (loc && category) {
+      // Both location and category available — most natural phrasing
+      naturalTemplates = [
+        `We've stayed at quite a few places in ${loc} over the years, and this was easily our favourite`,
+        `If you're planning a trip to ${loc}, this is the place to book — we had a wonderful experience`,
+        `Hands down the most comfortable ${category} we've come across in ${loc}`,
+        `We tried a couple of other options in ${loc} before, but this one stood out in every way`,
+        `Our experience here was so good that we're already recommending it to friends visiting ${loc}`,
+        `This place really sets the bar for what a great ${category} should feel like in ${loc}`,
+        `After exploring several options in ${loc}, we're glad we chose this one — everything was on point`,
+        `We were pleasantly surprised by the quality here, easily among the finest stays we've had in ${loc}`,
+        `For anyone looking for a reliable and comfortable ${category} in ${loc}, this should be at the top of your list`,
+        `The overall experience here was exceptional compared to other places we've been to in ${loc}`,
+        `We didn't expect to enjoy our stay this much, but this ${category} in ${loc} truly impressed us`,
+        `This place exceeded all our expectations for a ${category} in the ${loc} area`,
+        `Having visited ${loc} multiple times, we can say this is where you want to stay`,
+        `Everything about this ${category} felt premium — one of the finest places we've experienced in ${loc}`,
+        `We felt genuinely cared for during our stay, which is rare to find at a ${category} in ${loc}`,
+        `From the moment we arrived, we knew this was going to be a special stay in ${loc}`,
+        `Would highly recommend this to anyone visiting ${loc} — the experience was truly memorable`,
+        `A wonderful ${category} that does everything right, probably the best we've seen in ${loc}`,
+        `Staying here made our trip to ${loc} that much more enjoyable, great choice overall`,
+        `This is exactly the kind of ${category} that makes ${loc} worth visiting again`
+      ];
+    } else if (loc) {
+      // Location only
+      naturalTemplates = [
+        `We've visited ${loc} a few times and this was our best stay so far`,
+        `If you're heading to ${loc}, this place should definitely be on your shortlist`,
+        `Among all the places we checked out in ${loc}, this one impressed us the most`,
+        `Our experience here was outstanding — one of the highlights of our ${loc} trip`,
+        `This place made our time in ${loc} truly special, would definitely come back`,
+        `We didn't have high expectations but this turned out to be a gem in ${loc}`,
+        `Easily one of the most comfortable and well-run places we've stayed at in ${loc}`,
+        `Can't recommend this place enough for anyone planning a visit to ${loc}`,
+        `Great find in ${loc} — the quality and service were above what we expected`,
+        `Our stay here was a real highlight of our ${loc} trip, everything was spot on`
+      ];
+    } else if (category) {
+      // Category only
+      naturalTemplates = [
+        `This is easily one of the best ${category} experiences we've had`,
+        `If you're looking for a great ${category}, look no further — this place delivers`,
+        `We've tried quite a few options and this ${category} is genuinely exceptional`,
+        `Hard to find a ${category} that gets everything right, but this one does`,
+        `The quality and attention to detail here make it a standout ${category}`,
+        `Really impressed with this ${category}, would recommend it without hesitation`,
+        `Everything about this ${category} exceeded our expectations`,
+        `This is the kind of ${category} that makes you want to come back`
+      ];
+    } else {
+      // Generic fallback — no location or category parsed
+      naturalTemplates = [
+        'This place truly exceeded all our expectations — highly recommended',
+        'We\'ve visited quite a few places and this one really stands out from the rest',
+        'Honestly one of the best experiences we\'ve had, everything was just right',
+        'This place sets a high standard — would definitely recommend it to others',
+        'We were genuinely impressed by the quality and care put into everything here',
+        'Hard to find a place that gets everything right, but this one comes very close',
+        'Our experience here was top-notch, and we\'d happily come back again',
+        'Really glad we chose this place — it made our trip so much better'
+      ];
+    }
+
+    return cleanSentence(pickVariation(naturalTemplates, tagSeed));
   }
 
   // Positive keyword patterns — each with multiple variations for naturalness
