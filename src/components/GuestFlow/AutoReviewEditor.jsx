@@ -15,10 +15,30 @@ export function AutoReviewEditor({
 
   const isPackers = businessType === 'packers';
   const isDining = ['restaurant', 'cafe'].includes(businessType);
-  const isService = ['packers', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
 
-  const title = isPackers ? 'Tell us about your relocation experience' : (isDining ? 'Tell us about your visit' : (isService ? 'Tell us about your experience' : 'Tell us about your stay'));
-  const placeholder = isPackers ? 'Tell us what you enjoyed about our packing & moving service...' : (isDining ? 'Tell us what you enjoyed about your meal and visit...' : (isService ? 'Tell us what you enjoyed about our service...' : 'Tell us what you enjoyed about your stay...'));
+  const getEditorTitle = () => {
+    if (isPackers) return 'Tell us about your relocation experience';
+    if (businessType === 'business_consultant') return 'Tell us about your business setup experience';
+    if (businessType === 'makeup_artist') return 'Tell us about your makeup experience';
+    if (businessType === 'nail_artist') return 'Tell us about your nail art experience';
+    if (isDining) return 'Tell us about your visit';
+    if (isService) return 'Tell us about your experience';
+    return 'Tell us about your stay';
+  };
+
+  const getEditorPlaceholder = () => {
+    if (isPackers) return 'Tell us what you enjoyed about our packing & moving service...';
+    if (businessType === 'business_consultant') return 'Tell us what you enjoyed about our consultancy service...';
+    if (businessType === 'makeup_artist') return 'Tell us what you loved about your makeup and look...';
+    if (businessType === 'nail_artist') return 'Tell us what you loved about your nail set and design...';
+    if (isDining) return 'Tell us what you enjoyed about your meal and visit...';
+    if (isService) return 'Tell us what you enjoyed about our service...';
+    return 'Tell us what you enjoyed about your stay...';
+  };
+
+  const title = getEditorTitle();
+  const placeholder = getEditorPlaceholder();
 
   const handleCopy = async () => {
     if (!reviewText) return;

@@ -215,5 +215,50 @@ export const INDUSTRY_TEMPLATES = {
       { id: 'support', label: '📞 24/7 Road Assistance', category: 'Support', snippet: 'Great customer service and emergency roadside support' },
       { id: 'documents', label: '📄 Clear Documents', category: 'Service', snippet: 'All RC, insurance, and permit documents were up-to-date in the vehicle' },
     ]
+  },
+
+  business_consultant: {
+    name: 'Business Setup & Corporate Consultant',
+    icon: '💼',
+    keywords: [
+      { id: 'license_registration', label: '📄 Fast Company Registration & Licensing', category: 'Legal & Compliance', snippet: 'Handled our complete company registration and trade license seamlessly without any delay' },
+      { id: 'expert_guidance', label: '🧠 Expert Strategic Advisory', category: 'Consulting', snippet: 'Provided invaluable corporate setup advice and structured our business entity perfectly' },
+      { id: 'paperwork_hasslefree', label: '📋 Stress-Free Documentation', category: 'Documentation', snippet: 'Took care of all legal paperwork, PRO services, and bank account setup effortlessly' },
+      { id: 'tax_compliance', label: '⚖️ Tax & Compliance Advisory', category: 'Finance', snippet: 'Guided us clearly on GST, tax compliance, and legal regulatory frameworks' },
+      { id: 'transparent_pricing', label: '💰 Transparent & Clear Charges', category: 'Pricing', snippet: 'Clear upfront pricing with no hidden consultancy fees or unexpected costs' },
+      { id: 'responsive_support', label: '📞 Highly Responsive Consultant', category: 'Service', snippet: 'Always available to answer our queries promptly and resolve setup bottlenecks' },
+      { id: 'visa_pro', label: '🛂 Smooth PRO & Visa Processing', category: 'Services', snippet: 'Handled investor visa and PRO document clearance swift and hassle-free' },
+      { id: 'trustworthy', label: '🛡️ Highly Reliable Partner', category: 'Trust', snippet: 'A trustworthy business setup advisor you can rely on for starting a business' },
+    ]
+  },
+
+  makeup_artist: {
+    name: 'Bridal & Professional Makeup Artist',
+    icon: '💄',
+    keywords: [
+      { id: 'flawless_makeup', label: '✨ Flawless & Long-Lasting Look', category: 'Makeup', snippet: 'The makeup was flawless, felt lightweight, and lasted perfectly throughout the entire event' },
+      { id: 'bridal_look', label: '👑 Stunning Bridal Transformation', category: 'Bridal', snippet: 'Created a breathtaking bridal look that perfectly complemented my outfit and aesthetic' },
+      { id: 'premium_products', label: '💄 High-End Beauty Products', category: 'Products', snippet: 'Used top-tier luxury cosmetics that suit skin sensitively without causing breakouts' },
+      { id: 'punctual_artist', label: '⏱️ On-Time & Punctual', category: 'Punctuality', snippet: 'Arrived right on schedule for the venue makeup session with zero stress' },
+      { id: 'skilful_eye', label: '🎨 Skilful Eye & Detail', category: 'Technique', snippet: 'Incredible attention to eye detail, skin blending, and subtle contouring' },
+      { id: 'sweet_behavior', label: '🌸 Warm & Patient Artist', category: 'Service', snippet: 'Extremely sweet, patient, and made me feel completely relaxed and confident' },
+      { id: 'hair_draping', label: '🎀 Perfect Hair Styling & Draping', category: 'Styling', snippet: 'Hair styling and saree/lehenga dupatta draping were immaculate and secure' },
+      { id: 'value_glam', label: '💰 Worth Every Penny', category: 'Value', snippet: 'Top glam makeup service offering incredible value for special occasions' },
+    ]
+  },
+
+  nail_artist: {
+    name: 'Nail Art & Extension Studio',
+    icon: '💅',
+    keywords: [
+      { id: 'stunning_nail_art', label: '💅 Gorgeous Custom Nail Art', category: 'Nail Art', snippet: 'The custom nail art design turned out stunning and exceeded my expectations' },
+      { id: 'durable_extensions', label: '💎 Long-Lasting Extensions', category: 'Extensions', snippet: 'Acrylic/gel extensions are super sturdy, durable, and haven\'t chipped or lifted at all' },
+      { id: 'clean_hygiene', label: '✨ Spotless & Sanitized Tools', category: 'Hygiene', snippet: 'Cuticle care and tool sterilization were handled with pristine hygiene' },
+      { id: 'creative_designs', label: '🎨 Creative & Trendy Designs', category: 'Design', snippet: 'Extremely creative artist who brought my Pinterest nail reference to life' },
+      { id: 'gentle_care', label: '🌸 Gentle Cuticle Care', category: 'Care', snippet: 'Prepped my natural nails gently without thinning or damaging the nail bed' },
+      { id: 'gel_polish', label: '✨ High-Shine Gel Polish', category: 'Finish', snippet: 'The gel polish color selection is huge and gave a high-shine glossy finish' },
+      { id: 'polite_tech', label: '😊 Friendly Nail Technician', category: 'Service', snippet: 'The nail tech was polite, attentive, and took time to perfect every single nail' },
+      { id: 'fair_prices', label: '💰 Affordable Luxury Nails', category: 'Value', snippet: 'Reasonable rates for high-quality nail extensions and intricate art' },
+    ]
   }
 };

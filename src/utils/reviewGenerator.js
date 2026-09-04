@@ -250,6 +250,9 @@ export function detectBusinessType(settingsOrName, explicitType) {
   if (type && type !== 'hotel' && type !== 'other') return type;
 
   if (/packers|movers|relocation|shifting|movers and packers/i.test(name)) return 'packers';
+  if (/consultant|incorporation|company setup|business setup|corporate advisor|tax consultant/i.test(name)) return 'business_consultant';
+  if (/makeup|bridal makeup|mua|glam artist|beauty artist/i.test(name)) return 'makeup_artist';
+  if (/nail|nail art|nail extension|nail studio|nail bar/i.test(name)) return 'nail_artist';
   if (/transfer|cab|taxi|car rental|ride/i.test(name)) return 'transfers';
   if (/tour|travel|itinerary|holiday|package/i.test(name)) return 'tours_travels';
   if (/real estate|realty|property consultant/i.test(name)) return 'real_estate';
@@ -266,7 +269,10 @@ export function detectBusinessType(settingsOrName, explicitType) {
 function getOpenings(hotelName = 'this place', tone = 'friendly', businessType = 'hotel') {
   const name = hotelName || 'this place';
   const isPackers = businessType === 'packers';
-  const isService = ['packers', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+  const isConsultant = businessType === 'business_consultant';
+  const isMakeup = businessType === 'makeup_artist';
+  const isNails = businessType === 'nail_artist';
+  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
 
   if (isPackers) {
     return {
@@ -287,6 +293,62 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
       3: [`${name} handled our move okay, though a few things could have been managed better.`],
       2: [`A bit disappointed with the shifting service from ${name}.`],
       1: [`Unfortunately, our experience with ${name} for our move was not good.`]
+    };
+  }
+
+  if (isConsultant) {
+    return {
+      5: [
+        `We hired ${name} for our company incorporation and business setup, and they made the entire process seamless.`,
+        `Used ${name} for our business registration and advisory — exceptional guidance throughout.`,
+        `Booked ${name} to assist with our corporate setup and licensing, and they handled all paperwork effortlessly.`,
+        `Very impressed with the professional consultancy provided by ${name}.`,
+        `Super satisfied with how ${name} structured our business entity and legal formalities.`
+      ],
+      4: [
+        `Had a good experience with ${name} for our business setup. Solid advisory overall.`,
+        `${name} did a good job assisting with our company documentation.`
+      ],
+      3: [`${name} handled our business registration okay, though process response times could improve.`],
+      2: [`A bit disappointed with the consultancy service from ${name}.`],
+      1: [`Unfortunately, our experience with ${name} for business setup was not good.`]
+    };
+  }
+
+  if (isMakeup) {
+    return {
+      5: [
+        `Booked ${name} for my event makeup and the results were absolutely stunning!`,
+        `Got my makeup done by ${name} and received so many compliments throughout the function.`,
+        `Had a wonderful experience with ${name} for bridal/party glam — makeup was flawless.`,
+        `Super happy with ${name}, the makeup looked lightweight, glowing, and stayed all day.`,
+        `${name} is such a talented makeup artist, made me feel so confident and beautiful.`
+      ],
+      4: [
+        `Had a great session with ${name} for makeup. Looked lovely and lasted well.`,
+        `Good experience with ${name}, loved the eye makeup and finish.`
+      ],
+      3: [`Makeup by ${name} was nice, though a few adjustments were needed.`],
+      2: [`Wasn't completely happy with the makeup look from ${name}.`],
+      1: [`Unfortunately, the makeup service by ${name} did not meet expectations.`]
+    };
+  }
+
+  if (isNails) {
+    return {
+      5: [
+        `Got my nail extensions and custom nail art done at ${name} and I am obsessed!`,
+        `Visited ${name} for nail art and extensions, and the work was incredibly neat and gorgeous.`,
+        `Super happy with my nail set from ${name}, the design and finishing are top notch.`,
+        `${name} did an amazing job on my nails, super sturdy and beautiful art work.`
+      ],
+      4: [
+        `Had a good experience at ${name} for nail art. Loved the final set.`,
+        `Nice nail studio, extensions turned out great.`
+      ],
+      3: [`Nail work at ${name} was okay, though shape could be a bit more precise.`],
+      2: [`Nails didn't last as long as expected from ${name}.`],
+      1: [`Disappointed with the nail service at ${name}.`]
     };
   }
 
@@ -463,7 +525,10 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
 
 function getClosings(tone = 'friendly', businessType = 'hotel') {
   const isPackers = businessType === 'packers';
-  const isService = ['packers', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+  const isConsultant = businessType === 'business_consultant';
+  const isMakeup = businessType === 'makeup_artist';
+  const isNails = businessType === 'nail_artist';
+  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
 
   if (isPackers) {
     return {
@@ -474,6 +539,39 @@ function getClosings(tone = 'friendly', businessType = 'hotel') {
         'Will certainly use their services again whenever we move.'
       ],
       negative: ['Hope management takes steps to improve their packing and delivery service.']
+    };
+  }
+
+  if (isConsultant) {
+    return {
+      positive: [
+        'Would highly recommend their consultancy to any entrepreneur starting a business.',
+        'Will definitely work with them again for future corporate setup and advisory needs.',
+        'Glad we chose them for our business registration, smooth process overall.'
+      ],
+      negative: ['Hope management improves turnaround time for documentation.']
+    };
+  }
+
+  if (isMakeup) {
+    return {
+      positive: [
+        'Would definitely book her again for future events and functions!',
+        'Highly recommend to any bride looking for flawless glam on her big day!',
+        'Can\'t wait for my next booking with her!'
+      ],
+      negative: ['Hope she considers client preferences more carefully going forward.']
+    };
+  }
+
+  if (isNails) {
+    return {
+      positive: [
+        'Will definitely be coming back for my next refill and fresh set!',
+        'Highly recommend to anyone looking for stunning, long-lasting nail art!',
+        'My go-to nail studio from now on!'
+      ],
+      negative: ['Hope they refine their nail prep and extension prep techniques.']
     };
   }
 

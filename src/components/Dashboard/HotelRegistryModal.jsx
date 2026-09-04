@@ -150,6 +150,9 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
                 >
                   <option value="hotel">Hotel & Resort</option>
                   <option value="packers">Packers & Movers</option>
+                  <option value="business_consultant">Business Setup & Corporate Consultant</option>
+                  <option value="makeup_artist">Makeup Artist & Bridal Glam</option>
+                  <option value="nail_artist">Nail Art & Extension Studio</option>
                   <option value="transfers">Airport Transfers & Cabs</option>
                   <option value="packages">Tour & Travel Packages</option>
                   <option value="tours_travels">Tours & Travel Agency</option>
