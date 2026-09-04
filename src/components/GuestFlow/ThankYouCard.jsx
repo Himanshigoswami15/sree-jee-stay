@@ -3,6 +3,7 @@ import { CheckCircle2, RotateCcw, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useFeedback } from '../../context/FeedbackContext';
 import { getActiveProviders } from '../../utils/providerRouter';
+import { detectBusinessType } from '../../utils/reviewGenerator';
 
 export function ThankYouCard({ rating, onReset, guestContact }) {
   const { settings } = useFeedback();
@@ -13,6 +14,9 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
   const logoUrl = settings?.logoUrl || '';
   const brandColor = settings?.themeColor || '#1C1917';
   const locationText = settings?.location || 'Rajasthan · India';
+
+  const effectiveBusinessType = detectBusinessType(settings, settings?.businessType);
+  const isHotel = ['hotel', 'unique_stay'].includes(effectiveBusinessType);
 
   return (
     <div className="guest-page-wrapper">
@@ -84,7 +88,9 @@ export function ThankYouCard({ rating, onReset, guestContact }) {
 
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.875rem', color: '#78716C', lineHeight: '1.6', maxWidth: '440px', margin: '0 auto' }}>
               {isHighRating
-                ? `Your experience means a lot to us. We look forward to welcoming you back to ${hotelName}.`
+                ? (isHotel
+                    ? `Your experience means a lot to us. We look forward to welcoming you back to ${hotelName}.`
+                    : `Your experience means a lot to us. We look forward to serving you again at ${hotelName}.`)
                 : `Your feedback has been delivered directly to our Duty Management team. We are actively reviewing your notes.`}
             </p>
           </div>

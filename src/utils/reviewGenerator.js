@@ -261,9 +261,15 @@ export function detectBusinessType(settingsOrName, explicitType) {
   if (/gym|fitness|crossfit/i.test(name)) return 'gym';
   if (/restaurant|dining|diner|bistro|food/i.test(name)) return 'restaurant';
   if (/cafe|bakery|coffee/i.test(name)) return 'cafe';
-  if (/marketing|seo|agency|digital/i.test(name)) return 'marketing';
+  if (/marketing|seo|agency|digital|zone|elevate|media|tech|solutions|solution|enterprise|enterprises|studio|hub|center|centre|associates|advisors|consulting|ltd|pvts|pvt/i.test(name)) return 'marketing';
 
-  return type || 'hotel';
+  if (type === 'other') return 'service';
+
+  if (type === 'hotel' || /hotel|resort|stay|inn|lodge|homestay|villa|suites|guest house|guesthouse|residency|palace|cottage|hostel|b&b|bed and breakfast/i.test(name)) {
+    return 'hotel';
+  }
+
+  return 'service';
 }
 
 function getOpenings(hotelName = 'this place', tone = 'friendly', businessType = 'hotel') {

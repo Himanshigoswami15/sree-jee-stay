@@ -56,17 +56,19 @@ export function KeywordChips({ rating, selectedTags = [], onToggleTag, businessT
 
   if (!chipList || chipList.length === 0) return null;
 
+  const isHotel = ['hotel', 'unique_stay'].includes(businessType);
   const isPackers = businessType === 'packers';
   const isDining = ['restaurant', 'cafe'].includes(businessType);
-  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+  const isMarketing = businessType === 'marketing';
 
   const getPositiveTitle = () => {
     if (isPackers) return 'What did you love about our packing & moving service?';
     if (businessType === 'business_consultant') return 'What did you love about our business consultancy service?';
     if (businessType === 'makeup_artist') return 'What did you love about your makeup experience?';
     if (businessType === 'nail_artist') return 'What did you love about your nail art experience?';
+    if (isMarketing) return 'What did you love about our marketing service?';
     if (isDining) return 'What did you love about your dining experience?';
-    if (isService) return 'What did you love about our service?';
+    if (!isHotel) return 'What did you love about our service?';
     return 'What did you love about your stay?';
   };
 

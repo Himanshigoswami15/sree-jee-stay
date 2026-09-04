@@ -13,17 +13,19 @@ export function AutoReviewEditor({
 
   if (!rating) return null;
 
+  const isHotel = ['hotel', 'unique_stay'].includes(businessType);
   const isPackers = businessType === 'packers';
   const isDining = ['restaurant', 'cafe'].includes(businessType);
-  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+  const isMarketing = businessType === 'marketing';
 
   const getEditorTitle = () => {
     if (isPackers) return 'Tell us about your relocation experience';
     if (businessType === 'business_consultant') return 'Tell us about your business setup experience';
     if (businessType === 'makeup_artist') return 'Tell us about your makeup experience';
     if (businessType === 'nail_artist') return 'Tell us about your nail art experience';
+    if (isMarketing) return 'Tell us about your marketing experience';
     if (isDining) return 'Tell us about your visit';
-    if (isService) return 'Tell us about your experience';
+    if (!isHotel) return 'Tell us about your experience';
     return 'Tell us about your stay';
   };
 
@@ -32,8 +34,9 @@ export function AutoReviewEditor({
     if (businessType === 'business_consultant') return 'Tell us what you enjoyed about our consultancy service...';
     if (businessType === 'makeup_artist') return 'Tell us what you loved about your makeup and look...';
     if (businessType === 'nail_artist') return 'Tell us what you loved about your nail set and design...';
+    if (isMarketing) return 'Tell us what you enjoyed about our marketing service...';
     if (isDining) return 'Tell us what you enjoyed about your meal and visit...';
-    if (isService) return 'Tell us what you enjoyed about our service...';
+    if (!isHotel) return 'Tell us what you enjoyed about our service...';
     return 'Tell us what you enjoyed about your stay...';
   };
 

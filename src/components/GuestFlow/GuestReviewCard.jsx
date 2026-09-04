@@ -35,17 +35,30 @@ export function GuestReviewCard() {
   const isDuplicate = checkIsDuplicate(guestContact);
 
   const effectiveBusinessType = detectBusinessType(settings, settings?.businessType);
+  const isHotel = ['hotel', 'unique_stay'].includes(effectiveBusinessType);
   const isPackers = effectiveBusinessType === 'packers';
   const isDining = ['restaurant', 'cafe'].includes(effectiveBusinessType);
-  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(effectiveBusinessType);
+  const isConsultant = effectiveBusinessType === 'business_consultant';
+  const isMakeup = effectiveBusinessType === 'makeup_artist';
+  const isNails = effectiveBusinessType === 'nail_artist';
+  const isMarketing = effectiveBusinessType === 'marketing';
+  const isClinic = effectiveBusinessType === 'clinic';
+  const isSalon = effectiveBusinessType === 'salon';
+  const isGym = effectiveBusinessType === 'gym';
+  const isRealEstate = effectiveBusinessType === 'real_estate';
 
   const getHeadingText = () => {
     if (isPackers) return 'How was your relocation experience?';
-    if (effectiveBusinessType === 'business_consultant') return 'How was your consulting experience?';
-    if (effectiveBusinessType === 'makeup_artist') return 'How was your makeup experience?';
-    if (effectiveBusinessType === 'nail_artist') return 'How was your nail art experience?';
+    if (isConsultant) return 'How was your consulting experience?';
+    if (isMakeup) return 'How was your makeup experience?';
+    if (isNails) return 'How was your nail art experience?';
+    if (isMarketing) return 'How was your marketing experience?';
     if (isDining) return 'How was your dining experience?';
-    if (isService) return 'How was your experience?';
+    if (isClinic) return 'How was your visit?';
+    if (isSalon) return 'How was your session?';
+    if (isGym) return 'How was your workout experience?';
+    if (isRealEstate) return 'How was your property consulting experience?';
+    if (!isHotel) return 'How was your experience?';
     return 'How was your stay?';
   };
 
@@ -59,7 +72,7 @@ export function GuestReviewCard() {
         1: "We're sorry your experience fell short. Please let us know.",
       }[r] || "Wonderful. We're glad you had a great relocation experience.";
     }
-    if (effectiveBusinessType === 'business_consultant') {
+    if (isConsultant) {
       return {
         5: "Wonderful. We're glad you had a great business setup experience.",
         4: "Very Good. Thank you for your feedback.",
@@ -68,7 +81,7 @@ export function GuestReviewCard() {
         1: "We're sorry your experience fell short. Please let us know.",
       }[r] || "Wonderful. We're glad you had a great business setup experience.";
     }
-    if (effectiveBusinessType === 'makeup_artist') {
+    if (isMakeup) {
       return {
         5: "Wonderful. We're glad you loved your makeup look.",
         4: "Very Good. Thank you for your feedback.",
@@ -77,7 +90,7 @@ export function GuestReviewCard() {
         1: "We're sorry your experience fell short. Please let us know.",
       }[r] || "Wonderful. We're glad you loved your makeup look.";
     }
-    if (effectiveBusinessType === 'nail_artist') {
+    if (isNails) {
       return {
         5: "Wonderful. We're glad you loved your nail set.",
         4: "Very Good. Thank you for your feedback.",
@@ -85,6 +98,15 @@ export function GuestReviewCard() {
         2: "Fair. Tell us how we can improve.",
         1: "We're sorry your experience fell short. Please let us know.",
       }[r] || "Wonderful. We're glad you loved your nail set.";
+    }
+    if (isMarketing) {
+      return {
+        5: "Wonderful. We're glad you had a great marketing experience.",
+        4: "Very Good. Thank you for your feedback.",
+        3: "Good. We appreciate your feedback.",
+        2: "Fair. Tell us how we can improve.",
+        1: "We're sorry your experience fell short. Please let us know.",
+      }[r] || "Wonderful. We're glad you had a great marketing experience.";
     }
     if (isDining) {
       return {
@@ -95,7 +117,7 @@ export function GuestReviewCard() {
         1: "We're sorry your experience fell short. Please let us know.",
       }[r] || "Wonderful. We're glad you enjoyed your meal.";
     }
-    if (isService) {
+    if (!isHotel) {
       return {
         5: "Wonderful. We're glad you had a great experience with our service.",
         4: "Very Good. Thank you for your feedback.",
