@@ -125,5 +125,95 @@ export const INDUSTRY_TEMPLATES = {
       { id: 'loading_unloading', label: '🏗️ Quick Loading & Unloading', category: 'Service', snippet: 'Loading, transport, and unloading were carried out swiftly and systematically' },
       { id: 'vehicle_transport', label: '🚗 Safe Vehicle Transport', category: 'Service', snippet: 'Our car/bike was transported safely and delivered in perfect condition' },
     ]
+  },
+
+  packages: {
+    name: 'Tour & Travel Packages',
+    icon: '✈️',
+    keywords: [
+      { id: 'itinerary', label: '🗺️ Well-Planned Itinerary', category: 'Planning', snippet: 'The tour itinerary was exceptionally well-planned, flexible, and executed without a glitch' },
+      { id: 'guide', label: '👨‍🌾 Knowledgeable Tour Guide', category: 'Service', snippet: 'Our tour guide was warm, knowledgeable, and made every sightseeing stop super engaging' },
+      { id: 'sightseeing', label: '🏔️ Great Sightseeing', category: 'Experience', snippet: 'We covered all the top attractions and hidden gems comfortably without feeling rushed' },
+      { id: 'transfers', label: '🚗 Smooth Package Transfers', category: 'Transport', snippet: 'All pickup, drop, and intercity transfers were prompt, comfortable, and well-coordinated' },
+      { id: 'hotels', label: '🏨 Excellent Hotel Stays', category: 'Accommodation', snippet: 'The hotel accommodations included in the package were clean, comfortable, and top-tier' },
+      { id: 'customization', label: '🛠️ Tailored & Flexible', category: 'Service', snippet: 'They customized the package itinerary according to our preferences effortlessly' },
+      { id: 'support', label: '📞 24/7 Travel Support', category: 'Customer Support', snippet: 'The travel support team kept in touch throughout the trip and resolved questions instantly' },
+      { id: 'value', label: '💰 Value for Money Package', category: 'General', snippet: 'Offered an amazing holiday package with premium arrangements at a very fair price' },
+    ]
+  },
+
+  transfers: {
+    name: 'Airport Transfers & Cab Services',
+    icon: '🚗',
+    keywords: [
+      { id: 'punctual', label: '⏱️ Always Punctual', category: 'Punctuality', snippet: 'The driver arrived right on time for pickup, ensuring we never missed a moment' },
+      { id: 'driver', label: '👨‍✈️ Professional & Safe Driver', category: 'Service', snippet: 'Our driver was courteous, professional, and drove safely and comfortably throughout' },
+      { id: 'clean_cab', label: '✨ Clean & Sanitized Cab', category: 'Vehicle', snippet: 'The cab was sparkling clean, smelling fresh, and equipped with cold AC' },
+      { id: 'smooth_ride', label: '🛣️ Smooth & Stress-Free Ride', category: 'Comfort', snippet: 'The ride was smooth, quiet, and completely stress-free from pickup to destination' },
+      { id: 'luggage', label: '🧳 Helpful Luggage Care', category: 'Service', snippet: 'The driver happily assisted with loading and unloading all our heavy luggage' },
+      { id: 'airport_pickup', label: '✈️ Seamless Airport Drop/Pickup', category: 'Transfer', snippet: 'Made our airport transfer smooth with seamless door-to-door drop service' },
+      { id: 'fair_fare', label: '💰 Transparent & Fair Fare', category: 'Pricing', snippet: 'Clear transparent pricing with zero surprise charges or hidden fees' },
+      { id: 'navigation', label: '📍 Smart Route Navigation', category: 'Service', snippet: 'Knew the best routes to bypass heavy traffic and get us there efficiently' },
+    ]
+  },
+
+  unique_stay: {
+    name: 'Villas, Homestays & Unique Properties',
+    icon: '🏡',
+    keywords: [
+      { id: 'vibe', label: '🏡 Stunning Property Vibe', category: 'Ambiance', snippet: 'The property had a gorgeous aesthetic, unique architecture, and charming vibe' },
+      { id: 'views', label: '🌄 Breathtaking Views', category: 'Location', snippet: 'Enjoyed scenic panoramic views from the property terrace and balcony' },
+      { id: 'host', label: '🤝 Warm & Hospitable Host', category: 'Service', snippet: 'The host was extremely welcoming, responsive, and attentive to every detail' },
+      { id: 'privacy', label: '🔒 Peaceful Peace & Privacy', category: 'Comfort', snippet: 'Offered complete quietness, deep peace, and total privacy for our group' },
+      { id: 'private_pool', label: '🏊 Private Pool & Lawn', category: 'Amenities', snippet: 'The private pool area and lush green lawn were impeccably maintained' },
+      { id: 'cleanliness', label: '✨ Spotless Cleanliness', category: 'Cleanliness', snippet: 'The entire property was spotless, fresh, and disinfected before our arrival' },
+      { id: 'spacious', label: '🛋️ Luxurious Living Spaces', category: 'Comfort', snippet: 'Rooms and common lounge areas were spacious, cozy, and beautifully decorated' },
+      { id: 'kitchen_food', label: '🍳 Great Kitchen & Home Food', category: 'Dining', snippet: 'The fully equipped kitchen and fresh home-cooked meals were fantastic' },
+    ]
+  },
+
+  tours_travels: {
+    name: 'Tours & Travel Agency',
+    icon: '🧳',
+    keywords: [
+      { id: 'booking', label: '🎫 Easy Booking Process', category: 'Service', snippet: 'Ticket and tour booking was seamless and handled professionally' },
+      { id: 'guidance', label: '📋 Expert Travel Advice', category: 'Service', snippet: 'Provided expert travel guidance and insider tips for our destination' },
+      { id: 'packages', label: '✈️ Custom Tour Packages', category: 'Planning', snippet: 'Curated a tailored holiday package matching our budget and dates' },
+      { id: 'transfers', label: '🚘 Reliable Transport', category: 'Transport', snippet: 'Arranged reliable cab transport and transfers everywhere' },
+      { id: 'hotels', label: '🏨 Quality Hotel Selection', category: 'Accommodation', snippet: 'Booked top-rated hotels with great locations for our trip' },
+      { id: 'support', label: '📞 Prompt Assistance', category: 'Support', snippet: 'Team was available around the clock to help during our journey' },
+      { id: 'pricing', label: '💰 Honest Pricing', category: 'Pricing', snippet: 'Offered competitive rates with complete clarity on inclusions' },
+      { id: 'experience', label: '🌟 Unforgettable Experience', category: 'General', snippet: 'Made our vacation memorable and hassle-free from start to end' },
+    ]
+  },
+
+  real_estate: {
+    name: 'Real Estate & Property Consultant',
+    icon: '🏢',
+    keywords: [
+      { id: 'agent', label: '🤝 Professional Agent', category: 'Service', snippet: 'The property consultant was honest, professional, and knowledgeable' },
+      { id: 'options', label: '🏡 Top Property Listings', category: 'Properties', snippet: 'Showed us premium verified properties matching our exact budget' },
+      { id: 'paperwork', label: '📄 Smooth Documentation', category: 'Legal', snippet: 'Handled all legal paperwork and registry agreements smoothly' },
+      { id: 'transparency', label: '🔍 Clear Transparency', category: 'Trust', snippet: 'Completely transparent about property pricing, specs, and title' },
+      { id: 'location_advice', label: '📍 Location Guidance', category: 'Advice', snippet: 'Gave insightful advice about location growth, ROI, and connectivity' },
+      { id: 'negotiation', label: '💰 Best Deal Negotiated', category: 'Value', snippet: 'Helped negotiate a great deal and saved us money' },
+      { id: 'timely', label: '⏱️ Prompt Support', category: 'Service', snippet: 'Organized site visits promptly and answered every query' },
+      { id: 'trust', label: '🛡️ Highly Trustworthy', category: 'Trust', snippet: 'A reliable real estate consultant you can trust completely' },
+    ]
+  },
+
+  car_rental: {
+    name: 'Car & Bike Rentals',
+    icon: '🔑',
+    keywords: [
+      { id: 'vehicle_cond', label: '🚗 Well-Maintained Vehicle', category: 'Vehicle', snippet: 'The rental car was in pristine mechanical condition and clean' },
+      { id: 'easy_pickup', label: '⚡ Fast Pickup & Drop', category: 'Service', snippet: 'Key handover and vehicle pickup process took less than 5 minutes' },
+      { id: 'clean_interior', label: '✨ Spotless Interior', category: 'Cleanliness', snippet: 'Interior was clean, fresh, and smelled great' },
+      { id: 'deposit', label: '💰 Quick Deposit Refund', category: 'Pricing', snippet: 'Security deposit was refunded instantly without any hassle' },
+      { id: 'mileage', label: '⛽ Smooth Drive & Fuel Efficient', category: 'Performance', snippet: 'Vehicle gave great mileage and smooth performance on the highway' },
+      { id: 'pricing', label: '🏷️ Reasonable Daily Rates', category: 'Pricing', snippet: 'Affordable rental charges with zero hidden fees' },
+      { id: 'support', label: '📞 24/7 Road Assistance', category: 'Support', snippet: 'Great customer service and emergency roadside support' },
+      { id: 'documents', label: '📄 Clear Documents', category: 'Service', snippet: 'All RC, insurance, and permit documents were up-to-date in the vehicle' },
+    ]
   }
 };

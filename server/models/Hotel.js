@@ -75,6 +75,11 @@ const hotelSchema = new mongoose.Schema({
     enum: ['professional', 'friendly', 'luxury', 'budget', 'family', 'business'],
     default: 'friendly',
   },
+  businessType: {
+    type: String,
+    default: 'hotel',
+    trim: true,
+  },
   reviewLength: {
     type: String,
     enum: ['short', 'detailed'],
