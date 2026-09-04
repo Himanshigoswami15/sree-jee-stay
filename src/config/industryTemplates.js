@@ -16,7 +16,7 @@ export const INDUSTRY_TEMPLATES = {
       { id: 'bed', label: '🛏️ Comfortable Beds', category: 'Comfort', snippet: 'The beds were super comfortable with fresh, cozy linens' },
       { id: 'breakfast', label: '🍳 Superb Breakfast', category: 'Dining', snippet: 'Breakfast was fresh, delicious, and offered great variety' },
       { id: 'peaceful', label: '🌿 Peaceful Stay', category: 'Comfort', snippet: 'Enjoyed a quiet, serene, and deeply restful environment' },
-      { id: 'value', label: '💰 Value for Money', category: 'General', snippet: 'Exceptional hospitality and value for money' },
+      { id: 'value', label: '💰 Value for Money', category: 'General', snippet: 'Great service and excellent value for money' },
     ]
   },
 

@@ -13,7 +13,7 @@ export const RATING_KEYWORDS = {
       snippet: 'Our room was really clean when we arrived, everything felt fresh',
       snippets: [
         'Our room was really clean when we checked in, everything felt fresh and well-maintained',
-        'The housekeeping was great — our room always looked tidy and well-kept',
+        'The housekeeping was great, and our room always looked tidy and well-kept',
         'Room was spotless, you could tell they pay attention to cleanliness here',
         'Pleasantly surprised by how clean everything was, from the floors to the linens',
         'The room smelled fresh and was clearly well-cleaned before we got there'
@@ -65,7 +65,7 @@ export const RATING_KEYWORDS = {
       snippet: 'The bed was comfortable and we slept really well',
       snippets: [
         'The bed was comfortable and we got a great night of sleep',
-        'Slept like a log — the mattress and pillows were just right',
+        'Slept like a log, the mattress and pillows were just right',
         'Bed was cozy and the linens felt soft and clean',
         'Had a really restful sleep, the bed quality was better than I expected',
         'The bed was properly comfortable, woke up feeling refreshed every morning'
@@ -80,7 +80,7 @@ export const RATING_KEYWORDS = {
         'The pool area was clean and we spent a lot of time relaxing there',
         'Nice pool with clear water, great for unwinding after a long day',
         'We enjoyed the pool a lot, it was well-maintained and not crowded',
-        'Pool was a bonus — clean water and comfortable seating around it',
+        'Pool was a bonus with clean water and comfortable seating around it',
         'The swimming pool was in great condition, a perfect spot to cool off'
       ]
     },
@@ -105,7 +105,7 @@ export const RATING_KEYWORDS = {
       snippets: [
         'Good location with most of the main spots within easy reach',
         'The location was convenient, didn\'t have to travel far for anything',
-        'Liked the location — close enough to everything but still felt peaceful',
+        'Liked the location, close enough to everything but still felt peaceful',
         'Great spot, we could walk to restaurants and shops nearby',
         'Location worked well for us, easy access to local attractions'
       ]
@@ -225,9 +225,9 @@ export const RATING_KEYWORDS = {
 // Natural sentence connectors that join keyword sentences in flowing text
 const CONNECTORS = {
   positive: [
-    'Also, ', 'On top of that, ', 'Another thing we liked — ',
-    'What stood out was that ', 'We also noticed that ',
-    'Plus, ', 'And ', '', '', ''  // empty strings = no connector (just period-separated, for variety)
+    'Also, ', 'On top of that, ', 'Plus, ',
+    'We also noticed that ', 'In addition, ',
+    '', '', ''  // empty strings = no connector (just period-separated, for variety)
   ],
   negative: [
     'Also, ', 'On the other hand, ', 'Another issue was that ',
@@ -237,7 +237,7 @@ const CONNECTORS = {
 
 // Phrases that merge two sentences into one compound sentence
 const JOINERS = [
-  ' and ', ', and ', ', plus ', '. '
+  ' and ', ', and ', ', plus '
 ];
 
 export function detectBusinessType(settingsOrName, explicitType) {
@@ -281,7 +281,7 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
         `Used ${name} for our home shifting and everything went smoothly.`,
         `Booked ${name} to help with our packing and moving, and they did a fantastic job.`,
         `Very impressed with the relocation service provided by ${name}.`,
-        `Just finished shifting our goods with ${name} and wanted to share — top quality service.`,
+        `Just finished shifting our goods with ${name} and wanted to share that they provide top quality service.`,
         `We were really happy with how ${name} handled our complete packing and moving process.`,
         `${name} made our relocation completely stress-free and easy.`
       ],
@@ -300,7 +300,7 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
     return {
       5: [
         `We hired ${name} for our company incorporation and business setup, and they made the entire process seamless.`,
-        `Used ${name} for our business registration and advisory — exceptional guidance throughout.`,
+        `Used ${name} for our business registration and advisory and received exceptional guidance throughout.`,
         `Booked ${name} to assist with our corporate setup and licensing, and they handled all paperwork effortlessly.`,
         `Very impressed with the professional consultancy provided by ${name}.`,
         `Super satisfied with how ${name} structured our business entity and legal formalities.`
@@ -320,7 +320,7 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
       5: [
         `Booked ${name} for my event makeup and the results were absolutely stunning!`,
         `Got my makeup done by ${name} and received so many compliments throughout the function.`,
-        `Had a wonderful experience with ${name} for bridal/party glam — makeup was flawless.`,
+        `Had a wonderful experience with ${name} for party makeup, everything turned out flawless.`,
         `Super happy with ${name}, the makeup looked lightweight, glowing, and stayed all day.`,
         `${name} is such a talented makeup artist, made me feel so confident and beautiful.`
       ],
@@ -453,7 +453,7 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
       return {
         5: [
           `Worked with ${name} and everything went smoothly.`,
-          `${name} was a great fit — efficient and comfortable.`,
+          `${name} was a great fit, very efficient and comfortable.`,
           `Had a productive and comfortable experience with ${name}. Everything worked well.`
         ],
         4: [
@@ -486,7 +486,7 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
         5: [
           `${name} was a great find for the price. Reliable, comfortable, and affordable.`,
           `Really good value at ${name}, got more than what we paid for.`,
-          `Impressed by ${name} — quality service without spending too much.`
+          `Impressed by ${name}, top quality service without spending too much.`
         ],
         4: [
           `${name} was a solid budget-friendly option with decent service.`,
@@ -506,7 +506,7 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
           `${name} was a great choice, we had a wonderful experience.`,
           `Really happy with our experience with ${name}, everything went well.`,
           `Our experience with ${name} went even better than we expected.`,
-          `Just completed our work with ${name} and wanted to share — it was lovely.`,
+          `Just completed our work with ${name} and wanted to share that everything went smoothly.`,
           `We thoroughly enjoyed our time working with ${name}.`,
           `${name} made our experience really special, glad we chose them.`,
           `Had a wonderful experience with ${name} during our recent visit.`
@@ -516,7 +516,7 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
           `Our experience with ${name} was pleasant and comfortable.`,
           `${name} was a nice service provider, had a good experience.`
         ],
-        3: [`Our experience with ${name} was mixed — some things were nice but others need improvement.`],
+        3: [`Our experience with ${name} was mixed, as some things were nice but others need improvement.`],
         2: [`We were a bit disappointed with a few things during our time with ${name}.`],
         1: [`Unfortunately, our experience with ${name} wasn't good.`]
       };
@@ -790,19 +790,19 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
       if (loc) {
         naturalTemplates = [
           `We've hired a few packers and movers in ${loc} over the years, and this was easily our best experience`,
-          `If you're planning a relocation in ${loc}, this is the company to choose — smooth and hassle-free`,
+          `If you're planning a relocation in ${loc}, this is the company to choose for a smooth and hassle-free move`,
           `Hands down the most reliable packers and movers we've come across in ${loc}`,
           `We were genuinely impressed by how carefully they packed and moved everything in ${loc}`,
           `Our items were delivered safely with zero damage, easily one of the finest packers and movers in ${loc}`,
           `For anyone looking for safe and affordable packers and movers in ${loc}, this team should be at the top of your list`,
           `We felt completely stress-free during our move, which is rare to find with packers and movers in ${loc}`,
-          `Would highly recommend them to anyone shifting in or around ${loc} — exceptional service`,
+          `Would highly recommend them to anyone shifting in or around ${loc} for their exceptional service`,
           `The team handled all our furniture and belongings with extreme care throughout our move in ${loc}`
         ];
       } else {
         naturalTemplates = [
           `This is easily one of the best packers and movers experiences we've had`,
-          `If you're looking for reliable packers and movers, look no further — this team delivers`,
+          `If you're looking for reliable packers and movers, look no further because this team delivers`,
           `We've used a few relocation services before and this company is genuinely exceptional`,
           `Hard to find packers and movers that handle everything with zero damage, but this team does`
         ];
@@ -810,12 +810,12 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
     } else if (loc && category) {
       naturalTemplates = [
         `We've used a few providers in ${loc} over the years, and this was easily our favourite`,
-        `If you're looking for quality service in ${loc}, this is the place to choose — we had a wonderful experience`,
+        `If you're looking for quality service in ${loc}, this is the place to choose for a wonderful experience`,
         `Hands down the most reliable ${category} we've come across in ${loc}`,
         `We tried a couple of other options in ${loc} before, but this one stood out in every way`,
         `Our experience here was so good that we're already recommending it to friends in ${loc}`,
         `This service really sets the bar for what a great ${category} should feel like in ${loc}`,
-        `After exploring several options in ${loc}, we're glad we chose this one — everything was on point`,
+        `After exploring several options in ${loc}, we're glad we chose this one as everything was on point`,
         `We were pleasantly surprised by the quality here, easily among the finest services in ${loc}`,
         `For anyone looking for a reliable ${category} in ${loc}, this should be at the top of your list`
       ];
@@ -827,8 +827,8 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
       ];
     } else {
       naturalTemplates = [
-        'This service truly exceeded all our expectations — highly recommended',
-        'We\'ve used a few services and this one really stands out from the rest',
+        'This service truly exceeded all our expectations and comes highly recommended',
+        'We\'ve used a few services and this one stands out from the rest',
         'Honestly one of the best experiences we\'ve had, everything was just right'
       ];
     }
@@ -953,33 +953,34 @@ export function generateReviewText({
     const builtParts = [];
 
     for (let i = 0; i < tagSnippets.length; i++) {
-      const snippet = tagSnippets[i];
+      const rawSnippet = tagSnippets[i];
+      const snippet = cleanSentence(rawSnippet);
+      if (!snippet) continue;
 
-      if (i === 0) {
-        // First snippet — directly appended, no connector
+      if (builtParts.length === 0) {
+        // First snippet — directly appended
         builtParts.push(snippet);
-      } else if (i === 1 && tagSnippets.length <= 3 && Math.abs(Math.sin(variationSeed * 73)) > 0.5) {
+      } else if (builtParts.length === 1 && tagSnippets.length <= 3 && Math.abs(Math.sin(variationSeed * 73)) > 0.5) {
         // Sometimes merge second snippet with a joiner for natural compound sentence
         const joiner = pickVariation(JOINERS, variationSeed * (i + 5));
-        // Lowercase first char of snippet when joining mid-sentence
         const lowerSnippet = snippet.charAt(0).toLowerCase() + snippet.slice(1);
-        builtParts[builtParts.length - 1] = builtParts[builtParts.length - 1] + joiner + lowerSnippet;
+        builtParts[builtParts.length - 1] = cleanSentence(builtParts[builtParts.length - 1]) + joiner + lowerSnippet;
       } else {
-        // Use a connector phrase or just period-separate
+        // Use a connector phrase or start a fresh sentence
         const connectorSeed = variationSeed * (i + 1) * 17.3;
         const connector = pickVariation(connectorList, connectorSeed);
-        if (connector) {
-          // Connector phrase like "Also, " or "What stood out was that "
+        if (connector && connector.trim()) {
           const lowerSnippet = snippet.charAt(0).toLowerCase() + snippet.slice(1);
-          builtParts.push(connector + lowerSnippet);
+          builtParts.push(cleanSentence(connector + lowerSnippet));
         } else {
-          // No connector, just a new sentence
-          builtParts.push(snippet);
+          builtParts.push(cleanSentence(snippet));
         }
       }
     }
 
-    body = ' ' + builtParts.join('. ') + '.';
+    if (builtParts.length > 0) {
+      body = ' ' + builtParts.map(s => cleanSentence(s)).join('. ') + '.';
+    }
   }
 
   // Pick closing — but sometimes skip closing for shorter, more natural feel
