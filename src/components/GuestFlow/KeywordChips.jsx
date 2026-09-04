@@ -45,7 +45,7 @@ function getKeywordIcon(tagId = '', label = '', category = '') {
   return Star;
 }
 
-export function KeywordChips({ rating, selectedTags = [], onToggleTag }) {
+export function KeywordChips({ rating, selectedTags = [], onToggleTag, businessType = 'hotel' }) {
   const { keywords } = useFeedback();
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -56,6 +56,17 @@ export function KeywordChips({ rating, selectedTags = [], onToggleTag }) {
 
   if (!chipList || chipList.length === 0) return null;
 
+  const isPackers = businessType === 'packers';
+  const isDining = ['restaurant', 'cafe'].includes(businessType);
+  const isService = ['packers', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+
+  const getPositiveTitle = () => {
+    if (isPackers) return 'What did you love about our packing & moving service?';
+    if (isDining) return 'What did you love about your dining experience?';
+    if (isService) return 'What did you love about our service?';
+    return 'What did you love about your stay?';
+  };
+
   // Show top 6 items initially to avoid a "wall of keywords"
   const INITIAL_COUNT = 6;
   const visibleChips = isExpanded ? chipList : chipList.slice(0, INITIAL_COUNT);
@@ -65,7 +76,7 @@ export function KeywordChips({ rating, selectedTags = [], onToggleTag }) {
     <div className="guest-highlights-section">
       <div className="guest-section-header">
         <div className="guest-section-title">
-          {isPositive ? 'What did you love about your stay?' : 'What areas need attention?'}
+          {isPositive ? getPositiveTitle() : 'What areas need attention?'}
         </div>
         <div className="guest-section-subtitle">
           {isPositive

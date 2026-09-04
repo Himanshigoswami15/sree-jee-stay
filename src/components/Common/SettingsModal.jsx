@@ -388,6 +388,34 @@ export function SettingsModal({ isOpen, onClose }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: '#000000', marginBottom: '0.35rem' }}>
+                    Industry Category *
+                  </label>
+                  <select
+                    className="saas-input"
+                    value={formState.businessType || 'hotel'}
+                    onChange={(e) => handleChange('businessType', e.target.value)}
+                    style={{ fontWeight: 600 }}
+                  >
+                    <option value="hotel">Hotel & Resort</option>
+                    <option value="packers">Packers & Movers</option>
+                    <option value="transfers">Airport Transfers & Cabs</option>
+                    <option value="packages">Tour & Travel Packages</option>
+                    <option value="tours_travels">Tours & Travel Agency</option>
+                    <option value="unique_stay">Villas & Homestays</option>
+                    <option value="real_estate">Real Estate & Property</option>
+                    <option value="car_rental">Car & Bike Rentals</option>
+                    <option value="restaurant">Restaurant & Dining</option>
+                    <option value="cafe">Cafe & Bakery</option>
+                    <option value="salon">Salon & Spa</option>
+                    <option value="clinic">Clinic & Healthcare</option>
+                    <option value="gym">Gym & Fitness</option>
+                    <option value="marketing">Marketing Agency</option>
+                    <option value="other">Other Business</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: '#000000', marginBottom: '0.35rem' }}>
                     Review Generator Tone
                   </label>
                   <select
@@ -403,19 +431,19 @@ export function SettingsModal({ isOpen, onClose }) {
                     <option value="family">Family & Warm</option>
                   </select>
                 </div>
+              </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: '#000000', marginBottom: '0.35rem' }}>
-                    Logo URL (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    className="saas-input"
-                    value={formState.logoUrl || ''}
-                    onChange={(e) => handleChange('logoUrl', e.target.value)}
-                    placeholder="https://example.com/logo.png"
-                  />
-                </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: '#000000', marginBottom: '0.35rem' }}>
+                  Logo URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  className="saas-input"
+                  value={formState.logoUrl || ''}
+                  onChange={(e) => handleChange('logoUrl', e.target.value)}
+                  placeholder="https://example.com/logo.png"
+                />
               </div>
 
               <div>

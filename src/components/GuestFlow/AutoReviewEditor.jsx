@@ -7,10 +7,18 @@ export function AutoReviewEditor({
   onTextChange,
   rating,
   onRefreshPhrasing,
+  businessType = 'hotel',
 }) {
   const [copied, setCopied] = useState(false);
 
   if (!rating) return null;
+
+  const isPackers = businessType === 'packers';
+  const isDining = ['restaurant', 'cafe'].includes(businessType);
+  const isService = ['packers', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+
+  const title = isPackers ? 'Tell us about your relocation experience' : (isDining ? 'Tell us about your visit' : (isService ? 'Tell us about your experience' : 'Tell us about your stay'));
+  const placeholder = isPackers ? 'Tell us what you enjoyed about our packing & moving service...' : (isDining ? 'Tell us what you enjoyed about your meal and visit...' : (isService ? 'Tell us what you enjoyed about our service...' : 'Tell us what you enjoyed about your stay...'));
 
   const handleCopy = async () => {
     if (!reviewText) return;
@@ -27,7 +35,7 @@ export function AutoReviewEditor({
     <div className="guest-review-editorial">
       <div className="guest-section-header">
         <div className="guest-section-title">
-          Tell us about your stay
+          {title}
         </div>
         <div className="guest-section-subtitle">
           Share anything that made your experience memorable.
@@ -39,7 +47,7 @@ export function AutoReviewEditor({
           className="guest-editorial-textarea"
           value={reviewText}
           onChange={(e) => onTextChange(e.target.value)}
-          placeholder="Tell us what you enjoyed about your stay..."
+          placeholder={placeholder}
           rows={4}
         />
       </div>

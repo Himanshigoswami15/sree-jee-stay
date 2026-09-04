@@ -149,6 +149,13 @@ export function HotelRegistryModal({ isOpen, onClose, onHotelOnboarded }) {
                   style={{ fontWeight: 600 }}
                 >
                   <option value="hotel">Hotel & Resort</option>
+                  <option value="packers">Packers & Movers</option>
+                  <option value="transfers">Airport Transfers & Cabs</option>
+                  <option value="packages">Tour & Travel Packages</option>
+                  <option value="tours_travels">Tours & Travel Agency</option>
+                  <option value="unique_stay">Villas & Homestays</option>
+                  <option value="real_estate">Real Estate & Property</option>
+                  <option value="car_rental">Car & Bike Rentals</option>
                   <option value="restaurant">Restaurant & Dining</option>
                   <option value="cafe">Cafe & Bakery</option>
                   <option value="salon">Salon & Spa</option>

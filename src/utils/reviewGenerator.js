@@ -240,8 +240,73 @@ const JOINERS = [
   ' and ', ', and ', ', plus ', '. '
 ];
 
-function getOpenings(hotelName = 'this place', tone = 'friendly') {
+export function detectBusinessType(settingsOrName, explicitType) {
+  if (explicitType && explicitType !== 'hotel' && explicitType !== 'other') {
+    return explicitType;
+  }
+  const name = (typeof settingsOrName === 'string' ? settingsOrName : (settingsOrName?.name || settingsOrName?.hotelName || '')).toLowerCase();
+  const type = (typeof settingsOrName === 'object' ? settingsOrName?.businessType : explicitType) || '';
+
+  if (type && type !== 'hotel' && type !== 'other') return type;
+
+  if (/packers|movers|relocation|shifting|movers and packers/i.test(name)) return 'packers';
+  if (/transfer|cab|taxi|car rental|ride/i.test(name)) return 'transfers';
+  if (/tour|travel|itinerary|holiday|package/i.test(name)) return 'tours_travels';
+  if (/real estate|realty|property consultant/i.test(name)) return 'real_estate';
+  if (/clinic|hospital|dental|doctor|health/i.test(name)) return 'clinic';
+  if (/salon|spa|beauty|barber/i.test(name)) return 'salon';
+  if (/gym|fitness|crossfit/i.test(name)) return 'gym';
+  if (/restaurant|dining|diner|bistro|food/i.test(name)) return 'restaurant';
+  if (/cafe|bakery|coffee/i.test(name)) return 'cafe';
+  if (/marketing|seo|agency|digital/i.test(name)) return 'marketing';
+
+  return type || 'hotel';
+}
+
+function getOpenings(hotelName = 'this place', tone = 'friendly', businessType = 'hotel') {
   const name = hotelName || 'this place';
+  const isPackers = businessType === 'packers';
+  const isService = ['packers', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+
+  if (isPackers) {
+    return {
+      5: [
+        `We hired ${name} for our relocation recently and had a great experience overall.`,
+        `Used ${name} for our home shifting and everything went smoothly.`,
+        `Booked ${name} to help with our packing and moving, and they did a fantastic job.`,
+        `Very impressed with the relocation service provided by ${name}.`,
+        `Just finished shifting our goods with ${name} and wanted to share — top quality service.`,
+        `We were really happy with how ${name} handled our complete packing and moving process.`,
+        `${name} made our relocation completely stress-free and easy.`
+      ],
+      4: [
+        `Had a good experience with ${name} for our relocation. Solid service overall.`,
+        `${name} did a good job with our shifting and packing.`,
+        `Overall good experience using ${name} for our move.`
+      ],
+      3: [`${name} handled our move okay, though a few things could have been managed better.`],
+      2: [`A bit disappointed with the shifting service from ${name}.`],
+      1: [`Unfortunately, our experience with ${name} for our move was not good.`]
+    };
+  }
+
+  if (isService) {
+    return {
+      5: [
+        `We used the services of ${name} recently and had a wonderful experience.`,
+        `Really happy with ${name}, everything was handled professionally and smoothly.`,
+        `Our experience with ${name} was excellent from start to finish.`,
+        `We had a great experience working with ${name} and highly appreciate their service.`
+      ],
+      4: [
+        `Had a good experience with ${name}. Reliable service overall.`,
+        `Our experience with ${name} was positive and straightforward.`
+      ],
+      3: [`Our experience with ${name} was okay, though there is room for improvement.`],
+      2: [`A bit let down by our experience with ${name}.`],
+      1: [`Unfortunately, our experience with ${name} fell short of expectations.`]
+    };
+  }
 
   switch (tone) {
     case 'casual':
@@ -269,33 +334,33 @@ function getOpenings(hotelName = 'this place', tone = 'friendly') {
     case 'elegant':
       return {
         5: [
-          `Our stay at ${name} was truly a refined and memorable experience.`,
-          `${name} delivered exactly the kind of elegant stay we were hoping for.`,
+          `Our experience with ${name} was truly a refined and memorable one.`,
+          `${name} delivered exactly the kind of elegant experience we were hoping for.`,
           `We were genuinely impressed by the level of care and quality at ${name}.`,
           `From start to finish, ${name} provided a polished and comfortable experience.`,
           `${name} exceeded our expectations in terms of comfort and attention to detail.`,
-          `It was a pleasure staying at ${name}, everything was thoughtfully done.`
+          `It was a pleasure dealing with ${name}, everything was thoughtfully done.`
         ],
         4: [
           `Our visit to ${name} was quite pleasant with a lovely ambiance throughout.`,
-          `Enjoyed a comfortable and well-appointed stay at ${name}.`
+          `Enjoyed a comfortable and well-appointed experience at ${name}.`
         ],
         3: [`${name} had its merits, though a few details fell short of the standard we anticipated.`],
         2: [`Our experience at ${name} didn't quite match what we were expecting.`],
-        1: [`Unfortunately, our stay at ${name} was well below the standard one would hope for.`]
+        1: [`Unfortunately, our experience at ${name} was well below the standard one would hope for.`]
       };
 
     case 'minimal':
       return {
         5: [
-          `Great stay at ${name}. Really enjoyed it.`,
-          `${name} was excellent. Would go back.`,
+          `Great experience with ${name}. Really enjoyed it.`,
+          `${name} was excellent. Would use again.`,
           `Very happy with ${name}. Good experience.`,
           `Solid experience at ${name}. No complaints.`,
           `${name} was a great pick. Satisfied.`
         ],
         4: [
-          `Good stay at ${name} overall.`,
+          `Good experience at ${name} overall.`,
           `${name} was pleasant. Enjoyed it.`,
           `Decent experience at ${name}.`
         ],
@@ -307,8 +372,8 @@ function getOpenings(hotelName = 'this place', tone = 'friendly') {
     case 'professional':
       return {
         5: [
-          `Our experience at ${name} was very well-managed and comfortable throughout.`,
-          `We were pleased with the standards maintained at ${name} during our stay.`,
+          `Our experience at ${name} was very well-managed and professional throughout.`,
+          `We were pleased with the standards maintained at ${name} during our service.`,
           `${name} demonstrated consistent quality and professionalism across all areas.`,
           `The level of service and upkeep at ${name} was commendable.`,
           `${name} provided a well-organized and efficient experience from start to finish.`
@@ -318,54 +383,54 @@ function getOpenings(hotelName = 'this place', tone = 'friendly') {
           `${name} met our expectations with a well-run operation overall.`
         ],
         3: [`${name} was adequate, though there are areas that could benefit from attention.`],
-        2: [`Our visit to ${name} fell short of the standards we anticipated.`],
+        2: [`Our experience with ${name} fell short of the standards we anticipated.`],
         1: [`The experience at ${name} was unsatisfactory and needs management attention.`]
       };
 
     case 'business':
       return {
         5: [
-          `Stayed at ${name} during a work trip and everything went smoothly.`,
-          `${name} was a great fit for a business visit — efficient and comfortable.`,
-          `Had a productive and comfortable stay at ${name}. Everything worked well.`
+          `Worked with ${name} and everything went smoothly.`,
+          `${name} was a great fit — efficient and comfortable.`,
+          `Had a productive and comfortable experience with ${name}. Everything worked well.`
         ],
         4: [
-          `${name} served us well for our business stay. Reliable and comfortable.`,
-          `Decent stay at ${name} while on a work schedule.`
+          `${name} served us well for our business requirements. Reliable and professional.`,
+          `Decent experience with ${name}.`
         ],
-        3: [`${name} was alright for a work stay, though Wi-Fi and workspace comfort could improve.`],
-        2: [`${name} wasn't ideal for a business trip, ran into a few issues.`],
-        1: [`Would not choose ${name} again for work travel due to several problems.`]
+        3: [`${name} was alright, though service could improve.`],
+        2: [`${name} wasn't ideal, ran into a few issues.`],
+        1: [`Would not choose ${name} again due to several problems.`]
       };
 
     case 'family':
       return {
         5: [
-          `We stayed at ${name} with our family and everyone had a great time.`,
-          `${name} was a wonderful spot for our family trip, kids loved it too.`,
-          `Great family-friendly place, our whole group felt comfortable at ${name}.`
+          `We used ${name} with our family and everyone had a great experience.`,
+          `${name} was a wonderful choice for our family, everyone was satisfied.`,
+          `Great family-friendly service, our whole group felt comfortable with ${name}.`
         ],
         4: [
-          `Our family enjoyed our time at ${name}, nice and comfortable.`,
-          `${name} worked well for our family vacation overall.`
+          `Our family enjoyed our experience with ${name}, nice and comfortable.`,
+          `${name} worked well for our family overall.`
         ],
-        3: [`${name} was decent for families, though a few things could be more kid-friendly.`],
-        2: [`Our family's stay at ${name} was affected by a few comfort issues.`],
-        1: [`Not a great experience for families at ${name}, needed more care.`]
+        3: [`${name} was decent, though a few things could be better.`],
+        2: [`Our family's experience with ${name} was affected by a few issues.`],
+        1: [`Not a great experience for families with ${name}, needed more care.`]
       };
 
     case 'budget':
       return {
         5: [
-          `${name} was a great find for the price. Clean, comfortable, and affordable.`,
+          `${name} was a great find for the price. Reliable, comfortable, and affordable.`,
           `Really good value at ${name}, got more than what we paid for.`,
-          `Impressed by ${name} — quality stay without spending too much.`
+          `Impressed by ${name} — quality service without spending too much.`
         ],
         4: [
-          `${name} was a solid budget-friendly option with decent amenities.`,
+          `${name} was a solid budget-friendly option with decent service.`,
           `Good value at ${name}, nothing fancy but everything we needed.`
         ],
-        3: [`${name} was fair for a budget stay, though some basics need attention.`],
+        3: [`${name} was fair for the budget, though some basics need attention.`],
         2: [`Even for the price, ${name} fell below what we expected.`],
         1: [`Not worth it even at a low price. ${name} needs work.`]
       };
@@ -374,29 +439,56 @@ function getOpenings(hotelName = 'this place', tone = 'friendly') {
     default:
       return {
         5: [
-          `We had a really nice stay at ${name} and enjoyed every bit of it.`,
-          `Stayed at ${name} recently and it was a great experience overall.`,
-          `${name} was a great choice for our trip, we had a wonderful time.`,
-          `Really happy with our stay at ${name}, everything went well.`,
-          `Our visit to ${name} went even better than we expected.`,
-          `Just got back from ${name} and wanted to share — it was lovely.`,
-          `We thoroughly enjoyed our time at ${name}.`,
-          `${name} made our trip really special, glad we chose this place.`,
-          `Had a wonderful experience at ${name} during our recent visit.`
+          `We had a really nice experience with ${name} and enjoyed every bit of it.`,
+          `Used ${name} recently and it was a great experience overall.`,
+          `${name} was a great choice, we had a wonderful experience.`,
+          `Really happy with our experience with ${name}, everything went well.`,
+          `Our experience with ${name} went even better than we expected.`,
+          `Just completed our work with ${name} and wanted to share — it was lovely.`,
+          `We thoroughly enjoyed our time working with ${name}.`,
+          `${name} made our experience really special, glad we chose them.`,
+          `Had a wonderful experience with ${name} during our recent visit.`
         ],
         4: [
-          `Enjoyed our time at ${name}, it was a good stay.`,
-          `Our visit to ${name} was pleasant and comfortable.`,
-          `${name} was a nice place to stay, had a good experience.`
+          `Enjoyed our experience with ${name}, it was good.`,
+          `Our experience with ${name} was pleasant and comfortable.`,
+          `${name} was a nice service provider, had a good experience.`
         ],
-        3: [`Our stay at ${name} was mixed — some things were nice but others need improvement.`],
-        2: [`We were a bit disappointed with a few things during our stay at ${name}.`],
-        1: [`Unfortunately, our experience at ${name} wasn't good.`]
+        3: [`Our experience with ${name} was mixed — some things were nice but others need improvement.`],
+        2: [`We were a bit disappointed with a few things during our time with ${name}.`],
+        1: [`Unfortunately, our experience with ${name} wasn't good.`]
       };
   }
 }
 
-function getClosings(tone = 'friendly') {
+function getClosings(tone = 'friendly', businessType = 'hotel') {
+  const isPackers = businessType === 'packers';
+  const isService = ['packers', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+
+  if (isPackers) {
+    return {
+      positive: [
+        'Would definitely hire their team again for future relocation.',
+        'Highly recommend them to anyone looking for reliable packers and movers.',
+        'Glad we chose them for our move, hassle-free overall.',
+        'Will certainly use their services again whenever we move.'
+      ],
+      negative: ['Hope management takes steps to improve their packing and delivery service.']
+    };
+  }
+
+  if (isService) {
+    return {
+      positive: [
+        'Would definitely use their services again.',
+        'Highly recommend them to anyone looking for reliable service.',
+        'Glad we chose them, great experience overall.',
+        'Will certainly choose them again in the future.'
+      ],
+      negative: ['Hope management addresses these issues going forward.']
+    };
+  }
+
   switch (tone) {
     case 'casual':
       return {
@@ -409,24 +501,24 @@ function getClosings(tone = 'friendly') {
       };
     case 'minimal':
       return {
-        positive: ['Would stay again.', 'Good choice.', 'Satisfied overall.'],
+        positive: ['Would recommend.', 'Good choice.', 'Satisfied overall.'],
         negative: ['Room for improvement.']
       };
     case 'luxury':
     case 'elegant':
       return {
         positive: [
-          'It was a stay we will remember fondly.',
-          'Looking forward to returning for another visit.',
+          'It was an experience we will remember fondly.',
+          'Looking forward to returning or using their services again.',
           'A genuinely well-run establishment.'
         ],
-        negative: ['We hope these areas are addressed for future guests.']
+        negative: ['We hope these areas are addressed for future customers.']
       };
     case 'professional':
       return {
         positive: [
-          'We would be happy to stay here again.',
-          'A well-managed place that delivers on its promise.',
+          'We would be happy to choose them again.',
+          'A well-managed company that delivers on its promise.',
           'Credit to the team for maintaining good standards.'
         ],
         negative: ['We hope management takes note of these observations.']
@@ -434,18 +526,18 @@ function getClosings(tone = 'friendly') {
     case 'business':
       return {
         positive: [
-          'Would choose this place again for work trips.',
-          'Good option for anyone visiting on business.',
+          'Would choose them again for future requirements.',
+          'Good option for anyone looking for reliable service.',
           'Appreciated the efficient service throughout.'
         ],
-        negative: ['These issues should be resolved for business travelers.']
+        negative: ['These issues should be resolved for future clients.']
       };
     case 'family':
       return {
         positive: [
-          'Our family would love to come back.',
-          'A comfortable spot for families visiting the area.',
-          'Everyone in the family had a good time.'
+          'Our family would love to work with them again.',
+          'A comfortable and reliable choice for families.',
+          'Everyone in the family had a good experience.'
         ],
         negative: ['Hoping they can make things more comfortable for families.']
       };
@@ -453,7 +545,7 @@ function getClosings(tone = 'friendly') {
       return {
         positive: [
           'Great value for what you pay.',
-          'Would stay here again if we\'re on a budget trip.',
+          'Would choose them again if we\'re looking for a budget-friendly option.',
           'Good deal overall, happy with our choice.'
         ],
         negative: ['Even at this price point, some things should be better.']
@@ -462,9 +554,9 @@ function getClosings(tone = 'friendly') {
     default:
       return {
         positive: [
-          'Would definitely stay here again.',
-          'Happy with our choice, glad we came.',
-          'Looking forward to our next visit.',
+          'Would definitely choose them again.',
+          'Happy with our choice, glad we picked them.',
+          'Looking forward to our next experience with them.',
           'Good experience overall.'
         ],
         negative: ['Hope they can address these things going forward.']
@@ -550,8 +642,10 @@ function findTagObject(tagId, keywordsList, isPositive) {
 /**
  * Transforms any keyword, template, or custom tag into a natural, grammatically correct review sentence
  */
-export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.random()) {
+export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.random(), businessType = 'hotel', hotelName = '') {
   if (!tagObj) return null;
+
+  const isPackers = businessType === 'packers' || /packer|mover|relocation|shifting/i.test(hotelName);
 
   // Early detection: superlative/title tags should ALWAYS use the natural sentence generator,
   // never output their literal text. Skip snippet checks and go straight to label-based handler.
@@ -582,293 +676,133 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
   if (!labelToUse) return null;
   const lower = labelToUse.toLowerCase();
 
-  // Superlative / Title statements (e.g. "Best Hotel in Jodhpur", "Top Marketing Agency")
+  // Superlative / Title statements (e.g. "Best Hotel in Jodhpur", "Best Packers and Movers in Jodhpur")
   if (/^(best|top|truly the best|undoubtedly the best|number 1|#1|greatest|premier|finest)/i.test(labelToUse)) {
-    // Extract location (after "in/of/near/around") and category (hotel, restaurant, stay, etc.)
+    // Extract location (after "in/of/near/around") and category
     const locationMatch = lower.match(/\b(?:in|of|near|around)\s+(.+)$/i);
     const location = locationMatch ? locationMatch[1].replace(/^\s+|\s+$/g, '').replace(/^(the|a)\s+/i, '') : '';
-    // Capitalize each word in location for natural display
     const loc = location ? location.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
 
     const categoryMatch = lower.match(/(?:best|top|finest|greatest|premier|#1|number 1)\s+(.+?)(?:\s+(?:in|of|near|around)\s|$)/i);
     const category = categoryMatch ? categoryMatch[1].trim() : '';
 
-    // Build genuinely natural, human-sounding sentences that avoid keyword stuffing
     let naturalTemplates;
 
-    if (loc && category) {
-      // Both location and category available — most natural phrasing
+    if (isPackers || /packer|mover|relocation|shifting/i.test(category + ' ' + labelToUse)) {
+      if (loc) {
+        naturalTemplates = [
+          `We've hired a few packers and movers in ${loc} over the years, and this was easily our best experience`,
+          `If you're planning a relocation in ${loc}, this is the company to choose — smooth and hassle-free`,
+          `Hands down the most reliable packers and movers we've come across in ${loc}`,
+          `We were genuinely impressed by how carefully they packed and moved everything in ${loc}`,
+          `Our items were delivered safely with zero damage, easily one of the finest packers and movers in ${loc}`,
+          `For anyone looking for safe and affordable packers and movers in ${loc}, this team should be at the top of your list`,
+          `We felt completely stress-free during our move, which is rare to find with packers and movers in ${loc}`,
+          `Would highly recommend them to anyone shifting in or around ${loc} — exceptional service`,
+          `The team handled all our furniture and belongings with extreme care throughout our move in ${loc}`
+        ];
+      } else {
+        naturalTemplates = [
+          `This is easily one of the best packers and movers experiences we've had`,
+          `If you're looking for reliable packers and movers, look no further — this team delivers`,
+          `We've used a few relocation services before and this company is genuinely exceptional`,
+          `Hard to find packers and movers that handle everything with zero damage, but this team does`
+        ];
+      }
+    } else if (loc && category) {
       naturalTemplates = [
-        `We've stayed at quite a few places in ${loc} over the years, and this was easily our favourite`,
-        `If you're planning a trip to ${loc}, this is the place to book — we had a wonderful experience`,
-        `Hands down the most comfortable ${category} we've come across in ${loc}`,
+        `We've used a few providers in ${loc} over the years, and this was easily our favourite`,
+        `If you're looking for quality service in ${loc}, this is the place to choose — we had a wonderful experience`,
+        `Hands down the most reliable ${category} we've come across in ${loc}`,
         `We tried a couple of other options in ${loc} before, but this one stood out in every way`,
-        `Our experience here was so good that we're already recommending it to friends visiting ${loc}`,
-        `This place really sets the bar for what a great ${category} should feel like in ${loc}`,
+        `Our experience here was so good that we're already recommending it to friends in ${loc}`,
+        `This service really sets the bar for what a great ${category} should feel like in ${loc}`,
         `After exploring several options in ${loc}, we're glad we chose this one — everything was on point`,
-        `We were pleasantly surprised by the quality here, easily among the finest stays we've had in ${loc}`,
-        `For anyone looking for a reliable and comfortable ${category} in ${loc}, this should be at the top of your list`,
-        `The overall experience here was exceptional compared to other places we've been to in ${loc}`,
-        `We didn't expect to enjoy our stay this much, but this ${category} in ${loc} truly impressed us`,
-        `This place exceeded all our expectations for a ${category} in the ${loc} area`,
-        `Having visited ${loc} multiple times, we can say this is where you want to stay`,
-        `Everything about this ${category} felt premium — one of the finest places we've experienced in ${loc}`,
-        `We felt genuinely cared for during our stay, which is rare to find at a ${category} in ${loc}`,
-        `From the moment we arrived, we knew this was going to be a special stay in ${loc}`,
-        `Would highly recommend this to anyone visiting ${loc} — the experience was truly memorable`,
-        `A wonderful ${category} that does everything right, probably the best we've seen in ${loc}`,
-        `Staying here made our trip to ${loc} that much more enjoyable, great choice overall`,
-        `This is exactly the kind of ${category} that makes ${loc} worth visiting again`
+        `We were pleasantly surprised by the quality here, easily among the finest services in ${loc}`,
+        `For anyone looking for a reliable ${category} in ${loc}, this should be at the top of your list`
       ];
     } else if (loc) {
-      // Location only
       naturalTemplates = [
-        `We've visited ${loc} a few times and this was our best stay so far`,
-        `If you're heading to ${loc}, this place should definitely be on your shortlist`,
-        `Among all the places we checked out in ${loc}, this one impressed us the most`,
-        `Our experience here was outstanding — one of the highlights of our ${loc} trip`,
-        `This place made our time in ${loc} truly special, would definitely come back`,
-        `We didn't have high expectations but this turned out to be a gem in ${loc}`,
-        `Easily one of the most comfortable and well-run places we've stayed at in ${loc}`,
-        `Can't recommend this place enough for anyone planning a visit to ${loc}`,
-        `Great find in ${loc} — the quality and service were above what we expected`,
-        `Our stay here was a real highlight of our ${loc} trip, everything was spot on`
-      ];
-    } else if (category) {
-      // Category only
-      naturalTemplates = [
-        `This is easily one of the best ${category} experiences we've had`,
-        `If you're looking for a great ${category}, look no further — this place delivers`,
-        `We've tried quite a few options and this ${category} is genuinely exceptional`,
-        `Hard to find a ${category} that gets everything right, but this one does`,
-        `The quality and attention to detail here make it a standout ${category}`,
-        `Really impressed with this ${category}, would recommend it without hesitation`,
-        `Everything about this ${category} exceeded our expectations`,
-        `This is the kind of ${category} that makes you want to come back`
+        `We've tried a few options in ${loc} and this was our best experience so far`,
+        `If you're heading to ${loc}, this service should definitely be on your shortlist`,
+        `Among all the places we checked out in ${loc}, this one impressed us the most`
       ];
     } else {
-      // Generic fallback — no location or category parsed
       naturalTemplates = [
-        'This place truly exceeded all our expectations — highly recommended',
-        'We\'ve visited quite a few places and this one really stands out from the rest',
-        'Honestly one of the best experiences we\'ve had, everything was just right',
-        'This place sets a high standard — would definitely recommend it to others',
-        'We were genuinely impressed by the quality and care put into everything here',
-        'Hard to find a place that gets everything right, but this one comes very close',
-        'Our experience here was top-notch, and we\'d happily come back again',
-        'Really glad we chose this place — it made our trip so much better'
+        'This service truly exceeded all our expectations — highly recommended',
+        'We\'ve used a few services and this one really stands out from the rest',
+        'Honestly one of the best experiences we\'ve had, everything was just right'
       ];
     }
 
     return cleanSentence(pickVariation(naturalTemplates, tagSeed));
   }
 
-  // Positive keyword patterns — each with multiple variations for naturalness
+  // Positive keyword patterns
   if (isPositive) {
-    // Staff / Team / Reception / Service
-    if (lower.includes('staff') || lower.includes('team') || lower.includes('doctor') || lower.includes('trainer') || lower.includes('barista') || lower.includes('stylist') || lower.includes('service') || lower.includes('hospitality') || lower.includes('reception')) {
+    if (lower.includes('staff') || lower.includes('team') || lower.includes('doctor') || lower.includes('trainer') || lower.includes('service') || lower.includes('reception')) {
       const staffVariations = [
-        'The staff was friendly and always willing to help when we needed something',
+        'The team was polite, professional, and always willing to help',
         'Everyone we interacted with was polite and genuinely helpful',
-        'Really liked how approachable and warm the team was throughout our stay'
+        'Really liked how approachable and hardworking the staff was'
       ];
       return cleanSentence(pickVariation(staffVariations, tagSeed));
     }
 
-    // Room / Cleanliness / Hygiene
-    if (lower.includes('room') || lower.includes('clean') || lower.includes('hygien') || lower.includes('spotless') || lower.includes('sparkling')) {
-      const cleanVariations = [
-        'The room was clean and well-maintained when we arrived',
-        'Our room was tidy and everything felt fresh and well-kept',
-        'Housekeeping did a good job, the room was neat and clean'
+    if (lower.includes('pack') || lower.includes('bubble') || lower.includes('box') || lower.includes('relocat') || lower.includes('shift')) {
+      const packVariations = [
+        'All items and furniture were packed securely with high-quality materials',
+        'The packing process was fast, organized, and handled with great care',
+        'They brought sturdy boxes and bubble wrap, ensuring everything was protected'
       ];
-      return cleanSentence(pickVariation(cleanVariations, tagSeed));
+      return cleanSentence(pickVariation(packVariations, tagSeed));
     }
 
-    // Bed / Sleep / Comfort / AC / Pool
-    if (lower.includes('bed') || lower.includes('mattress') || lower.includes('pillow') || lower.includes('sleep') || lower.includes('comfort')) {
-      const bedVariations = [
-        'The bed was comfortable and we slept really well each night',
-        'Got a good night\'s rest, the mattress and pillows were just right',
-        'Bed quality was better than we expected, slept soundly'
+    if (lower.includes('delivery') || lower.includes('timely') || lower.includes('time') || lower.includes('punctual')) {
+      const timeVariations = [
+        'The team arrived right on schedule and completed the delivery on time',
+        'Pickup and delivery were handled promptly without any unexpected delays',
+        'Punctual and efficient service from start to finish'
       ];
-      return cleanSentence(pickVariation(bedVariations, tagSeed));
-    }
-    if (lower.includes('ac') || lower.includes('air condition') || lower.includes('cooling')) {
-      const acVariations = [
-        'The AC worked well and kept the room at a comfortable temperature',
-        'Air conditioning was effective and ran quietly throughout the night',
-        'Room stayed cool thanks to the well-functioning AC'
-      ];
-      return cleanSentence(pickVariation(acVariations, tagSeed));
-    }
-    if (lower.includes('pool') || lower.includes('swimming')) {
-      const poolVariations = [
-        'The pool was clean and a great spot to relax in the afternoon',
-        'Enjoyed spending time at the pool, it was well-maintained',
-        'The swimming pool was in good shape and the water was clean'
-      ];
-      return cleanSentence(pickVariation(poolVariations, tagSeed));
+      return cleanSentence(pickVariation(timeVariations, tagSeed));
     }
 
-    // Food / Dining / Breakfast / Coffee
-    if (lower.includes('breakfast') || lower.includes('food') || lower.includes('dining') || lower.includes('coffee') || lower.includes('meal') || lower.includes('dish') || lower.includes('pastr') || lower.includes('buffet') || lower.includes('drink')) {
-      const foodVariations = [
-        'The food was good with a nice variety of options each day',
-        'Enjoyed the meals, everything was freshly prepared and tasty',
-        'The breakfast was a highlight, good selection and quality'
+    if (lower.includes('damage') || lower.includes('handling') || lower.includes('safe')) {
+      const damageVariations = [
+        'All our fragile items and electronics arrived intact with zero damage',
+        'Handled all heavy furniture and valuables with extreme care',
+        'Careful handling throughout loading, transport, and unloading'
       ];
-      return cleanSentence(pickVariation(foodVariations, tagSeed));
+      return cleanSentence(pickVariation(damageVariations, tagSeed));
     }
 
-    // Location / Ambience / Vibe / View
-    if (lower.includes('location') || lower.includes('spot') || lower.includes('prime')) {
-      const locationVariations = [
-        'The location was convenient, close to all the places we wanted to visit',
-        'Good location with easy access to local attractions and restaurants',
-        'Liked where it\'s situated, made getting around quite easy'
-      ];
-      return cleanSentence(pickVariation(locationVariations, tagSeed));
-    }
-    if (lower.includes('ambien') || lower.includes('vibe') || lower.includes('atmosphere') || lower.includes('peaceful') || lower.includes('serene')) {
-      const ambienceVariations = [
-        'The atmosphere was relaxing and it felt like a nice getaway',
-        'Loved the calm and peaceful vibe of the whole place',
-        'The ambience was pleasant, made our stay feel more special'
-      ];
-      return cleanSentence(pickVariation(ambienceVariations, tagSeed));
-    }
-    if (lower.includes('view') || lower.includes('scenic') || lower.includes('mountain') || lower.includes('ocean')) {
-      const viewVariations = [
-        'The view from our room was beautiful, really made the stay special',
-        'We got a nice room with a lovely view, was worth it',
-        'Enjoyed the scenic surroundings, it added to the whole experience'
-      ];
-      return cleanSentence(pickVariation(viewVariations, tagSeed));
-    }
-
-    // Wi-Fi / Tech / Speed
-    if (lower.includes('wi-fi') || lower.includes('wifi') || lower.includes('internet') || lower.includes('speed')) {
-      const wifiVariations = [
-        'Wi-Fi was reliable and fast enough for work and streaming',
-        'The internet worked well, had no connectivity issues',
-        'Good Wi-Fi speed throughout our stay'
-      ];
-      return cleanSentence(pickVariation(wifiVariations, tagSeed));
-    }
-
-    // Value / Pricing
-    if (lower.includes('value') || lower.includes('price') || lower.includes('pricing') || lower.includes('affordable') || lower.includes('worth') || lower.includes('cost')) {
+    if (lower.includes('value') || lower.includes('price') || lower.includes('pricing') || lower.includes('fair') || lower.includes('transparent')) {
       const valueVariations = [
-        'Good value for what you pay, felt like we got our money\'s worth',
-        'The pricing felt fair for the quality and service we received',
-        'Definitely worth the price, no complaints about value'
+        'Transparent pricing with zero hidden charges or surprise costs',
+        'Felt like a very fair price for the high level of service provided',
+        'Great value for money, reasonable rates for complete shifting'
       ];
       return cleanSentence(pickVariation(valueVariations, tagSeed));
     }
 
-    // Check-in / Arrival
-    if (lower.includes('check-in') || lower.includes('checkin') || lower.includes('arrival')) {
-      const checkinVariations = [
-        'Check-in was quick and the front desk was well-organized',
-        'Got settled in quickly, the check-in process was smooth',
-        'No long waits at arrival, everything was handled efficiently'
-      ];
-      return cleanSentence(pickVariation(checkinVariations, tagSeed));
-    }
-
-    // Marketing / SEO / Leads / Agency
-    if (lower.includes('seo') || lower.includes('ranking')) {
-      const seoVariations = [
-        'Saw real improvement in our search rankings after working with them',
-        'Our website traffic went up noticeably, they know what they\'re doing',
-        'The SEO work they did made a visible difference in our Google presence'
-      ];
-      return cleanSentence(pickVariation(seoVariations, tagSeed));
-    }
-    if (lower.includes('lead') || lower.includes('conversion') || lower.includes('sales')) {
-      const leadVariations = [
-        'We started getting more quality leads after they took over',
-        'Our conversions improved steadily since we started working together',
-        'They delivered on lead generation, we saw real business results'
-      ];
-      return cleanSentence(pickVariation(leadVariations, tagSeed));
-    }
-    if (lower.includes('ads') || lower.includes('roas') || lower.includes('roi')) {
-      const adsVariations = [
-        'Our ad campaigns performed much better under their management',
-        'They managed our ads well and the returns were solid',
-        'Good ROI on the ad spend, they know how to optimize campaigns'
-      ];
-      return cleanSentence(pickVariation(adsVariations, tagSeed));
-    }
-
-    // Default — wrap any custom positive keyword into a natural sentence
-    const defaultPositiveTemplates = [
-      `We really liked the ${lower} here`,
+    // Default positive template
+    const defaultPositiveTemplates = isPackers ? [
+      `We really appreciated the ${lower} during our move`,
+      `The ${lower} was handled expertly and made our relocation so much easier`,
+      `Impressed with the ${lower}, it made our moving experience seamless`
+    ] : [
+      `We really liked the ${lower}`,
       `The ${lower} was a nice touch and added to the experience`,
-      `Impressed with the ${lower}, it made our stay better`,
-      `The ${lower} stood out to us during our visit`,
-      `Worth mentioning that the ${lower} was really good`
+      `Impressed with the ${lower}, it made our experience better`
     ];
     return cleanSentence(pickVariation(defaultPositiveTemplates, tagSeed));
   }
 
-  // Negative tags (1-3 stars)
-  if (lower.includes('wifi') || lower.includes('wi-fi') || lower.includes('internet')) {
-    const negWifiVariations = [
-      'The Wi-Fi was slow and kept dropping, which was frustrating',
-      'Internet connectivity was poor in our room',
-      'Had trouble getting a stable internet connection'
-    ];
-    return cleanSentence(pickVariation(negWifiVariations, tagSeed));
-  }
-  if (lower.includes('ac') || lower.includes('cooling') || lower.includes('air condition')) {
-    const negAcVariations = [
-      'The AC wasn\'t working properly, room stayed warm',
-      'Air conditioning struggled to cool the room down',
-      'The AC in our room needed servicing, didn\'t cool well'
-    ];
-    return cleanSentence(pickVariation(negAcVariations, tagSeed));
-  }
-  if (lower.includes('noise') || lower.includes('loud') || lower.includes('sound')) {
-    const negNoiseVariations = [
-      'There was quite a bit of noise that disturbed our sleep',
-      'Sound insulation wasn\'t great, could hear a lot from outside',
-      'Noise levels were higher than comfortable, especially at night'
-    ];
-    return cleanSentence(pickVariation(negNoiseVariations, tagSeed));
-  }
-  if (lower.includes('clean') || lower.includes('dirty') || lower.includes('hygiene') || lower.includes('bath')) {
-    const negCleanVariations = [
-      'Cleanliness wasn\'t up to the mark, noticed a few issues',
-      'The room could have been cleaned more thoroughly',
-      'Housekeeping needs to pay more attention to details'
-    ];
-    return cleanSentence(pickVariation(negCleanVariations, tagSeed));
-  }
-  if (lower.includes('food') || lower.includes('breakfast') || lower.includes('cold')) {
-    const negFoodVariations = [
-      'The food could have been better, some items were cold when served',
-      'Breakfast was a bit disappointing, not enough variety or freshness',
-      'Meals were underwhelming compared to what we expected'
-    ];
-    return cleanSentence(pickVariation(negFoodVariations, tagSeed));
-  }
-  if (lower.includes('staff') || lower.includes('service') || lower.includes('reception') || lower.includes('delay')) {
-    const negServiceVariations = [
-      'Service was slow at times, had to wait longer than expected',
-      'The front desk response could have been quicker',
-      'Staff seemed stretched thin, service felt a bit rushed'
-    ];
-    return cleanSentence(pickVariation(negServiceVariations, tagSeed));
-  }
-
+  // Negative tags
   const defaultNegativeTemplates = [
     `The ${lower} could use some improvement`,
     `We felt the ${lower} wasn't quite up to the mark`,
-    `The ${lower} was a bit of a letdown for us`,
-    `Would have been better if the ${lower} was handled properly`
+    `The ${lower} was a bit of a letdown for us`
   ];
   return cleanSentence(pickVariation(defaultNegativeTemplates, tagSeed));
 }
@@ -885,13 +819,15 @@ export function generateReviewText({
   reviewLength = 'short',
   includeEmojis = true,
   keywordsList = RATING_KEYWORDS,
-  variationSeed = Math.random()
+  variationSeed = Math.random(),
+  businessType = 'hotel'
 }) {
   if (!rating) return '';
 
+  const effectiveBusinessType = detectBusinessType(hotelName, businessType);
   const isPositive = rating >= 4;
-  const openingsDict = getOpenings(hotelName, tone);
-  const closingsDict = getClosings(tone);
+  const openingsDict = getOpenings(hotelName, tone, effectiveBusinessType);
+  const closingsDict = getClosings(tone, effectiveBusinessType);
 
   const availableOpenings = openingsDict[rating] || openingsDict[5];
   let opening = pickVariation(availableOpenings, variationSeed);
@@ -903,7 +839,7 @@ export function generateReviewText({
       if (!tagObj) return null;
 
       const tagSeed = variationSeed * (idx + 1) * 31.7;
-      return formatTagToSentence(tagObj, isPositive, tagSeed);
+      return formatTagToSentence(tagObj, isPositive, tagSeed, effectiveBusinessType, hotelName);
     })
     .filter(Boolean);
 
