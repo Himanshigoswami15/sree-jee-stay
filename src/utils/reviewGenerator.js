@@ -253,6 +253,8 @@ export function detectBusinessType(settingsOrName, explicitType) {
   if (/consultant|incorporation|company setup|business setup|corporate advisor|tax consultant/i.test(name)) return 'business_consultant';
   if (/makeup|bridal makeup|mua|glam artist|beauty artist/i.test(name)) return 'makeup_artist';
   if (/nail|nail art|nail extension|nail studio|nail bar/i.test(name)) return 'nail_artist';
+  if (/clothing|fashion|apparel|boutique|garments|outfit|wardrobe|dress store|cloth store/i.test(name)) return 'clothing';
+  if (/finance|financial|investment|wealth|mutual fund|stock broker|tax advisor|accounting|loans|mortgage/i.test(name)) return 'financial_services';
   if (/transfer|cab|taxi|car rental|ride/i.test(name)) return 'transfers';
   if (/tour|travel|itinerary|holiday|package/i.test(name)) return 'tours_travels';
   if (/real estate|realty|property consultant/i.test(name)) return 'real_estate';
@@ -278,7 +280,47 @@ function getOpenings(hotelName = 'this place', tone = 'friendly', businessType =
   const isConsultant = businessType === 'business_consultant';
   const isMakeup = businessType === 'makeup_artist';
   const isNails = businessType === 'nail_artist';
-  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+  const isClothing = businessType === 'clothing';
+  const isFinance = businessType === 'financial_services';
+  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'clothing', 'financial_services', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+
+  if (isFinance) {
+    return {
+      5: [
+        `We hired ${name} for our wealth management and financial advisory, and had an outstanding experience.`,
+        `Been working with ${name} for our investments and financial planning, and their guidance has been exceptional.`,
+        `Consulted ${name} for our financial planning and received transparent, expert advice throughout.`,
+        `Very impressed with the professional financial services provided by ${name}.`,
+        `Super satisfied with how ${name} managed our investment portfolio and advisory needs.`
+      ],
+      4: [
+        `Had a good experience working with ${name} for financial advisory. Solid service overall.`,
+        `${name} provided reliable guidance for our financial setup.`
+      ],
+      3: [`Our experience with ${name} was okay, though communication turnaround times could improve.`],
+      2: [`A bit disappointed with the financial advisory service from ${name}.`],
+      1: [`Unfortunately, our experience with ${name} for financial services was unsatisfactory.`]
+    };
+  }
+
+  if (isClothing) {
+    return {
+      5: [
+        `Visited ${name} recently and had a wonderful shopping experience!`,
+        `Bought a few outfits from ${name} and I'm super happy with the quality and collection.`,
+        `Got some amazing clothes from ${name}, everything fit perfectly and looks great.`,
+        `Very impressed with the trendy fashion collection and polite staff at ${name}.`,
+        `Had a great time shopping at ${name}, highly satisfied with my purchase.`
+      ],
+      4: [
+        `Had a good experience shopping at ${name}. Nice collection overall.`,
+        `Got a few good pieces from ${name}, good quality clothing and fair prices.`
+      ],
+      3: [`Shopping at ${name} was okay, though stock variety could be expanded.`],
+      2: [`A bit disappointed with the sizing and selection at ${name}.`],
+      1: [`Unfortunately, our shopping experience at ${name} was unsatisfactory.`]
+    };
+  }
 
   if (isPackers) {
     return {
@@ -534,7 +576,32 @@ function getClosings(tone = 'friendly', businessType = 'hotel') {
   const isConsultant = businessType === 'business_consultant';
   const isMakeup = businessType === 'makeup_artist';
   const isNails = businessType === 'nail_artist';
-  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+  const isClothing = businessType === 'clothing';
+  const isFinance = businessType === 'financial_services';
+  const isService = ['packers', 'business_consultant', 'makeup_artist', 'nail_artist', 'clothing', 'financial_services', 'transfers', 'clinic', 'salon', 'gym', 'marketing', 'real_estate', 'car_rental', 'tours_travels'].includes(businessType);
+
+  if (isFinance) {
+    return {
+      positive: [
+        'Would highly recommend their financial advisory to anyone looking to grow their wealth.',
+        'Will definitely continue working with them for long-term investment planning.',
+        'Glad we chose them as our financial services partner.'
+      ],
+      negative: ['Hope management improves turnaround times for client reports.']
+    };
+  }
+
+  if (isClothing) {
+    return {
+      positive: [
+        'Will definitely visit again for my next shopping trip!',
+        'Highly recommend to anyone looking for stylish and quality clothing!',
+        'Glad I checked out their store, great shopping experience overall.',
+        'Will certainly be back for more fashion shopping.'
+      ],
+      negative: ['Hope they restock more sizes and varieties going forward.']
+    };
+  }
 
   if (isPackers) {
     return {

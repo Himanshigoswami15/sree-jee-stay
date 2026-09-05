@@ -41,6 +41,8 @@ export function GuestReviewCard() {
   const isConsultant = effectiveBusinessType === 'business_consultant';
   const isMakeup = effectiveBusinessType === 'makeup_artist';
   const isNails = effectiveBusinessType === 'nail_artist';
+  const isClothing = effectiveBusinessType === 'clothing';
+  const isFinance = effectiveBusinessType === 'financial_services';
   const isMarketing = effectiveBusinessType === 'marketing';
   const isClinic = effectiveBusinessType === 'clinic';
   const isSalon = effectiveBusinessType === 'salon';
@@ -52,6 +54,8 @@ export function GuestReviewCard() {
     if (isConsultant) return 'How was your consulting experience?';
     if (isMakeup) return 'How was your makeup experience?';
     if (isNails) return 'How was your nail art experience?';
+    if (isClothing) return 'How was your shopping experience?';
+    if (isFinance) return 'How was your financial advisory experience?';
     if (isMarketing) return 'How was your marketing experience?';
     if (isDining) return 'How was your dining experience?';
     if (isClinic) return 'How was your visit?';
@@ -63,6 +67,24 @@ export function GuestReviewCard() {
   };
 
   const getRatingDescription = (r) => {
+    if (isFinance) {
+      return {
+        5: "Wonderful. We're glad you had a great financial advisory experience.",
+        4: "Very Good. Thank you for your feedback.",
+        3: "Good. We appreciate your feedback.",
+        2: "Fair. Tell us how we can improve.",
+        1: "We're sorry your experience fell short. Please let us know.",
+      }[r] || "Wonderful. We're glad you had a great financial advisory experience.";
+    }
+    if (isClothing) {
+      return {
+        5: "Wonderful. We're glad you loved your shopping experience.",
+        4: "Very Good. Thank you for your feedback.",
+        3: "Good. We appreciate your feedback.",
+        2: "Fair. Tell us how we can improve.",
+        1: "We're sorry your experience fell short. Please let us know.",
+      }[r] || "Wonderful. We're glad you loved your shopping experience.";
+    }
     if (isPackers) {
       return {
         5: "Wonderful. We're glad you had a great relocation experience.",

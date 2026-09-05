@@ -23,6 +23,8 @@ export function AutoReviewEditor({
     if (businessType === 'business_consultant') return 'Tell us about your business setup experience';
     if (businessType === 'makeup_artist') return 'Tell us about your makeup experience';
     if (businessType === 'nail_artist') return 'Tell us about your nail art experience';
+    if (businessType === 'clothing') return 'Tell us about your shopping experience';
+    if (businessType === 'financial_services') return 'Tell us about your financial advisory experience';
     if (isMarketing) return 'Tell us about your marketing experience';
     if (isDining) return 'Tell us about your visit';
     if (!isHotel) return 'Tell us about your experience';
@@ -34,6 +36,8 @@ export function AutoReviewEditor({
     if (businessType === 'business_consultant') return 'Tell us what you enjoyed about our consultancy service...';
     if (businessType === 'makeup_artist') return 'Tell us what you loved about your makeup and look...';
     if (businessType === 'nail_artist') return 'Tell us what you loved about your nail set and design...';
+    if (businessType === 'clothing') return 'Tell us what you loved about our collection, fabric quality & service...';
+    if (businessType === 'financial_services') return 'Tell us what you appreciated about our financial guidance & advisory...';
     if (isMarketing) return 'Tell us what you enjoyed about our marketing service...';
     if (isDining) return 'Tell us what you enjoyed about your meal and visit...';
     if (!isHotel) return 'Tell us what you enjoyed about our service...';

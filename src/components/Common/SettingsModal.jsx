@@ -397,6 +397,8 @@ export function SettingsModal({ isOpen, onClose }) {
                     style={{ fontWeight: 600 }}
                   >
                     <option value="hotel">Hotel & Resort</option>
+                    <option value="clothing">Clothing & Fashion Store</option>
+                    <option value="financial_services">Financial Services & Investment</option>
                     <option value="packers">Packers & Movers</option>
                     <option value="business_consultant">Business Setup & Corporate Consultant</option>
                     <option value="makeup_artist">Makeup Artist & Bridal Glam</option>

@@ -66,6 +66,8 @@ export function KeywordChips({ rating, selectedTags = [], onToggleTag, businessT
     if (businessType === 'business_consultant') return 'What did you love about our business consultancy service?';
     if (businessType === 'makeup_artist') return 'What did you love about your makeup experience?';
     if (businessType === 'nail_artist') return 'What did you love about your nail art experience?';
+    if (businessType === 'clothing') return 'What did you love about our clothing store & collection?';
+    if (businessType === 'financial_services') return 'What did you love about our financial advisory & services?';
     if (isMarketing) return 'What did you love about our marketing service?';
     if (isDining) return 'What did you love about your dining experience?';
     if (!isHotel) return 'What did you love about our service?';

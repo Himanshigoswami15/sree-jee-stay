@@ -260,5 +260,35 @@ export const INDUSTRY_TEMPLATES = {
       { id: 'polite_tech', label: '😊 Friendly Nail Technician', category: 'Service', snippet: 'The nail tech was polite, attentive, and took time to perfect every single nail' },
       { id: 'fair_prices', label: '💰 Affordable Luxury Nails', category: 'Value', snippet: 'Reasonable rates for high-quality nail extensions and intricate art' },
     ]
+  },
+
+  clothing: {
+    name: 'Clothing & Fashion Store',
+    icon: '👗',
+    keywords: [
+      { id: 'quality', label: '✨ High-Quality Fabric', category: 'Quality', snippet: 'The fabric and material quality of the clothing was outstanding' },
+      { id: 'collection', label: '👗 Trendy Collection', category: 'Variety', snippet: 'Fantastic variety of stylish, trendy, and elegant outfits' },
+      { id: 'staff', label: '😊 Helpful Staff', category: 'Service', snippet: 'The store staff were super friendly, patient, and helpful' },
+      { id: 'fitting', label: '✂️ Perfect Fitting', category: 'Comfort', snippet: 'The sizing and fitting of the garments were spot-on' },
+      { id: 'pricing', label: '💰 Reasonable Prices', category: 'Pricing', snippet: 'Great fashion collection at very fair and affordable prices' },
+      { id: 'trial', label: '👗 Clean Fitting Rooms', category: 'Amenities', snippet: 'Trial rooms were clean, well-lit, and comfortable' },
+      { id: 'latest_stock', label: '🏷️ Latest Seasonal Stock', category: 'Variety', snippet: 'Had all the latest fashion arrivals and fresh designs' },
+      { id: 'ambience', label: '🛍️ Organized Store Vibe', category: 'General', snippet: 'The store ambiance was pleasant and everything was neatly organized' },
+    ]
+  },
+
+  financial_services: {
+    name: 'Financial Services & Investment',
+    icon: '📊',
+    keywords: [
+      { id: 'advisor', label: '📊 Expert Advisor', category: 'Advisory', snippet: 'The financial advisors were highly knowledgeable, patient, and strategic' },
+      { id: 'planning', label: '📈 Sound Investment Plan', category: 'Strategy', snippet: 'Created a customized, well-structured financial and investment portfolio' },
+      { id: 'transparency', label: '🔍 Complete Transparency', category: 'Trust', snippet: 'Explained all terms, returns, and risks with complete honesty and transparency' },
+      { id: 'returns', label: '💰 Great Portfolio Growth', category: 'Results', snippet: 'Delivered consistent growth and strong financial returns on our investments' },
+      { id: 'support', label: '📞 Responsive Support', category: 'Customer Support', snippet: 'The advisory team is always accessible, responsive, and ready to guide' },
+      { id: 'paperwork', label: '📄 Hassle-Free Documentation', category: 'Service', snippet: 'Handled all account onboarding, tax, and compliance documentation smoothly' },
+      { id: 'trust', label: '🛡️ Reliable & Trustworthy', category: 'Trust', snippet: 'A dependable financial consulting firm you can rely on for long-term wealth' },
+      { id: 'tax_saving', label: '⚖️ Smart Tax Planning', category: 'Advisory', snippet: 'Helped optimize tax savings and wealth management strategies efficiently' },
+    ]
   }
 };
