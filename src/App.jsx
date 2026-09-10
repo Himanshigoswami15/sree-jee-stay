@@ -1,6 +1,6 @@
 import React, { Component, useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { Building2, Plus, ArrowRight, ShieldCheck, Sparkles, RefreshCw } from 'lucide-react';
+import { Building2, Plus, ArrowRight, ShieldCheck, Sparkles, RefreshCw, Lock } from 'lucide-react';
 import { FeedbackProvider, useFeedback } from './context/FeedbackContext';
 import { Navigation } from './components/Navigation';
 import { AlertBanner } from './components/Common/AlertBanner';
@@ -197,18 +197,27 @@ function RootRedirector() {
   const [isManager, setIsManager] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      apiClient(`/api/hotels?_t=${Date.now()}`),
-      apiClient(`/api/auth/me?_t=${Date.now()}`).catch(() => null),
-    ]).then(([hotelsRes, authRes]) => {
-      if (hotelsRes && hotelsRes.success && Array.isArray(hotelsRes.hotels)) {
-        setHotels(hotelsRes.hotels);
-      }
-      if (authRes && authRes.authenticated && authRes.user && ['manager', 'owner', 'SUPER_ADMIN'].includes(authRes.user.role)) {
-        setIsManager(true);
-      }
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    // Only query the private hotel directory if the user is an authenticated manager
+    apiClient(`/api/auth/me?_t=${Date.now()}`)
+      .then((authRes) => {
+        if (
+          authRes &&
+          authRes.authenticated &&
+          authRes.user &&
+          ['manager', 'owner', 'SUPER_ADMIN'].includes(authRes.user.role)
+        ) {
+          setIsManager(true);
+          return apiClient(`/api/hotels?_t=${Date.now()}`);
+        }
+        return null;
+      })
+      .then((hotelsRes) => {
+        if (hotelsRes && hotelsRes.success && Array.isArray(hotelsRes.hotels)) {
+          setHotels(hotelsRes.hotels);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -233,50 +242,58 @@ function RootRedirector() {
         Enterprise Multi-Tenant Hospitality Review & Reputation Intelligence OS.
       </p>
 
-      {hotels.length > 0 && (
-        <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
-            {isManager ? `Registered Properties (${hotels.length})` : 'Available Properties'}
-          </div>
+      {isManager ? (
+        hotels.length > 0 && (
+          <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
+              Registered Properties ({hotels.length})
+            </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '280px', overflowY: 'auto' }}>
-            {hotels.map((h) => (
-              <button
-                key={h.hotelSlug || h.hotelId}
-                type="button"
-                onClick={() => navigate(`/${h.hotelSlug || h.hotelId}`)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.75rem 1rem',
-                  background: 'var(--slate-50)',
-                  border: '1px solid var(--slate-200)',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'var(--transition-fast)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--slate-300)';
-                  e.currentTarget.style.background = 'var(--slate-100)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--slate-200)';
-                  e.currentTarget.style.background = 'var(--slate-50)';
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                  <Building2 size={16} color="var(--slate-500)" />
-                  <div>
-                    <div style={{ fontWeight: 600, color: 'var(--slate-900)', fontSize: '0.875rem' }}>{h.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>/{h.hotelSlug || h.hotelId}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '280px', overflowY: 'auto' }}>
+              {hotels.map((h) => (
+                <button
+                  key={h.hotelSlug || h.hotelId}
+                  type="button"
+                  onClick={() => navigate(`/${h.hotelSlug || h.hotelId}`)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.75rem 1rem',
+                    background: 'var(--slate-50)',
+                    border: '1px solid var(--slate-200)',
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'var(--transition-fast)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--slate-300)';
+                    e.currentTarget.style.background = 'var(--slate-100)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--slate-200)';
+                    e.currentTarget.style.background = 'var(--slate-50)';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <Building2 size={16} color="var(--slate-500)" />
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--slate-900)', fontSize: '0.875rem' }}>{h.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>/{h.hotelSlug || h.hotelId}</div>
+                    </div>
                   </div>
-                </div>
-                <ArrowRight size={15} color="var(--slate-400)" />
-              </button>
-            ))}
+                  <ArrowRight size={15} color="var(--slate-400)" />
+                </button>
+              ))}
+            </div>
           </div>
+        )
+      ) : (
+        <div style={{ padding: '1.25rem 1rem', background: 'var(--slate-50)', borderRadius: 'var(--radius-md)', border: '1px solid var(--slate-200)', marginBottom: '1.25rem' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--slate-600)', margin: 0, lineHeight: 1.55 }}>
+            Welcome to the JJ Review System portal. To submit a guest review, please scan your property's QR card or open your hotel's review link.
+          </p>
         </div>
       )}
 
@@ -303,11 +320,56 @@ function RootRedirector() {
   );
 }
 
+function ManagerRouteGuard() {
+  const navigate = useNavigate();
+  return (
+    <div style={{ maxWidth: '480px', margin: '4rem auto', padding: '2.25rem', textAlign: 'center' }} className="saas-card">
+      <div
+        style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '50%',
+          background: '#FEE2E2',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 1rem',
+          color: '#DC2626',
+        }}
+      >
+        <Lock size={24} />
+      </div>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--slate-900)', marginBottom: '0.35rem' }}>
+        Access Denied: Manager Only
+      </h2>
+      <p style={{ fontSize: '0.875rem', color: 'var(--slate-600)', marginBottom: '1.5rem', lineHeight: '1.55' }}>
+        Property management and administration routes are restricted to authenticated managers. Guests are not permitted to access this area.
+      </p>
+      <button
+        type="button"
+        className="saas-btn saas-btn-primary"
+        onClick={() => navigate('/')}
+        style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+      >
+        <span>Return to Home</span>
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
       <Routes>
         <Route path="/" element={<RootRedirector />} />
+        <Route path="/manager" element={<ManagerRouteGuard />} />
+        <Route path="/manager/*" element={<ManagerRouteGuard />} />
+        <Route path="/hotels" element={<ManagerRouteGuard />} />
+        <Route path="/properties" element={<ManagerRouteGuard />} />
+        <Route path="/onboard-hotel" element={<ManagerRouteGuard />} />
+        <Route path="/onboard-property" element={<ManagerRouteGuard />} />
+        <Route path="/hotel/:hotelSlug" element={<HotelWrapper />} />
+        <Route path="/property/:hotelSlug" element={<HotelWrapper />} />
         <Route path="/super-admin" element={<SuperAdminPortal />} />
         <Route path="/super" element={<SuperAdminPortal />} />
         <Route path="/admin" element={<SuperAdminPortal />} />

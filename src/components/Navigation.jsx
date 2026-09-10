@@ -30,6 +30,7 @@ export function Navigation() {
     currentUser,
     userRole,
     isManager,
+    canManageProperties,
     canOnboardHotel,
     lockDashboard,
   } = useFeedback();
@@ -130,128 +131,132 @@ export function Navigation() {
               </div>
             </div>
 
-            <div style={{ width: '1px', height: '22px', background: 'var(--slate-200)' }} />
+            {/* Private Property Selector (Manager Portal Only) */}
+            {canManageProperties && (
+              <>
+                <div style={{ width: '1px', height: '22px', background: 'var(--slate-200)' }} />
 
-            {/* Hotel Switcher Dropdown */}
-            <div style={{ position: 'relative' }}>
-              <button
-                type="button"
-                onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-                className="saas-btn saas-btn-secondary"
-                style={{
-                  padding: '0.35rem 0.65rem',
-                  fontSize: '0.8125rem',
-                  fontWeight: 600,
-                  gap: '0.4rem',
-                  maxWidth: '220px',
-                  height: '34px',
-                }}
-              >
-                <Building2 size={14} color="var(--slate-600)" />
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {settings?.hotelName || settings?.name || 'Select Hotel'}
-                </span>
-                <ChevronDown size={13} color="var(--slate-400)" />
-              </button>
+                <div style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
+                    className="saas-btn saas-btn-secondary"
+                    style={{
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      gap: '0.4rem',
+                      maxWidth: '220px',
+                      height: '34px',
+                    }}
+                  >
+                    <Building2 size={14} color="var(--slate-600)" />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {settings?.hotelName || settings?.name || 'Select Hotel'}
+                    </span>
+                    <ChevronDown size={13} color="var(--slate-400)" />
+                  </button>
 
-              {isSwitcherOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '115%',
-                    left: 0,
-                    background: '#FFFFFF',
-                    border: '1px solid var(--slate-200)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-dropdown)',
-                    minWidth: '260px',
-                    maxWidth: '320px',
-                    zIndex: 200,
-                    padding: '0.5rem',
-                  }}
-                >
-                  <div style={{ padding: '0.35rem 0.5rem' }}>
-                    <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
-                      <Search
-                        size={13}
-                        style={{
-                          position: 'absolute',
-                          left: '8px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          color: 'var(--slate-400)',
-                        }}
-                      />
-                      <input
-                        type="text"
-                        className="saas-input"
-                        placeholder="Search hotels..."
-                        value={switcherFilter}
-                        onChange={(e) => setSwitcherFilter(e.target.value)}
-                        autoFocus
-                        style={{ height: '32px', fontSize: '0.75rem', paddingLeft: '1.75rem' }}
-                      />
-                    </div>
+                  {isSwitcherOpen && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '115%',
+                        left: 0,
+                        background: '#FFFFFF',
+                        border: '1px solid var(--slate-200)',
+                        borderRadius: 'var(--radius-lg)',
+                        boxShadow: 'var(--shadow-dropdown)',
+                        minWidth: '260px',
+                        maxWidth: '320px',
+                        zIndex: 200,
+                        padding: '0.5rem',
+                      }}
+                    >
+                      <div style={{ padding: '0.35rem 0.5rem' }}>
+                        <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
+                          <Search
+                            size={13}
+                            style={{
+                              position: 'absolute',
+                              left: '8px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              color: 'var(--slate-400)',
+                            }}
+                          />
+                          <input
+                            type="text"
+                            className="saas-input"
+                            placeholder="Search hotels..."
+                            value={switcherFilter}
+                            onChange={(e) => setSwitcherFilter(e.target.value)}
+                            autoFocus
+                            style={{ height: '32px', fontSize: '0.75rem', paddingLeft: '1.75rem' }}
+                          />
+                        </div>
 
-                    <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                      {canOnboardHotel ? `REGISTERED HOTELS (${filteredHotels.length})` : 'AVAILABLE HOTELS'}
-                    </div>
-                  </div>
+                        <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                          Registered Hotels ({filteredHotels.length})
+                        </div>
+                      </div>
 
-                  <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                    {filteredHotels.map((h) => {
-                      const isSelected = h.hotelSlug === settings.hotelSlug || h.hotelId === settings.hotelSlug;
-                      return (
-                        <button
-                          key={h.hotelSlug || h.hotelId}
-                          type="button"
-                          onClick={() => handleSelectHotel(h.hotelSlug || h.hotelId)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            width: '100%',
-                            padding: '0.45rem 0.65rem',
-                            border: 'none',
-                            background: isSelected ? 'var(--slate-100)' : 'transparent',
-                            color: isSelected ? 'var(--slate-900)' : 'var(--slate-700)',
-                            fontWeight: isSelected ? 700 : 500,
-                            borderRadius: 'var(--radius-sm)',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            fontSize: '0.8125rem',
-                          }}
-                        >
-                          <Building2 size={14} color={isSelected ? 'var(--slate-900)' : 'var(--slate-400)'} />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>{h.name}</div>
-                            <div style={{ fontSize: '0.6875rem', color: 'var(--slate-400)' }}>/{h.hotelSlug || h.hotelId}</div>
-                          </div>
-                          {isSelected && <CheckCircle2 size={13} color="var(--emerald-600)" />}
-                        </button>
-                      );
-                    })}
-                  </div>
+                      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        {filteredHotels.map((h) => {
+                          const isSelected = h.hotelSlug === settings.hotelSlug || h.hotelId === settings.hotelSlug;
+                          return (
+                            <button
+                              key={h.hotelSlug || h.hotelId}
+                              type="button"
+                              onClick={() => handleSelectHotel(h.hotelSlug || h.hotelId)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                width: '100%',
+                                padding: '0.45rem 0.65rem',
+                                border: 'none',
+                                background: isSelected ? 'var(--slate-100)' : 'transparent',
+                                color: isSelected ? 'var(--slate-900)' : 'var(--slate-700)',
+                                fontWeight: isSelected ? 700 : 500,
+                                borderRadius: 'var(--radius-sm)',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                fontSize: '0.8125rem',
+                              }}
+                            >
+                              <Building2 size={14} color={isSelected ? 'var(--slate-900)' : 'var(--slate-400)'} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>{h.name}</div>
+                                <div style={{ fontSize: '0.6875rem', color: 'var(--slate-400)' }}>/{h.hotelSlug || h.hotelId}</div>
+                              </div>
+                              {isSelected && <CheckCircle2 size={13} color="var(--emerald-600)" />}
+                            </button>
+                          );
+                        })}
+                      </div>
 
-                  {canOnboardHotel && (
-                    <div style={{ borderTop: '1px solid var(--slate-100)', marginTop: '0.35rem', paddingTop: '0.35rem' }}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsSwitcherOpen(false);
-                          setIsRegistryOpen(true);
-                        }}
-                        className="saas-btn saas-btn-ghost"
-                        style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.78125rem', color: 'var(--brand-rose)', fontWeight: 600 }}
-                      >
-                        <Plus size={13} />
-                        <span>Onboard New Hotel</span>
-                      </button>
+                      {canOnboardHotel && (
+                        <div style={{ borderTop: '1px solid var(--slate-100)', marginTop: '0.35rem', paddingTop: '0.35rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsSwitcherOpen(false);
+                              setIsRegistryOpen(true);
+                            }}
+                            className="saas-btn saas-btn-ghost"
+                            style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.78125rem', color: 'var(--brand-rose)', fontWeight: 600 }}
+                          >
+                            <Plus size={13} />
+                            <span>Onboard New Hotel</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           {/* RIGHT: TABS & ACTIONS */}

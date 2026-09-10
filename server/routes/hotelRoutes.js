@@ -7,7 +7,7 @@ import { onboardHotelSchema } from '../validators/hotelSchemas.js';
 
 const router = express.Router();
 
-router.get('/', hotelController.list);
+router.get('/', optionalAuth, hotelController.list);
 router.post(
   '/onboard',
   rateLimiter(15 * 60 * 1000, 5),

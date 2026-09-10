@@ -61,11 +61,17 @@ export function FeedbackProvider({ children, hotelSlug }) {
 
   const userRole = currentUser?.role || (isManagerAuthenticated ? 'manager' : 'guest');
   const isManager = Boolean(isManagerAuthenticated && ['manager', 'owner', 'SUPER_ADMIN'].includes(userRole));
+  const canManageProperties = Boolean(isManager && activeTab === 'dashboard');
   const canOnboardHotel = Boolean(isManager && activeTab === 'dashboard');
 
   const auditLogger = new AuditLogger(hotelSlug);
 
   const fetchHotelsList = useCallback(async () => {
+    // Security: Only authenticated managers are authorized to fetch the private property directory
+    if (!isManagerAuthenticated) {
+      setRegisteredHotels([]);
+      return;
+    }
     try {
       const res = await apiClient(`/api/hotels?_t=${Date.now()}`);
       if (res && res.success && Array.isArray(res.hotels)) {
@@ -74,9 +80,13 @@ export function FeedbackProvider({ children, hotelSlug }) {
           name: h.name || h.hotelName || h.hotelSlug
         }));
         setRegisteredHotels(serverHotels);
+      } else {
+        setRegisteredHotels([]);
       }
-    } catch (e) {}
-  }, []);
+    } catch (e) {
+      setRegisteredHotels([]);
+    }
+  }, [isManagerAuthenticated]);
 
   const fetchData = useCallback(async () => {
     if (!hotelSlug) return;
@@ -89,7 +99,8 @@ export function FeedbackProvider({ children, hotelSlug }) {
     setKeywords(RATING_KEYWORDS);
 
     try {
-      fetchHotelsList();
+      // Note: Guests must NEVER fetch the private property directory.
+      // fetchHotelsList() is intentionally excluded here to prevent property leakage.
 
       const t = Date.now();
       const [settingsRes, keywordsRes, feedbackRes] = await Promise.all([
@@ -150,6 +161,7 @@ export function FeedbackProvider({ children, hotelSlug }) {
       } else {
         setIsManagerAuthenticated(false);
         setCurrentUser(null);
+        setRegisteredHotels([]);
         if (typeof window !== 'undefined') {
           localStorage.removeItem('jj_access_token');
         }
@@ -189,10 +201,21 @@ export function FeedbackProvider({ children, hotelSlug }) {
     }
 
     return () => {
-      if (eventSource) eventSource.close();
+      if (eventSource) {
+        eventSource.close();
+      }
       if (bc) bc.close();
     };
   }, [hotelSlug, fetchData]);
+
+  // Synchronize hotel list strictly when manager is authenticated in dashboard mode
+  useEffect(() => {
+    if (isManagerAuthenticated && activeTab === 'dashboard') {
+      fetchHotelsList();
+    } else {
+      setRegisteredHotels([]);
+    }
+  }, [isManagerAuthenticated, activeTab, fetchHotelsList]);
 
   const switchTab = (tab) => {
     if (tab === 'dashboard' && !isManagerAuthenticated) {
@@ -214,6 +237,7 @@ export function FeedbackProvider({ children, hotelSlug }) {
         setActiveTab('dashboard');
         auditLogger.logEvent('MANAGER_LOGIN_SUCCESS');
         fetchData();
+        fetchHotelsList();
         return { success: true };
       }
 
@@ -261,6 +285,7 @@ export function FeedbackProvider({ children, hotelSlug }) {
     logoutApi();
     setIsManagerAuthenticated(false);
     setCurrentUser(null);
+    setRegisteredHotels([]);
     setActiveTab('guest');
     auditLogger.logEvent('MANAGER_LOGOUT');
   };
@@ -516,6 +541,7 @@ export function FeedbackProvider({ children, hotelSlug }) {
         currentUser,
         userRole,
         isManager,
+        canManageProperties,
         canOnboardHotel,
         isManagerAuthenticated,
         isPinModalOpen,
@@ -564,6 +590,7 @@ export function useFeedback() {
       currentUser: null,
       userRole: 'guest',
       isManager: false,
+      canManageProperties: false,
       canOnboardHotel: false,
       isManagerAuthenticated: false,
       isPinModalOpen: false,
