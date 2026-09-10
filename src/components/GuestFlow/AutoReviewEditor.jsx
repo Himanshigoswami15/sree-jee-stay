@@ -31,7 +31,22 @@ export function AutoReviewEditor({
     return 'Tell us about your stay';
   };
 
+  const isPositive = rating >= 4;
+
   const getEditorPlaceholder = () => {
+    if (!isPositive) {
+      if (isPackers) return 'Tell us what could have been handled better during your relocation...';
+      if (businessType === 'business_consultant') return 'Tell us what could have been handled better with your business setup...';
+      if (businessType === 'makeup_artist') return 'Tell us how your makeup experience could be improved...';
+      if (businessType === 'nail_artist') return 'Tell us how your nail art experience could be improved...';
+      if (businessType === 'clothing') return 'Tell us how your shopping experience could be improved...';
+      if (businessType === 'financial_services') return 'Tell us how our financial advisory could be improved...';
+      if (isMarketing) return 'Tell us how our marketing service could be improved...';
+      if (isDining) return 'Tell us what could have been better during your meal...';
+      if (!isHotel) return 'Tell us how we can improve our service...';
+      return 'Tell us how we can improve your stay...';
+    }
+
     if (isPackers) return 'Tell us what you enjoyed about our packing & moving service...';
     if (businessType === 'business_consultant') return 'Tell us what you enjoyed about our consultancy service...';
     if (businessType === 'makeup_artist') return 'Tell us what you loved about your makeup and look...';

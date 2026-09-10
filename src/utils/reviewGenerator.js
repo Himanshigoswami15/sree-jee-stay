@@ -4,6 +4,8 @@
  * selected keyword tags, hotel name, writing tone, review length, and Review Assistant toggles.
  */
 
+import { INDUSTRY_TEMPLATES } from '../config/industryTemplates.js';
+
 export const RATING_KEYWORDS = {
   positive: [
     {
@@ -764,7 +766,7 @@ function cleanSentence(str = '') {
 /**
  * Robust tag finder across custom keywords, templates, and defaults
  */
-function findTagObject(tagId, keywordsList, isPositive) {
+function findTagObject(tagId, keywordsList, isPositive, businessType = 'hotel') {
   const primaryList = isPositive
     ? (Array.isArray(keywordsList?.positive) ? keywordsList.positive : [])
     : (Array.isArray(keywordsList?.negative) ? keywordsList.negative : []);
@@ -774,10 +776,19 @@ function findTagObject(tagId, keywordsList, isPositive) {
     : (Array.isArray(keywordsList?.positive) ? keywordsList.positive : []);
 
   const flatList = Array.isArray(keywordsList) ? keywordsList : [];
+
+  const template = INDUSTRY_TEMPLATES[businessType];
+  const templatePrimary = isPositive
+    ? (Array.isArray(template?.keywords) ? template.keywords : [])
+    : (Array.isArray(template?.negativeKeywords) ? template.negativeKeywords : []);
+  const templateSecondary = isPositive
+    ? (Array.isArray(template?.negativeKeywords) ? template.negativeKeywords : [])
+    : (Array.isArray(template?.keywords) ? template.keywords : []);
+
   const defaultList = isPositive ? RATING_KEYWORDS.positive : RATING_KEYWORDS.negative;
   const defaultAlt = isPositive ? RATING_KEYWORDS.negative : RATING_KEYWORDS.positive;
 
-  const allSearches = [primaryList, flatList, secondaryList, defaultList, defaultAlt];
+  const allSearches = [primaryList, templatePrimary, flatList, secondaryList, templateSecondary, defaultList, defaultAlt];
 
   for (const list of allSearches) {
     if (!Array.isArray(list)) continue;
@@ -970,6 +981,65 @@ export function formatTagToSentence(tagObj, isPositive = true, tagSeed = Math.ra
   }
 
   // Negative tags
+  if (isPackers) {
+    if (lower.includes('delay') || lower.includes('late') || lower.includes('time') || lower.includes('timing')) {
+      const delayVariations = [
+        'Delivery took longer than the committed timeline',
+        'There were some unexpected delays during shifting and delivery',
+        'Delivery scheduling could have been handled with better timeliness'
+      ];
+      return cleanSentence(pickVariation(delayVariations, tagSeed));
+    }
+    if (lower.includes('damage') || lower.includes('scratch') || lower.includes('item') || lower.includes('break')) {
+      const damageVariations = [
+        'A few of our household items suffered minor damage during transit',
+        'Noticed scratches on some furniture pieces after unpacking',
+        'Item handling during transportation could have been more careful'
+      ];
+      return cleanSentence(pickVariation(damageVariations, tagSeed));
+    }
+    if (lower.includes('pack') || lower.includes('wrap') || lower.includes('care')) {
+      const packVariations = [
+        'Packing quality could have been more protective for fragile items',
+        'Felt that higher grade packing material should have been used',
+        'Packing felt slightly rushed and needed more protective wrapping'
+      ];
+      return cleanSentence(pickVariation(packVariations, tagSeed));
+    }
+    if (lower.includes('charge') || lower.includes('cost') || lower.includes('price') || lower.includes('hidden') || lower.includes('fee')) {
+      const costVariations = [
+        'Encountered unexpected extra charges that were not discussed upfront',
+        'Pricing transparency could be improved regarding additional handling fees',
+        'There were surprise charges added beyond the initial estimate'
+      ];
+      return cleanSentence(pickVariation(costVariations, tagSeed));
+    }
+    if (lower.includes('staff') || lower.includes('crew') || lower.includes('behavior') || lower.includes('polite')) {
+      const crewVariations = [
+        'The loading crew lacked proper coordination and politeness',
+        'Staff coordination on moving day could have been more cooperative',
+        'Moving crew seemed hurried and customer handling was average'
+      ];
+      return cleanSentence(pickVariation(crewVariations, tagSeed));
+    }
+    if (lower.includes('track') || lower.includes('update') || lower.includes('communicat') || lower.includes('phone')) {
+      const commVariations = [
+        'Communication and transit tracking updates were lacking during the move',
+        'Had difficulty getting timely status updates while goods were in transit',
+        'Customer support could be more proactive in sharing shipment status'
+      ];
+      return cleanSentence(pickVariation(commVariations, tagSeed));
+    }
+    if (lower.includes('unload') || lower.includes('placement')) {
+      const unloadVariations = [
+        'Unloading and item placement inside the premises was rushed and disorganized',
+        'The team rushed through unloading without placing heavy items properly',
+        'Care during unloading and shifting upstairs could have been better'
+      ];
+      return cleanSentence(pickVariation(unloadVariations, tagSeed));
+    }
+  }
+
   const defaultNegativeTemplates = [
     `The ${lower} could use some improvement`,
     `We felt the ${lower} wasn't quite up to the mark`,
@@ -1006,7 +1076,7 @@ export function generateReviewText({
   // Map each selected tag to a natural sentence using robust finder and formatter
   let tagSnippets = selectedTags
     .map((tagId, idx) => {
-      const tagObj = findTagObject(tagId, keywordsList, isPositive);
+      const tagObj = findTagObject(tagId, keywordsList, isPositive, effectiveBusinessType);
       if (!tagObj) return null;
 
       const tagSeed = variationSeed * (idx + 1) * 31.7;

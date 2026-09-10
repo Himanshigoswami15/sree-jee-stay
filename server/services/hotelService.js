@@ -197,7 +197,11 @@ export async function onboardHotel(data) {
       });
     }
 
-    RATING_KEYWORDS.negative.forEach((item, idx) => {
+    const negList = (templateObj && Array.isArray(templateObj.negativeKeywords) && templateObj.negativeKeywords.length > 0)
+      ? templateObj.negativeKeywords
+      : RATING_KEYWORDS.negative;
+
+    negList.forEach((item, idx) => {
       docs.push({
         hotel: createdHotel._id,
         hotelId,
@@ -206,7 +210,7 @@ export async function onboardHotel(data) {
         label: item.label,
         category: item.category || 'General',
         snippet: item.snippet || item.label,
-        snippets: item.snippets || [],
+        snippets: item.snippets || [item.snippet || item.label],
         sortOrder: idx,
       });
     });

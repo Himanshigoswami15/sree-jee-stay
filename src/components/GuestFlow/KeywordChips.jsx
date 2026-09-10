@@ -13,20 +13,31 @@ import {
   Check,
   AlertCircle,
   ShieldCheck,
+  ShieldAlert,
   Star,
   Coffee,
   ChevronDown,
   ChevronUp,
   Volume2,
   Tv,
-  Car
+  Car,
+  Truck,
+  Package,
+  DollarSign,
+  PhoneCall
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFeedback } from '../../context/FeedbackContext';
+import { INDUSTRY_TEMPLATES } from '../../config/industryTemplates';
 
 function getKeywordIcon(tagId = '', label = '', category = '') {
   const lower = `${tagId} ${label} ${category}`.toLowerCase();
 
+  if (lower.includes('truck') || lower.includes('mover') || lower.includes('relocat') || lower.includes('transit') || lower.includes('pickup')) return Truck;
+  if (lower.includes('package') || lower.includes('box') || lower.includes('item') || lower.includes('furniture') || lower.includes('damage') || lower.includes('pack')) return Package;
+  if (lower.includes('care') || lower.includes('scratch') || lower.includes('fragile') || lower.includes('shield')) return ShieldAlert;
+  if (lower.includes('price') || lower.includes('charge') || lower.includes('cost') || lower.includes('pricing') || lower.includes('bill') || lower.includes('fee')) return DollarSign;
+  if (lower.includes('phone') || lower.includes('track') || lower.includes('call') || lower.includes('communicat') || lower.includes('support')) return PhoneCall;
   if (lower.includes('clean') || lower.includes('spotless') || lower.includes('hygien')) return Sparkles;
   if (lower.includes('wifi') || lower.includes('wi-fi') || lower.includes('internet')) return Wifi;
   if (lower.includes('staff') || lower.includes('team') || lower.includes('friendly') || lower.includes('service') || lower.includes('doctor') || lower.includes('reception') || lower.includes('hospitality')) return Users;
@@ -52,12 +63,36 @@ export function KeywordChips({ rating, selectedTags = [], onToggleTag, businessT
   if (!rating) return null;
 
   const isPositive = rating >= 4;
-  const chipList = isPositive ? (keywords?.positive || []) : (keywords?.negative || []);
+  const isHotel = ['hotel', 'unique_stay'].includes(businessType);
+  const isPackers = businessType === 'packers';
+  const template = INDUSTRY_TEMPLATES[businessType];
+
+  let rawList = isPositive ? (keywords?.positive || []) : (keywords?.negative || []);
+
+  // Safeguard: If business is not a hotel (e.g. packers), never show default hotel keywords
+  if (!isHotel && template) {
+    if (!isPositive) {
+      const hasHotelDefaults = rawList.some((c) =>
+        ['slow_wifi', 'ac_issue', 'noise', 'breakfast_cold', 'bathroom_dirty', 'keycard'].includes(c.id || c.tagId)
+      );
+      if (hasHotelDefaults || rawList.length === 0) {
+        rawList = template.negativeKeywords || [];
+      }
+    } else {
+      const hasHotelDefaults = rawList.some((c) =>
+        ['clean', 'wifi', 'staff', 'location', 'bed', 'breakfast'].includes(c.id || c.tagId) &&
+        !template.keywords?.some((k) => (k.id || k.tagId) === (c.id || c.tagId))
+      );
+      if (hasHotelDefaults || rawList.length === 0) {
+        rawList = template.keywords || [];
+      }
+    }
+  }
+
+  const chipList = rawList;
 
   if (!chipList || chipList.length === 0) return null;
 
-  const isHotel = ['hotel', 'unique_stay'].includes(businessType);
-  const isPackers = businessType === 'packers';
   const isDining = ['restaurant', 'cafe'].includes(businessType);
   const isMarketing = businessType === 'marketing';
 

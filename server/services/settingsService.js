@@ -3,6 +3,7 @@ import { Settings, Keyword, Hotel, Feedback, Notification } from '../models/inde
 import { getHotel } from './hotelService.js';
 import { logEvent } from './auditService.js';
 import { RATING_KEYWORDS } from '../../src/utils/reviewGenerator.js';
+import { INDUSTRY_TEMPLATES } from '../../src/config/industryTemplates.js';
 import { generateGoogleReviewUrl } from '../../src/utils/googleReview.js';
 import { connectDB, ensureDbConnected } from '../config/db.js';
 import { logger } from '../utils/logger.js';
@@ -150,19 +151,55 @@ export async function getKeywords(identifier) {
   if (!identifier) throw new AppError('Hotel identifier is required.', 400);
   const hotel = await getHotel(identifier);
   const hotelId = hotel ? hotel.hotelId : identifier;
+  const bType = ((hotel && hotel.businessType) || '').toLowerCase() ||
+    (hotel && /packers|movers|relocation|shifting/i.test(hotel.name || '') ? 'packers' : 'hotel');
+  const templateObj = INDUSTRY_TEMPLATES[bType] || INDUSTRY_TEMPLATES.hotel;
 
-  const keywords = await Keyword.find({
+  let keywords = await Keyword.find({
     $or: [{ hotelId }, { hotelId: identifier }],
     isActive: true,
   }).sort({ sortOrder: 1 });
 
   if (keywords.length === 0) {
-    await seedDefaultKeywords(hotelId).catch(() => {});
+    await seedDefaultKeywords(hotelId, bType, hotel?._id).catch(() => {});
     const seeded = await Keyword.find({
       $or: [{ hotelId }, { hotelId: identifier }],
       isActive: true,
     }).sort({ sortOrder: 1 });
     return groupKeywords(seeded);
+  }
+
+  // Auto-migrate non-hotel businesses (e.g. packers) that currently have hotel negative keywords in DB
+  if (templateObj && templateObj.negativeKeywords && templateObj.negativeKeywords.length > 0 && bType !== 'hotel') {
+    const hasHotelNegative = keywords.some(
+      (k) => k.type === 'negative' && ['slow_wifi', 'ac_issue', 'noise', 'breakfast_cold', 'bathroom_dirty', 'keycard'].includes(k.tagId)
+    );
+    if (hasHotelNegative) {
+      try {
+        await Keyword.deleteMany({
+          $or: [{ hotelId }, { hotelId: identifier }],
+          type: 'negative',
+        });
+        const newNegDocs = templateObj.negativeKeywords.map((item, idx) => ({
+          hotel: hotel ? hotel._id : undefined,
+          hotelId,
+          type: 'negative',
+          tagId: item.id,
+          label: item.label,
+          category: item.category || 'General',
+          snippet: item.snippet || item.label,
+          snippets: item.snippets || [item.snippet || item.label],
+          sortOrder: idx,
+        }));
+        await Keyword.insertMany(newNegDocs);
+        keywords = await Keyword.find({
+          $or: [{ hotelId }, { hotelId: identifier }],
+          isActive: true,
+        }).sort({ sortOrder: 1 });
+      } catch (err) {
+        logger.warn('[getKeywords] Auto-migrating negative keywords failed:', err.message);
+      }
+    }
   }
 
   return groupKeywords(keywords);
@@ -194,31 +231,42 @@ function groupKeywords(keywords) {
   return { positive, negative };
 }
 
-async function seedDefaultKeywords(hotelId) {
+async function seedDefaultKeywords(hotelId, bType = 'hotel', hotelMongoId = null) {
   const docs = [];
+  const templateObj = INDUSTRY_TEMPLATES[bType] || INDUSTRY_TEMPLATES.hotel;
 
-  RATING_KEYWORDS.positive.forEach((item, idx) => {
+  const posList = (templateObj && Array.isArray(templateObj.keywords) && templateObj.keywords.length > 0)
+    ? templateObj.keywords
+    : RATING_KEYWORDS.positive;
+
+  posList.forEach((item, idx) => {
     docs.push({
+      hotel: hotelMongoId,
       hotelId,
       type: 'positive',
       tagId: item.id,
       label: item.label,
       category: item.category || 'General',
       snippet: item.snippet || item.label,
-      snippets: item.snippets || [],
+      snippets: item.snippets || [item.snippet || item.label],
       sortOrder: idx,
     });
   });
 
-  RATING_KEYWORDS.negative.forEach((item, idx) => {
+  const negList = (templateObj && Array.isArray(templateObj.negativeKeywords) && templateObj.negativeKeywords.length > 0)
+    ? templateObj.negativeKeywords
+    : RATING_KEYWORDS.negative;
+
+  negList.forEach((item, idx) => {
     docs.push({
+      hotel: hotelMongoId,
       hotelId,
       type: 'negative',
       tagId: item.id,
       label: item.label,
       category: item.category || 'General',
       snippet: item.snippet || item.label,
-      snippets: item.snippets || [],
+      snippets: item.snippets || [item.snippet || item.label],
       sortOrder: idx,
     });
   });
@@ -350,6 +398,7 @@ export async function applyKeywordTemplate(identifier, templateKey, customKeywor
   });
 
   const docs = customKeywords.map((item, idx) => ({
+    hotel: hotel ? hotel._id : undefined,
     hotelId,
     type: item.type || 'positive',
     tagId: item.id || item.tagId || 'tmpl_' + idx + '_' + Date.now().toString(36),
@@ -360,6 +409,25 @@ export async function applyKeywordTemplate(identifier, templateKey, customKeywor
     sortOrder: idx,
     isActive: true,
   }));
+
+  const templateObj = INDUSTRY_TEMPLATES[templateKey];
+  const hasNegativeInCustom = docs.some((d) => d.type === 'negative');
+  if (!hasNegativeInCustom && templateObj && Array.isArray(templateObj.negativeKeywords)) {
+    templateObj.negativeKeywords.forEach((item, idx) => {
+      docs.push({
+        hotel: hotel ? hotel._id : undefined,
+        hotelId,
+        type: 'negative',
+        tagId: item.id || item.tagId,
+        label: item.label,
+        category: item.category || 'General',
+        snippet: item.snippet || item.label,
+        snippets: item.snippets || [item.snippet || item.label],
+        sortOrder: idx,
+        isActive: true,
+      });
+    });
+  }
 
   if (docs.length > 0) {
     await Keyword.insertMany(docs);

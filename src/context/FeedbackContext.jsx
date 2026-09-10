@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { RATING_KEYWORDS } from '../utils/reviewGenerator';
+import { INDUSTRY_TEMPLATES } from '../config/industryTemplates';
 import { getHotelConfig } from '../config/hotelConfig';
 import { AuditLogger } from '../utils/auditLogger';
 import { verifyPasswordApi, changePasswordApi, logoutApi } from '../services/authService';
@@ -357,13 +358,13 @@ export function FeedbackProvider({ children, hotelSlug }) {
   };
 
   const applyIndustryTemplate = async (templateKey) => {
-    const { INDUSTRY_TEMPLATES } = await import('../config/industryTemplates');
     const template = INDUSTRY_TEMPLATES[templateKey];
     if (!template) return { success: false, error: 'Invalid template' };
 
-    const newKeywordsList = template.keywords.map((k, idx) => ({
+    const posKeywords = (template.keywords || []).map((k, idx) => ({
       id: k.id,
       tagId: k.id,
+      type: 'positive',
       label: k.label,
       category: k.category,
       snippet: k.snippet,
@@ -371,6 +372,20 @@ export function FeedbackProvider({ children, hotelSlug }) {
       sortOrder: idx,
       isActive: true,
     }));
+
+    const negKeywords = (template.negativeKeywords || []).map((k, idx) => ({
+      id: k.id,
+      tagId: k.id,
+      type: 'negative',
+      label: k.label,
+      category: k.category,
+      snippet: k.snippet,
+      snippets: k.snippets || [k.snippet || k.label],
+      sortOrder: idx,
+      isActive: true,
+    }));
+
+    const newKeywordsList = [...posKeywords, ...negKeywords];
 
     const res = await apiClient('/api/keywords/template', {
       method: 'POST',
