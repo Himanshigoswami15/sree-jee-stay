@@ -56,7 +56,12 @@ export function FeedbackProvider({ children, hotelSlug }) {
   const [managerAlertToast, setManagerAlertToast] = useState(null);
 
   const [isManagerAuthenticated, setIsManagerAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+
+  const userRole = currentUser?.role || (isManagerAuthenticated ? 'manager' : 'guest');
+  const isManager = Boolean(isManagerAuthenticated && ['manager', 'owner', 'SUPER_ADMIN'].includes(userRole));
+  const canOnboardHotel = Boolean(isManager && activeTab === 'dashboard');
 
   const auditLogger = new AuditLogger(hotelSlug);
 
@@ -138,11 +143,13 @@ export function FeedbackProvider({ children, hotelSlug }) {
         res.success &&
         res.authenticated &&
         res.user &&
-        (res.user.hotelSlug === hotelSlug || res.user.hotelId === hotelSlug)
+        (res.user.hotelSlug === hotelSlug || res.user.hotelId === hotelSlug || res.user.role === 'SUPER_ADMIN')
       ) {
         setIsManagerAuthenticated(true);
+        setCurrentUser(res.user);
       } else {
         setIsManagerAuthenticated(false);
+        setCurrentUser(null);
         if (typeof window !== 'undefined') {
           localStorage.removeItem('jj_access_token');
         }
@@ -200,6 +207,9 @@ export function FeedbackProvider({ children, hotelSlug }) {
       const result = await verifyPasswordApi(hotelSlug, inputPin);
       if (result.success) {
         setIsManagerAuthenticated(true);
+        if (result.user) {
+          setCurrentUser(result.user);
+        }
         setIsPinModalOpen(false);
         setActiveTab('dashboard');
         auditLogger.logEvent('MANAGER_LOGIN_SUCCESS');
@@ -250,6 +260,7 @@ export function FeedbackProvider({ children, hotelSlug }) {
     }
     logoutApi();
     setIsManagerAuthenticated(false);
+    setCurrentUser(null);
     setActiveTab('guest');
     auditLogger.logEvent('MANAGER_LOGOUT');
   };
@@ -502,6 +513,10 @@ export function FeedbackProvider({ children, hotelSlug }) {
         setActiveTab: switchTab,
         managerAlertToast,
         dismissAlertToast,
+        currentUser,
+        userRole,
+        isManager,
+        canOnboardHotel,
         isManagerAuthenticated,
         isPinModalOpen,
         setIsPinModalOpen,
@@ -546,6 +561,10 @@ export function useFeedback() {
       setActiveTab: () => {},
       managerAlertToast: null,
       dismissAlertToast: () => {},
+      currentUser: null,
+      userRole: 'guest',
+      isManager: false,
+      canOnboardHotel: false,
       isManagerAuthenticated: false,
       isPinModalOpen: false,
       setIsPinModalOpen: () => {},

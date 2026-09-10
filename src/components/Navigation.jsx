@@ -27,6 +27,10 @@ export function Navigation() {
     settings,
     registeredHotels,
     isManagerAuthenticated,
+    currentUser,
+    userRole,
+    isManager,
+    canOnboardHotel,
     lockDashboard,
   } = useFeedback();
 
@@ -190,7 +194,7 @@ export function Navigation() {
                     </div>
 
                     <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                      Registered Hotels ({filteredHotels.length})
+                      {canOnboardHotel ? `REGISTERED HOTELS (${filteredHotels.length})` : 'AVAILABLE HOTELS'}
                     </div>
                   </div>
 
@@ -229,20 +233,22 @@ export function Navigation() {
                     })}
                   </div>
 
-                  <div style={{ borderTop: '1px solid var(--slate-100)', marginTop: '0.35rem', paddingTop: '0.35rem' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsSwitcherOpen(false);
-                        setIsRegistryOpen(true);
-                      }}
-                      className="saas-btn saas-btn-ghost"
-                      style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.78125rem', color: 'var(--brand-rose)', fontWeight: 600 }}
-                    >
-                      <Plus size={13} />
-                      <span>Onboard New Hotel</span>
-                    </button>
-                  </div>
+                  {canOnboardHotel && (
+                    <div style={{ borderTop: '1px solid var(--slate-100)', marginTop: '0.35rem', paddingTop: '0.35rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSwitcherOpen(false);
+                          setIsRegistryOpen(true);
+                        }}
+                        className="saas-btn saas-btn-ghost"
+                        style={{ width: '100%', padding: '0.4rem 0.5rem', fontSize: '0.78125rem', color: 'var(--brand-rose)', fontWeight: 600 }}
+                      >
+                        <Plus size={13} />
+                        <span>Onboard New Hotel</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -317,14 +323,16 @@ export function Navigation() {
         onClose={() => setIsSettingsOpen(false)}
       />
 
-      <HotelRegistryModal
-        isOpen={isRegistryOpen}
-        onClose={() => setIsRegistryOpen(false)}
-        onHotelOnboarded={(slug) => {
-          lockDashboard();
-          navigate(`/${slug}`);
-        }}
-      />
+      {canOnboardHotel && (
+        <HotelRegistryModal
+          isOpen={isRegistryOpen}
+          onClose={() => setIsRegistryOpen(false)}
+          onHotelOnboarded={(slug) => {
+            lockDashboard();
+            navigate(`/${slug}`);
+          }}
+        />
+      )}
     </>
   );
 }

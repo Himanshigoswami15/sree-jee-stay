@@ -73,7 +73,7 @@ class ErrorBoundary extends Component {
 }
 
 function MainContent() {
-  const { activeTab, loading, hotelNotFound } = useFeedback();
+  const { activeTab, loading, hotelNotFound, canOnboardHotel } = useFeedback();
   const [isRegistryOpen, setIsRegistryOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -107,23 +107,38 @@ function MainContent() {
           Property Profile Not Found
         </h2>
         <p style={{ fontSize: '0.875rem', color: 'var(--slate-600)', marginBottom: '1.5rem', lineHeight: '1.55' }}>
-          The requested hospitality profile is not registered in the system directory. You can register it in 2 minutes:
+          {canOnboardHotel
+            ? 'The requested hospitality profile is not registered in the system directory. You can register it in 2 minutes:'
+            : 'The requested hospitality profile is not registered or is unavailable. Please select an available property from the directory.'}
         </p>
-        <button
-          type="button"
-          className="saas-btn saas-btn-primary"
-          onClick={() => setIsRegistryOpen(true)}
-          style={{ width: '100%', height: '44px', justifyContent: 'center' }}
-        >
-          <Plus size={16} />
-          <span>Onboard This Property Now</span>
-        </button>
+        {canOnboardHotel ? (
+          <>
+            <button
+              type="button"
+              className="saas-btn saas-btn-primary"
+              onClick={() => setIsRegistryOpen(true)}
+              style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+            >
+              <Plus size={16} />
+              <span>Onboard This Property Now</span>
+            </button>
 
-        <HotelRegistryModal
-          isOpen={isRegistryOpen}
-          onClose={() => setIsRegistryOpen(false)}
-          onHotelOnboarded={(slug) => navigate(`/${slug}`)}
-        />
+            <HotelRegistryModal
+              isOpen={isRegistryOpen}
+              onClose={() => setIsRegistryOpen(false)}
+              onHotelOnboarded={(slug) => navigate(`/${slug}`)}
+            />
+          </>
+        ) : (
+          <button
+            type="button"
+            className="saas-btn saas-btn-secondary"
+            onClick={() => navigate('/')}
+            style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+          >
+            <span>View Available Properties</span>
+          </button>
+        )}
       </div>
     );
   }
@@ -179,11 +194,18 @@ function RootRedirector() {
   const [loading, setLoading] = useState(true);
   const [hotels, setHotels] = useState([]);
   const [isRegistryOpen, setIsRegistryOpen] = useState(false);
+  const [isManager, setIsManager] = useState(false);
 
   useEffect(() => {
-    apiClient(`/api/hotels?_t=${Date.now()}`).then((res) => {
-      if (res && res.success && Array.isArray(res.hotels)) {
-        setHotels(res.hotels);
+    Promise.all([
+      apiClient(`/api/hotels?_t=${Date.now()}`),
+      apiClient(`/api/auth/me?_t=${Date.now()}`).catch(() => null),
+    ]).then(([hotelsRes, authRes]) => {
+      if (hotelsRes && hotelsRes.success && Array.isArray(hotelsRes.hotels)) {
+        setHotels(hotelsRes.hotels);
+      }
+      if (authRes && authRes.authenticated && authRes.user && ['manager', 'owner', 'SUPER_ADMIN'].includes(authRes.user.role)) {
+        setIsManager(true);
       }
       setLoading(false);
     }).catch(() => setLoading(false));
@@ -214,7 +236,7 @@ function RootRedirector() {
       {hotels.length > 0 && (
         <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
           <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.04em' }}>
-            Registered Properties ({hotels.length})
+            {isManager ? `Registered Properties (${hotels.length})` : 'Available Properties'}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '280px', overflowY: 'auto' }}>
@@ -258,21 +280,25 @@ function RootRedirector() {
         </div>
       )}
 
-      <button
-        type="button"
-        className="saas-btn saas-btn-primary"
-        onClick={() => setIsRegistryOpen(true)}
-        style={{ width: '100%', height: '44px', justifyContent: 'center' }}
-      >
-        <Plus size={16} />
-        <span>Onboard New Property</span>
-      </button>
+      {isManager && (
+        <>
+          <button
+            type="button"
+            className="saas-btn saas-btn-primary"
+            onClick={() => setIsRegistryOpen(true)}
+            style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+          >
+            <Plus size={16} />
+            <span>Onboard New Property</span>
+          </button>
 
-      <HotelRegistryModal
-        isOpen={isRegistryOpen}
-        onClose={() => setIsRegistryOpen(false)}
-        onHotelOnboarded={(slug) => navigate(`/${slug}`)}
-      />
+          <HotelRegistryModal
+            isOpen={isRegistryOpen}
+            onClose={() => setIsRegistryOpen(false)}
+            onHotelOnboarded={(slug) => navigate(`/${slug}`)}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -1,37 +1,43 @@
 import * as hotelService from '../services/hotelService.js';
 import { logEvent } from '../services/auditService.js';
-import { ADMIN_SECRET_KEY } from '../config/constants.js';
+import { ADMIN_SECRET_KEY, DEFAULT_ADMIN_PIN, USER_ROLES } from '../config/constants.js';
 
 export async function onboard(req, res, next) {
   try {
+    const isManagerOrAdmin = req.user && [USER_ROLES.MANAGER, USER_ROLES.OWNER, USER_ROLES.SUPER_ADMIN].includes(req.user.role);
     const providedKey = (req.body.secretKey || req.body.adminSecretKey || req.headers['x-admin-secret-key'] || '').toString().trim();
-    const isSuperAdmin = req.user && req.user.role === 'SUPER_ADMIN';
     const envKey = (process.env.ADMIN_SECRET_KEY || ADMIN_SECRET_KEY || 'JJR-2026-SUPER-6X8F91ZP-K29A').toString().trim();
+    const adminPin = (process.env.ADMIN_PIN || DEFAULT_ADMIN_PIN || '9008').toString().trim();
 
-    const validKeys = [envKey, '9008', 'admin', 'admin9008', '1234', 'JJR-2026-SUPER-6X8F91ZP-K29A'];
-    const isValidKey = isSuperAdmin || (providedKey && validKeys.includes(providedKey));
+    const validKeys = [envKey, adminPin, 'JJR-2026-SUPER-6X8F91ZP-K29A'];
+    const hasValidKey = providedKey && validKeys.includes(providedKey);
 
-    if (!isValidKey) {
-      logEvent('SYSTEM', 'ONBOARDING_FAILED', {
-        reason: 'Invalid secret key or unauthorized role',
+    // Enforce role-based access control:
+    // Only authenticated managers/owners/super_admins OR authorized callers with verified admin key
+    if (!isManagerOrAdmin && !hasValidKey) {
+      logEvent('SYSTEM', 'ONBOARDING_UNAUTHORIZED', {
+        reason: req.user ? `Forbidden role: ${req.user.role}` : 'Unauthenticated guest attempt to onboard hotel',
         providedKeyLength: providedKey ? providedKey.length : 0,
         ip: req.ip,
         userAgent: req.headers['user-agent'],
       }).catch(() => {});
 
-      return res.status(403).json({
+      return res.status(req.user ? 403 : 401).json({
         success: false,
-        error: 'Invalid Admin Secret Key.',
-        message: 'Invalid Admin Secret Key.',
+        error: req.user
+          ? 'Forbidden: Only managers and administrators can onboard properties.'
+          : 'Authentication required. Guests are not permitted to onboard properties.',
+        message: req.user
+          ? 'Forbidden: Only managers and administrators can onboard properties.'
+          : 'Authentication required. Guests are not permitted to onboard properties.',
       });
     }
-
 
     const result = await hotelService.onboardHotel(req.body);
 
     logEvent(result.hotelId || result.hotelSlug || 'NEW_HOTEL', 'HOTEL_ONBOARDED', {
       hotelName: result.name || result.hotelName,
-      superAdmin: req.user?.email || 'AdminSecretKey',
+      superAdmin: req.user?.email || 'ManagerOnboard',
       ip: req.ip,
       userAgent: req.headers['user-agent'],
     }).catch(() => {});

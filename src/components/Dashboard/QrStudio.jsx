@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 
 export function QrStudio() {
   const navigate = useNavigate();
-  const { settings, updateSettings, refreshHotels, feedbacks } = useFeedback();
+  const { settings, updateSettings, refreshHotels, feedbacks, canOnboardHotel } = useFeedback();
 
   const [inputReviewUrl, setInputReviewUrl] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
@@ -223,15 +223,17 @@ export function QrStudio() {
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
-              className="saas-btn saas-btn-primary"
-              onClick={() => setIsRegistryOpen(true)}
-              style={{ fontSize: '0.8125rem', height: '36px' }}
-            >
-              <Plus size={14} />
-              <span>Onboard Property</span>
-            </button>
+            {canOnboardHotel && (
+              <button
+                type="button"
+                className="saas-btn saas-btn-primary"
+                onClick={() => setIsRegistryOpen(true)}
+                style={{ fontSize: '0.8125rem', height: '36px' }}
+              >
+                <Plus size={14} />
+                <span>Onboard Property</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -474,11 +476,13 @@ export function QrStudio() {
         </div>
       </div>
 
-      <HotelRegistryModal
-        isOpen={isRegistryOpen}
-        onClose={() => setIsRegistryOpen(false)}
-        onHotelOnboarded={(slug) => navigate(`/${slug}`)}
-      />
+      {canOnboardHotel && (
+        <HotelRegistryModal
+          isOpen={isRegistryOpen}
+          onClose={() => setIsRegistryOpen(false)}
+          onHotelOnboarded={(slug) => navigate(`/${slug}`)}
+        />
+      )}
     </div>
   );
 }
